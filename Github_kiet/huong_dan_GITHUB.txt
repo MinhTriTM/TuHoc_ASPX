@@ -1,0 +1,245 @@
+================================================================================
+HƯỚNG DẪN SỬ DỤNG GIT & GITHUB CHO DỰ ÁN ASPX (.NET FRAMEWORK 4.8.1)
+Dành cho thành viên nhóm thực hành: TuHoc_ASPX / AspxDemo_NET481
+================================================================================
+
+TÀI LIỆU NÀY HƯỚNG DẪN TOÀN BỘ VÒNG ĐỜI LÀM VIỆC VỚI GITHUB:
+  1. Cấu hình máy trạm ban đầu
+  2. Lấy dự án về máy (Clone / Fetch)
+  3. Cập nhật nhánh chính trước khi bắt đầu
+  4. Tạo nhánh tính năng (Feature branch)
+  5. Thao tác code trong Visual Studio & Lưu vết (Add / Commit)
+  6. Đẩy nhánh lên GitHub (Push)
+  7. Mở Pull Request (PR) & Hợp nhất mã nguồn
+  8. Đồng bộ và dọn dẹp nhánh cục bộ
+  9. Xử lý các tình huống thường gặp (Xung đột Web.config, Stash, Hoàn tác)
+
+--------------------------------------------------------------------------------
+PHẦN 1: CẤU HÌNH MÁY TRẠM BAN ĐẦU (CHỈ CẦN THỰC HIỆN 1 LẦN DUY NHẤT)
+--------------------------------------------------------------------------------
+Mở terminal Git Bash (hoặc PowerShell) và chạy các lệnh sau để định danh tác giả:
+
+  git config --global user.name "Nguyen Van A"
+  git config --global user.email "mssv@sinhvien.edu.vn"
+
+Thiết lập chuẩn hóa ký tự xuống dòng cho Windows và đặt nhánh mặc định là main:
+
+  git config --global core.autocrlf true
+  git config --global init.defaultBranch main
+
+Kiểm tra lại cấu hình đã nhận:
+
+  git config --list
+
+--------------------------------------------------------------------------------
+PHẦN 2: LẤY DỰ ÁN TỪ GITHUB VỀ MÁY (CLONE)
+--------------------------------------------------------------------------------
+Bước 2.1: Sao chép đường link repository từ GitHub (HTTPS hoặc SSH).
+  Ví dụ link: https://github.com/ten-nhom/TuHoc_ASPX.git
+
+Bước 2.2: Mở terminal tại thư mục bạn muốn lưu bài (ví dụ T:\HK1_26_27\Lap_trinh_aspx):
+
+  git clone https://github.com/ten-nhom/TuHoc_ASPX.git
+
+Bước 2.3: Di chuyển vào thư mục dự án vừa tải về:
+
+  cd TuHoc_ASPX
+
+Bước 2.4: Kiểm tra kết nối máy chủ remote:
+
+  git remote -v
+  # Kết quả phải hiển thị origin trỏ đúng về địa chỉ GitHub của nhóm.
+
+--------------------------------------------------------------------------------
+PHẦN 3: BẮT ĐẦU MỘT TÍNH NĂNG MỚI (TẠO NHÁNH - FEATURE BRANCH)
+--------------------------------------------------------------------------------
+QUY TẮC BẮT BUỘC CỦA NHÓM:
+  - KHÔNG BAO GIỜ code và push trực tiếp trên nhánh `main` hay `develop`.
+  - Mọi công việc (tạo trang mới, sửa giao diện, làm CI/CD) đều thực hiện trên một
+    nhánh riêng biệt gọi là Feature Branch.
+
+Bước 3.1: Đảm bảo bạn đang ở nhánh `main` và có code mới nhất từ đồng đội:
+
+  git checkout main
+  git pull origin main
+
+Bước 3.2: Tạo nhánh mới và chuyển ngay sang nhánh đó:
+  Cú pháp đặt tên nhánh:
+    feature/ten-chuc-nang  (ví dụ: feature/dang-nhap, feature/trang-chu)
+    fix/ten-loi            (ví dụ: fix/loi-webconfig, fix/sai-mat-khau)
+    docs/ten-tai-lieu      (ví dụ: docs/cap-nhat-slide, docs/them-bao-cao)
+
+  Ví dụ lệnh tạo nhánh làm tính năng đăng nhập:
+
+  git checkout -b feature/dang-nhap
+
+  (Hoặc dùng cú pháp Git mới):
+  git switch -c feature/dang-nhap
+
+Bước 3.3: Kiểm tra bạn đang đứng ở đúng nhánh mới:
+
+  git branch
+  # Dấu sao (*) phải nằm ở trước tên nhánh feature/dang-nhap.
+
+--------------------------------------------------------------------------------
+PHẦN 4: LÀM VIỆC VỚI CODE TRONG VISUAL STUDIO & LƯU VẾT (COMMIT)
+--------------------------------------------------------------------------------
+Bước 4.1: Mở Solution `AspxDemo_NET481.sln` bằng Visual Studio 2022.
+  - Tiến hành thêm file Web Form: ví dụ `Login.aspx` và `Login.aspx.cs`.
+  - Viết code giao diện và logic.
+  - Nhấn Ctrl + Shift + B để biên dịch; đảm bảo thông báo `Build succeeded`.
+
+LƯU Ý QUAN TRỌNG VỀ .GITIGNORE:
+  - Nhóm đã cấu hình sẵn `.gitignore` cho ASP.NET 4.8.1.
+  - Các thư mục tự sinh ra khi build như `bin/`, `obj/`, `packages/`, `.vs/`
+    sẽ TỰ ĐỘNG bị bỏ qua. Tuyệt đối không xóa hoặc ghi đè `.gitignore`.
+
+Bước 4.2: Mở terminal kiểm tra danh sách file đã thay đổi:
+
+  git status
+
+Bước 4.3: Xem chi tiết các dòng code đã thêm hoặc sửa:
+
+  git diff
+
+Bước 4.4: Đưa các file cần lưu vào vùng chuẩn bị (Staging Area):
+  - Đưa từng file cụ thể (khuyên dùng):
+      git add AspxDemo_NET481/Login.aspx
+      git add AspxDemo_NET481/Login.aspx.cs
+      git add AspxDemo_NET481/Login.aspx.designer.cs
+  - Hoặc đưa toàn bộ thay đổi:
+      git add .
+
+Bước 4.5: Tạo commit theo chuẩn CONVENTIONAL COMMITS:
+  Quy ước tiền tố bắt buộc:
+    feat:     Thêm trang/chức năng mới (VD: Login.aspx, form đăng ký)
+    fix:      Sửa lỗi (VD: sửa connection string, sửa lỗi validate)
+    docs:     Tài liệu, báo cáo LaTeX, slide
+    style:    Định dạng CSS, giao diện Master Page (không đổi logic C#)
+    refactor: Tái cấu trúc mã nguồn (tách class DAL, tối ưu code-behind)
+    test:     Viết thêm kiểm thử đơn vị NUnit/MSTest
+    chore:    Việc linh tinh, sửa .gitignore, cập nhật packages
+
+  Ví dụ lệnh commit chuẩn:
+
+  git commit -m "feat(auth): them trang Login.aspx va xu ly dang nhap demo"
+
+--------------------------------------------------------------------------------
+PHẦN 5: ĐƯA NHÁNH LÊN GITHUB (GIT PUSH)
+--------------------------------------------------------------------------------
+Bước 5.1: Đẩy nhánh tính năng lên máy chủ GitHub lần đầu tiên:
+  Lệnh có cờ `-u` (upstream) giúp liên kết nhánh cục bộ với nhánh trên GitHub:
+
+  git push -u origin feature/dang-nhap
+
+  Từ lần thứ 2 trở đi trên cùng nhánh này, bạn chỉ cần gõ ngắn gọn:
+
+  git push
+
+Bước 5.2: Terminal sẽ hiển thị đường link trực tiếp để tạo Pull Request trên GitHub!
+  Ví dụ: `https://github.com/ten-nhom/TuHoc_ASPX/pull/new/feature/dang-nhap`
+
+--------------------------------------------------------------------------------
+PHẦN 6: MỞ PULL REQUEST (PR) VÀ HỢP NHẤT MÃ NGUỒN TRÊN TRÌNH DUYỆT
+--------------------------------------------------------------------------------
+Bước 6.1: Truy cập vào trang web GitHub của repository.
+  - GitHub sẽ hiện thanh thông báo màu vàng:
+    "feature/dang-nhap had recent pushes ... [Compare & pull request]"
+  - Bấm vào nút **Compare & pull request**.
+
+Bước 6.2: Điền thông tin Pull Request:
+  - Base: `main` (hoặc `develop`)  <---  Compare: `feature/dang-nhap`.
+  - Tiêu đề PR: Rõ ràng, súc tích (VD: `feat(auth): hoan thanh trang Login.aspx`).
+  - Nội dung PR: Mô tả ngắn việc đã làm.
+    NẾU CÓ ISSUE LIÊN KẾT, gõ cú pháp đóng tự động ở cuối:
+      `Closes #3` (hoặc `Fixes #3`).
+  - Bên cột phải:
+      Reviewers: Chọn TV1, TV2 hoặc TV3 để mời xem code.
+      Assignees: Chọn chính mình.
+      Labels: Gán nhãn `enhancement` hoặc `feature`.
+  - Bấm nút **Create pull request**.
+
+Bước 6.3: Kiểm tra điều kiện gộp code:
+  - Hệ thống GitHub Actions sẽ tự động kích hoạt workflow `CI ASPX 4.8.1`.
+  - Đợi 40 - 60 giây để máy ảo `windows-latest` restore NuGet và chạy `msbuild`.
+  - Khi xuất hiện dấu TÍCH XANH (All checks have passed) VÀ đồng đội bấm APPROVE:
+    Nút Merge sẽ chuyển sang màu xanh lục!
+
+Bước 6.4: Hợp nhất (Merge):
+  - Bấm mũi tên cạnh nút Merge, chọn **Squash and merge** (để gom các commit nhỏ
+    thành 1 commit duy nhất trên nhánh chính, giữ lịch sử sạch đẹp).
+  - Bấm **Confirm Squash and merge**.
+  - Bấm tiếp nút **Delete branch** ngay trên trang web để xóa nhánh feature trên
+    GitHub, tránh tồn đọng rác.
+
+--------------------------------------------------------------------------------
+PHẦN 7: ĐỒNG BỘ VÀ DỌN DẸP TRÊN MÁY TÍNH CÁ NHÂN (LOCAL)
+--------------------------------------------------------------------------------
+Sau khi PR đã được merge trên web GitHub:
+
+Bước 7.1: Chuyển về nhánh `main`:
+
+  git checkout main
+
+Bước 7.2: Kéo bản code vừa được merge trên GitHub về máy:
+
+  git pull origin main
+
+Bước 7.3: Xóa nhánh tính năng ở máy local vì đã xong nhiệm vụ:
+
+  git branch -d feature/dang-nhap
+
+Bước 7.4: Xóa các con trỏ nhánh remote đã bị xóa trên GitHub:
+
+  git fetch -p
+
+Bây giờ nhánh `main` trên máy bạn đã hoàn toàn sạch sẽ và cập nhật mới nhất,
+sẵn sàng để lặp lại từ Bước 3.1 cho tính năng tiếp theo!
+
+--------------------------------------------------------------------------------
+PHẦN 8: XỬ LÝ CÁC TÌNH HUỐNG THƯỜNG GẶP
+--------------------------------------------------------------------------------
+
+TÌNH HUỐNG 1: ĐỒNG ĐỘI ĐÃ MERGE CODE MỚI LÊN `main` TRONG KHI BẠN ĐANG LÀM NHÁNH RIÊNG
+  Bạn muốn cập nhật những thay đổi mới nhất đó vào nhánh `feature` của mình:
+    # Đứng tại nhánh feature đang làm:
+    git fetch origin
+    git merge origin/main
+    # Hoặc cách giữ lịch sử thẳng đẹp hơn:
+    git rebase origin/main
+
+TÌNH HUỐNG 2: XUNG ĐỘT (CONFLICT) FILE `Web.config` HOẶC MÃ NGUỒN
+  Khi merge/pull mà báo "CONFLICT (content): Merge conflict in Web.config":
+    1. Mở file `Web.config` trong Visual Studio hoặc VS Code.
+    2. Tìm các điểm có ký hiệu:
+       <<<<<<< HEAD (code hiện tại của bạn)
+       =======
+       >>>>>>> origin/main (code mới của đồng đội)
+    3. Thảo luận với người cùng sửa để chọn dòng đúng (ví dụ giữ connection string
+       chuẩn của môi trường dev).
+    4. Xóa bỏ các dòng ký hiệu `<<<<<<<`, `=======`, `>>>>>>>`.
+    5. Lưu file và biên dịch thử (Ctrl + Shift + B).
+    6. Chạy các lệnh hoàn tất:
+         git add Web.config
+         git commit -m "fix(config): giai quyet xung dot connection string Web.config"
+         git push
+
+TÌNH HUỐNG 3: ĐANG LÀM DỞ TÍNH NĂNG NHƯNG CẦN CHUYỂN GẤP SANG NHÁNH KHÁC ĐỂ TEST
+  Dùng cơ chế cất tạm (Stash):
+    # Cất toàn bộ thay đổi chưa commit vào ngăn kéo:
+    git stash
+    # Lúc này thư mục làm việc hoàn toàn sạch sẽ, bạn có thể checkout sang nhánh khác:
+    git checkout main
+    # Khi quay lại nhánh cũ, lấy code từ ngăn kéo ra tiếp tục làm:
+    git checkout feature/dang-nhap
+    git stash pop
+
+TÌNH HUỐNG 4: LỠ COMMIT NHẦM FILE HOẶC MUỐN ĐỔI MESSAGE COMMIT VỪA TẠO
+  - Nếu chỉ muốn sửa lại câu mô tả commit gần nhất (chưa push):
+      git commit --amend -m "feat(auth): noi dung commit chinh xac hon"
+  - Nếu muốn hủy commit gần nhất nhưng vẫn giữ nguyên code đang sửa:
+      git reset --soft HEAD~1
+
+================================================================================
+CHÚC BẠN THỰC HÀNH THÀNH CÔNG VÀ GIỮ VỮNG PIPELINE LUÔN XANH!
+================================================================================
