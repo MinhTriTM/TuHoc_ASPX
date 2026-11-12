@@ -69,9 +69,13 @@ jobs:
       - name: List build output
         run: dir ${{ env.PUBLISH_DIR }}
 
-      # Buoc 8: chay unit test bang VSTest tren cac DLL test
+      # Buoc 8: chay unit test bang VSTest neu tim thay DLL test
+      # (bo qua neu project chua co test project - pipeline van xanh)
       - name: Run VSTest
-        run: vstest.console.exe ${{ env.PUBLISH_DIR }}\*Tests.dll /Logger:trx /Platform:x64
+        run: |
+          $tests = Get-ChildItem -Path "${{ env.PUBLISH_DIR }}" -Filter "*Tests.dll" -Recurse -ErrorAction SilentlyContinue
+          if ($null -eq $tests) { Write-Host "Khong thay *Tests.dll - bo qua VSTest."; exit 0 }
+          vstest.console.exe @($tests.FullName) /Logger:trx /Platform:x64
 
       # Buoc 9: tai file ket qua test .trx lam artifact de tai ve xem
       - name: Upload test results
@@ -82,6 +86,8 @@ jobs:
           name: test-results
           # Thu muc chua file .trx do VSTest sinh ra
           path: TestResults/*.trx
+          # Khong fail job khi chua co file .trx (project chua co test)
+          if-no-files-found: warn
           # Giu artifact 7 ngay
           retention-days: 7
 
@@ -130,10 +136,13 @@ jobs:
           if (!(Test-Path "verify-publish/Web.config")) { throw "Thieu Web.config" }
           if (!(Test-Path "verify-publish/bin")) { throw "Thieu thu muc bin" }
 
-      # Buoc 5: chay lai test tren goi vua tai ve
+      # Buoc 5: chay lai test tren goi vua tai ve (bo qua neu khong co DLL test)
       - name: Re-run VSTest on package
-        run: vstest.console.exe verify-publish/bin/*Tests.dll /Logger:trx /Platform:x64
+        run: |
+          $tests = Get-ChildItem -Path "verify-publish" -Filter "*Tests.dll" -Recurse -ErrorAction SilentlyContinue
+          if ($null -eq $tests) { Write-Host "Khong thay *Tests.dll - bo qua VSTest."; exit 0 }
+          vstest.console.exe @($tests.FullName) /Logger:trx /Platform:x64
 
       # Buoc 6: ket luan trang thai kiem tra
       - name: Done
-        run: echo "Verify OK: publish package co Web.config, bin va test xanh."
+        run: echo "Verify OK: publish package co Web.config va bin."

@@ -2,6 +2,7 @@
 # .gitlab-ci.yml - Pipeline mau cho ASP.NET Web Forms 4.8.1
 # (ASCII only - copy noi dung nay vao file .gitlab-ci.yml)
 # Repo: AspxDemo_NET481 | Runner: Windows + MSBuild + NuGet
+# Shell mac dinh PowerShell - script viet theo cu phap PowerShell ($env:VAR).
 # Luong chay: build -> test -> deploy staging
 # ============================================================
 
@@ -36,19 +37,19 @@ build_aspx:
     - windows
   # Chao mung + in thong tin moi truong truoc khi build.
   before_script:
-    - echo Hello from GitLab CI - build ASPX 4.8.1
-    - echo Branch is %CI_COMMIT_BRANCH%
-    - echo Runner is %CI_RUNNER_DESCRIPTION%
+    - echo "Hello from GitLab CI - build ASPX 4.8.1"
+    - echo "Branch is $env:CI_COMMIT_BRANCH"
+    - echo "Runner is $env:CI_RUNNER_DESCRIPTION"
     - nuget --version
     - msbuild -version -nologo
   # Khoi phuc goi NuGet roi build solution o che do Release.
   script:
-    - echo Restore NuGet packages for %SOLUTION_FILE%
-    - nuget restore %SOLUTION_FILE% -PackagesDirectory %NUGET_PACKAGES%
-    - echo Build solution with MSBuild Release
-    - msbuild %SOLUTION_FILE% /p:Configuration=%BUILD_CONFIG% /p:Platform="Any CPU" /p:DeployOnBuild=true /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl=%PUBLISH_DIR% /m /nologo /v:m
-    - echo List publish output
-    - dir %PUBLISH_DIR%
+    - echo "Restore NuGet packages for $env:SOLUTION_FILE"
+    - nuget restore $env:SOLUTION_FILE -PackagesDirectory $env:NUGET_PACKAGES
+    - echo "Build solution with MSBuild Release"
+    - msbuild $env:SOLUTION_FILE /p:Configuration=$env:BUILD_CONFIG /p:Platform="Any CPU" /p:DeployOnBuild=true /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl=$env:PUBLISH_DIR /m /nologo /v:m
+    - echo "List publish output"
+    - dir $env:PUBLISH_DIR
   # Cache thu muc packages de lan chay sau nhanh hon.
   cache:
     key: nuget-packages-v1
@@ -60,6 +61,8 @@ build_aspx:
     expire_in: 1 week
     paths:
       - publish/
+      # Them DLL test de job test tai ve chay VSTest.
+      - AspxDemo.Tests/bin/Release/
   # Chay build cho push va merge request, bo qua schedule.
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -82,14 +85,15 @@ test_aspx:
     - echo Hello from GitLab CI - test ASPX 4.8.1
     - vstest.console.exe /Help | findstr /C:"Version"
   script:
-    - echo Run unit tests with VSTest
-    - mkdir TestResults 2>NUL || echo TestResults exists
-    - vstest.console.exe %TEST_DLL% /Logger:"trx;LogFileName=test.trx" /TestCaseFilter:"TestCategory!=Live"
-    - echo Install trx2junit converter once per runner
-    - dotnet tool install -g trx2junit || echo trx2junit already installed
-    - echo Convert TRX test result to JUnit XML
-    - trx2junit TestResults\test.trx --output %JUNIT_FILE%
-    - echo Show JUnit report path
+    - echo "Run unit tests with VSTest"
+    - New-Item -ItemType Directory -Force TestResults | Out-Null
+    - if (!(Test-Path $env:TEST_DLL)) { throw "Khong thay $env:TEST_DLL. Hay them test project vao solution." }
+    - vstest.console.exe $env:TEST_DLL /Logger:"trx;LogFileName=test.trx" /TestCaseFilter:"TestCategory!=Live"
+    - echo "Install trx2junit converter once per runner"
+    - dotnet tool install -g trx2junit; if ($LASTEXITCODE -ne 0) { echo "trx2junit already installed" }
+    - echo "Convert TRX test result to JUnit XML"
+    - trx2junit TestResults\test.trx --output $env:JUNIT_FILE
+    - echo "Show JUnit report path"
     - dir TestResults
   # Bao cao JUnit hien thi truc tiep tren GitLab UI.
   artifacts:
@@ -112,10 +116,12 @@ deploy_staging:
   # Deploy ASPX can Windows de chep file vao thu muc IIS.
   tags:
     - windows
-  # Chi chay sau khi test pass, lay artifacts publish.
+  # Lay publish tu job build, dong thoi doi job test pass moi deploy.
   needs:
-    - job: test_aspx
+    - job: build_aspx
       artifacts: true
+    - job: test_aspx
+      artifacts: false
   # Quy tac: chi chay tren nhanh main, nhanh khac bo qua.
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -127,7 +133,7 @@ deploy_staging:
     url: https://staging.example.com/AspxDemo
   before_script:
     - echo Hello from GitLab CI - deploy to staging
-    - echo Deploy commit %CI_COMMIT_SHORT_SHA% to staging
+    - echo "Deploy commit $env:CI_COMMIT_SHORT_SHA to staging"
   # Chep thu muc publish len thu muc web staging (vi du).
   script:
     - echo Copy publish output to staging folder

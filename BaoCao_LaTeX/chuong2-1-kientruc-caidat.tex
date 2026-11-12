@@ -70,7 +70,7 @@ Luồng dữ liệu chuẩn chỉ gồm hai bước. Lệnh \verb|git add| chép
 Để thấy ba vùng bằng mắt thường, sinh viên chỉ cần mở project ASPX mẫu đã khởi tạo Git rồi liệt kê thư mục \texttt{.git} như trong Liệt kê~\ref{lst:c2-1-dot-git}. Mọi chú thích trong khối lệnh đều viết không dấu theo đúng quy định ASCII của môi trường liệt kê.
 
 \begin{lstlisting}[language=bash, caption={Khám phá thư mục .git trong project ASPX mẫu}, label={lst:c2-1-dot-git}]
-cd AspxDemo-NET481
+cd AspxDemo_NET481
 ls .git
 # output: HEAD config description hooks index info logs objects refs
 cat .git/HEAD
@@ -129,13 +129,13 @@ git config --global user.email "nguyenvana@example.com"
 git config --global init.defaultBranch main
 git config --global core.autocrlf true
 git config --global --list
-mkdir AspxDemo-NET481
-cd AspxDemo-NET481
+mkdir AspxDemo_NET481
+cd AspxDemo_NET481
 git init
 git status
 cd ..
-git clone https://github.com/example-org/AspxDemo-NET481.git
-cd AspxDemo-NET481
+git clone https://github.com/MinhTriTM/AspxDemo_NET481.git
+cd AspxDemo_NET481
 git log --oneline -3
 git remote -v
 \end{lstlisting}

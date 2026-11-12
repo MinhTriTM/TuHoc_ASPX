@@ -13,7 +13,7 @@
 \begin{frame}[fragile]{Pipeline CI cho ASPX 4.8.1}
 \begin{itemize}
 \item Mọi \texttt{push} và \texttt{PR} đều kích hoạt build và test tự động.
-\item \texttt{msbuild} biên dịch \texttt{AspxDemo.sln}, \texttt{vstest} chạy test, artifact lưu gói web.
+\item \texttt{msbuild} biên dịch \texttt{AspxDemo\_NET481.sln}, \texttt{vstest} chạy test, artifact lưu gói web.
 \end{itemize}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 name: CI ASPX 4.8.1
@@ -28,9 +28,9 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
       - name: Restore packages
-        run: nuget restore AspxDemo.sln
+        run: nuget restore AspxDemo_NET481.sln
       - name: Build solution
-        run: msbuild AspxDemo.sln /p:Config=Release
+        run: msbuild AspxDemo_NET481.sln /p:Config=Release
       - name: Run tests
         run: vstest.console.exe Tests.dll
       - name: Upload artifact
@@ -69,8 +69,8 @@ Tốc độ, chi phí & Chậm, đắt hơn & Nhanh, rẻ \\
 \end{itemize}
 \begin{lstlisting}[language=bash, basicstyle=\ttfamily\scriptsize]
 echo "Checking ${{ secrets.DB_SERVER }}"
-nuget restore AspxDemo.sln
-msbuild AspxDemo.sln /p:Conn="${{ secrets.CONN_STR }}"
+nuget restore AspxDemo_NET481.sln
+msbuild AspxDemo_NET481.sln /p:Conn="${{ secrets.CONN_STR }}"
 \end{lstlisting}
 \end{frame}
 

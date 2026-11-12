@@ -88,17 +88,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.config', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
       # Step 5: restore all NuGet packages for the solution.
       - name: Restore NuGet packages
-        run: nuget restore AspxDemo.sln
+        run: nuget restore AspxDemo_NET481.sln
 
       # Step 6: build the solution in Release mode.
       - name: Build solution
-        run: msbuild AspxDemo.sln /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild AspxDemo_NET481.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DeployOnBuild=true /p:PublishDir=publish\
 
       # Step 7: run unit tests with VSTest.
       - name: Run tests
@@ -109,12 +109,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aspx-site
-          path: WebApp\obj\Release\Package
+          path: publish/
           retention-days: 7
 \end{lstlisting}
 
 Workflow trên có thể sao chép vào thư mục \verb|.github/workflows| của repository demo
-và chạy ngay sau khi đẩy lên GitHub, với điều kiện solution có tên \verb|AspxDemo.sln|
+và chạy ngay sau khi đẩy lên GitHub, với điều kiện solution có tên \verb|AspxDemo_NET481.sln|
 và project kiểm thử đã được biên dịch ra \verb|AspxDemo.Tests.dll|.
 
 \subsubsection{Giải thích từng bước}
@@ -127,9 +127,9 @@ MSBuild là công cụ duy nhất biên dịch đầy đủ project Web Forms m�
 Lệnh \verb|nuget restore| sau đó đọc \verb|packages.config| và tải các gói còn thiếu về máy chạy.
 \item \textbf{Dùng cache:} hành động \verb|actions/cache@v4| lưu thư mục \verb|~/.nuget/packages| giữa các lần chạy.
 Khóa cache gồm hệ điều hành và giá trị băm của tệp khóa gói nên khi không đổi thư viện thì bỏ qua tải lại.
-\item \textbf{Khôi phục gói:} lệnh \verb|nuget restore AspxDemo.sln| tải phần gói còn thiếu sau khi đã dùng cache.
+\item \textbf{Khôi phục gói:} lệnh \verb|nuget restore AspxDemo_NET481.sln| tải phần gói còn thiếu sau khi đã dùng cache.
 Bước này bắt buộc đứng trước biên dịch, nếu thiếu gói thì MSBuild sẽ báo lỗi ngay.
-\item \textbf{Biên dịch:} lệnh \verb|msbuild AspxDemo.sln /p:Configuration=Release| biên dịch toàn bộ solution.
+\item \textbf{Biên dịch:} lệnh \verb|msbuild AspxDemo_NET481.sln /p:Configuration=Release| biên dịch toàn bộ solution.
 Mọi lỗi biên dịch làm workflow báo đỏ và chặn pull request cho đến khi được sửa.
 \item \textbf{Kiểm thử:} lệnh \verb|vstest.console.exe| chạy các DLL kiểm thử và xuất nhật ký định dạng \verb|.trx|.
 Chỉ cần một test không đạt, toàn bộ workflow được đánh dấu thất bại.
@@ -218,7 +218,7 @@ steps:
 
   # Packages missing from cache are downloaded by restore.
   - name: Restore packages
-    run: nuget restore AspxDemo.sln
+    run: nuget restore AspxDemo_NET481.sln
 
   # Keep the build output for download and deploy jobs.
   - name: Upload test results

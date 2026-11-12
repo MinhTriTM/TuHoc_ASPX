@@ -132,11 +132,11 @@ git bisect start
 git bisect bad HEAD
 git bisect good v1.0
 # Git checkout commit o giua, vi du f6g7h8i, ta kiem thu:
-msbuild AspxDemo.sln /p:Configuration=Release
+msbuild AspxDemo_NET481.sln /p:Configuration=Release
 # Bien dich loi, trang Default.aspx trang tinh, danh dau xau:
 git bisect bad
 # Git thu hep pham vi, checkout commit tiep theo de kiem tra:
-msbuild AspxDemo.sln /p:Configuration=Release
+msbuild AspxDemo_NET481.sln /p:Configuration=Release
 # Lan nay bien dich tot, trang hien thi binh thuong:
 git bisect good
 # Lap lai vai vong, cuoi cung Git bao:
@@ -145,7 +145,7 @@ git bisect reset
 # Ve nhanh ban dau, bat dau doc commit d3e4f5g de sua loi
 \end{lstlisting}
 
-Với project lớn có hàng trăm commit, có thể tự động hóa bước kiểm tra bằng \verb|git bisect run|, ví dụ \verb|git bisect run msbuild AspxDemo.sln| để Git tự chạy lệnh sau mỗi lần chuyển commit và tự kết luận tốt hay xấu theo mã thoát.
+Với project lớn có hàng trăm commit, có thể tự động hóa bước kiểm tra bằng \verb|git bisect run|, ví dụ \verb|git bisect run msbuild AspxDemo_NET481.sln| để Git tự chạy lệnh sau mỗi lần chuyển commit và tự kết luận tốt hay xấu theo mã thoát.
 
 Hình \ref{fig:c32-bisect} tóm tắt vòng lặp thu hẹp phạm vi của \verb|git bisect| từ khoảng nghi vấn ban đầu đến commit gây lỗi đầu tiên.
 
@@ -205,7 +205,7 @@ git worktree list
 # D:/TuHoc_ASPX        ab12cd3 [main]
 # D:/TuHoc_ASPX-hotfix ef45gh6 [feature/thanh-toan]
 cd ../aspx-hotfix
-msbuild AspxDemo.sln /p:Configuration=Release
+msbuild AspxDemo_NET481.sln /p:Configuration=Release
 cd ../TuHoc_ASPX
 git worktree remove ../aspx-hotfix
 \end{lstlisting}
