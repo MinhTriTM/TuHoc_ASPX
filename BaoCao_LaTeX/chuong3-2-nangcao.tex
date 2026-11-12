@@ -1,0 +1,215 @@
+\subsection{Rebase và rebase tương tác}
+\label{sec:c32-rebase}
+
+Khi mỗi thành viên làm trên một nhánh tính năng của project Web Forms, lệnh \verb|git rebase| giúp đặt lại toàn bộ nhánh lên đầu một nhánh mới hơn, tạo lịch sử thẳng và dễ đọc hơn so với việc tạo thêm commit hợp nhất \cite{progit}.
+
+Về bản chất, rebase lấy từng commit trên nhánh hiện tại, tạm gỡ chúng ra, cập nhật con trỏ lên đỉnh nhánh đích rồi áp dụng lại từng commit theo thứ tự, vì vậy mỗi commit được viết lại với mã băm SHA mới \cite{atlassiangit}.
+
+Dạng mạnh nhất của rebase là rebase tương tác với cờ \verb|-i|, cho phép biên tập lại cả chuỗi commit trước khi áp dụng, ví dụ gộp nhiều commit thử nghiệm thành một commit hoàn chỉnh trước khi mở pull request.
+
+Khi chạy \verb|git rebase -i HEAD~3|, Git mở một danh sách ba commit cùng hành động đi kèm, trong đó bốn hành động dùng nhiều nhất là:
+
+\begin{description}
+\item[\texttt{pick}] giữ nguyên commit, không thay đổi nội dung hay thông điệp.
+\item[\texttt{reword}] giữ nguyên nội dung nhưng sửa lại nội dung thông điệp commit cho rõ nghĩa và đúng chuẩn nhóm.
+\item[\texttt{squash}] gộp commit này vào commit đứng ngay trước nó, đồng thời cho phép gộp cả hai thông điệp thành một.
+\item[\texttt{drop}] loại bỏ commit khỏi lịch sử, thường dùng để xóa commit thử nghiệm hoặc commit chưa từng được đẩy lên máy chủ.
+\end{description}
+
+Ví dụ sau gộp ba commit rời rạc khi dựng trang \verb|Default.aspx| thành một commit duy nhất có thông điệp đúng chuẩn Conventional Commits \cite{convcommits}:
+
+\begin{lstlisting}[language=bash, caption={Gop ba commit thanh mot commit bang rebase tuong tac}, label={lst:c32-rebase-squash}]
+git log --oneline -3
+# h7i8j9k them ghi chu tam vao form dang nhap
+# e4f5g6h sua loi chinh ta tren nhan nut
+# a1b2c3d tao trang Default.aspx ban dau
+git rebase -i HEAD~3
+# Trong trinh soan thao, sua danh sach thanh:
+# pick a1b2c3d tao trang Default.aspx ban dau
+# squash e4f5g6h sua loi chinh ta tren nhan nut
+# squash h7i8j9k them ghi chu tam vao form dang nhap
+# Luu file, Git gop 3 commit va mo hop thoai nhap thong diep moi:
+# feat: tao trang dang nhap Default.aspx
+git log --oneline -1
+# k9l0m1n feat: tao trang dang nhap Default.aspx
+\end{lstlisting}
+
+Nếu quá trình rebase gặp conflict, Git dừng lại ở commit đang áp dụng dở và chờ người dùng xử lý; sau khi sửa file xong, chạy \verb|git add| rồi \verb|git rebase --continue| để đi tiếp, hoặc \verb|git rebase --abort| để hủy toàn bộ và quay về trạng thái ban đầu.
+
+\textbf{Cảnh báo quan trọng, nguyên tắc vàng của rebase:} tuyệt đối không rebase các commit đã đẩy lên nhánh công khai như \verb|main| hay \verb|develop| mà nhiều người đang dùng chung.
+
+Lý do là rebase viết lại mã băm SHA của mọi commit, nên đồng đội đã kéo bản cũ về sẽ bị lệch lịch sử, phải xử lý conflict trùng lặp và có nguy cơ đẩy nhầm bản sao commit lên máy chủ \cite{progit}.
+
+Quy tắc an toàn cho nhóm ba người: chỉ rebase nhánh tính năng của chính mình trước khi mở pull request, và sau khi rebase nhánh riêng thì đẩy lên bằng \verb|git push --force-with-lease| thay vì đẩy ép buộc thông thường để tránh ghi đè nhầm công việc của người khác.
+
+Trong đồ án ASPX, tình huống điển hình là nhánh \verb|feature/sua-giao-dien| đã cũ hai ngày so với \verb|develop|; thành viên cập nhật nhánh của mình bằng \verb|git rebase develop| trên máy cá nhân, giải quyết mọi conflict ngay tại chỗ rồi mới mở pull request sạch sẽ.
+
+\subsection{So sánh merge, rebase và cherry-pick}
+\label{sec:c32-compare}
+
+Ba thao tác \verb|merge|, \verb|rebase| và \verb|cherry-pick| đều dùng để kết hợp công việc giữa các nhánh, nhưng mỗi thao tác tạo ra hình dạng lịch sử khác nhau và phù hợp với tình huống khác nhau \cite{atlassiangit}.
+
+Lệnh \verb|merge| giữ nguyên toàn bộ lịch sử hai phía rồi tạo thêm một commit hợp nhất, nhờ đó phản ánh trung thực quá trình phát triển song song của nhóm.
+
+Lệnh \verb|rebase| viết lại chuỗi commit thành một đường thẳng gọn gàng nhưng thay đổi mã băm SHA, vì vậy chỉ an toàn trên nhánh riêng như đã phân tích ở Mục \ref{sec:c32-rebase}.
+
+Lệnh \verb|cherry-pick| không hợp nhất cả nhánh mà chỉ chép đúng một commit sang vị trí hiện tại, rất tiện cho việc mang bản vá nóng sang nhánh phát hành mà không kéo theo các thay đổi dở dang khác.
+
+Bảng \ref{tab:c32-compare} tổng hợp sáu tiêu chí quan trọng nhất để nhóm quyết định chọn thao tác nào trong từng tình huống cụ thể.
+
+\begin{table}[H]
+\centering
+\caption{So sanh merge rebase va cherry pick theo sau tieu chi}
+\label{tab:c32-compare}
+\begin{tabular}{p{2.6cm} p{3.3cm} p{3.3cm} p{3.3cm}}
+\toprule
+Tiêu chí & merge & rebase & cherry-pick \\
+\midrule
+Lịch sử commit & Giữ nguyên hai phía, thêm một commit hợp nhất & Viết lại thành một đường thẳng gọn gàng & Chỉ thêm đúng một bản sao commit \\
+Mã băm SHA & Không đổi với commit cũ & Đổi toàn bộ commit được viết lại & Bản sao mang SHA mới \\
+Xử lý conflict & Giải một lần duy nhất trong commit hợp nhất & Có thể phải giải lặp lại ở từng commit & Giải một lần trên bản sao duy nhất \\
+Dùng khi nào & Hợp nhất nhánh tính năng đã review xong & Làm sạch nhánh riêng trước pull request & Mang bản vá nóng sang nhánh khác \\
+Ưu điểm chính & Trung thực, an toàn với nhánh công khai & Lịch sử thẳng, dễ đọc và dễ truy vết & Chính xác từng commit, không kéo việc dở dang \\
+Rủi ro chính & Nhiều commit hợp nhất gây rối & Ghi đè lịch sử nếu dùng sai nhánh & Dễ trùng lặp, khó theo dõi nguồn gốc \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Quy ước gợi ý cho nhóm: dùng \verb|merge| khi hợp nhất nhánh tính năng vào \verb|develop|, dùng \verb|rebase| để cập nhật nhánh cá nhân trước khi xin review, và dùng \verb|cherry-pick| khi cần mang đúng một bản vá sang nhánh phát hành.
+
+\subsection{Cherry-pick và bản vá nóng}
+\label{sec:c32-cherry-pick}
+
+Trong đồ án Web Forms, tình huống kinh điển cần \verb|cherry-pick| là khi phát hiện lỗi nghiêm trọng trên nhánh \verb|main| nhưng nhánh \verb|develop| đang chứa nhiều tính năng dở dang chưa thể phát hành.
+
+Thay vì hợp nhất cả hai nhánh, trưởng nhóm sửa lỗi trực tiếp trên \verb|main|, tạo một commit vá nóng rồi dùng \verb|cherry-pick| để chép đúng commit đó sang \verb|develop|, đảm bảo bản phát hành tiếp theo cũng hết lỗi \cite{progit}.
+
+Cú pháp cơ bản chỉ gồm mã băm của commit cần chép, ngoài ra cờ \verb|-x| còn tự động ghi thêm một dòng chú thích nguồn gốc vào thông điệp để sau này dễ truy vết.
+
+Ví dụ đầy đủ dưới đây vá lỗi chuỗi kết nối trong \verb|Web.config| trên \verb|main| rồi mang đúng bản vá sang \verb|develop|:
+
+\begin{lstlisting}[language=bash, caption={Chep mot commit va nong tu main sang develop}, label={lst:c32-cherry-pick}]
+git checkout main
+# Sua truc tiep loi chuoi ket noi trong Web.config roi commit:
+git add Web.config
+git commit -m "fix: sua chuoi ket noi SQL Server tren main"
+git log --oneline -1
+# p1q2r3s fix: sua chuoi ket noi SQL Server tren main
+git checkout develop
+git cherry-pick -x p1q2r3s
+# Git tao mot ban sao commit tren develop, kem dong ghi nguon goc:
+# (cherry picked from commit p1q2r3s...)
+git log --oneline -1
+# t4u5v6w fix: sua chuoi ket noi SQL Server tren main
+\end{lstlisting}
+
+Nếu bản vá conflict với code trên \verb|develop|, Git dừng lại và đánh dấu file lỗi giống như khi hợp nhất; sau khi sửa xong, chạy \verb|git add| rồi \verb|git cherry-pick --continue| để hoàn tất, hoặc \verb|git cherry-pick --abort| để hủy bỏ.
+
+Cần lưu ý rằng bản sao do \verb|cherry-pick| tạo ra mang mã băm SHA khác commit gốc, vì vậy không nên lạm dụng cho hàng loạt commit, trường hợp đó nên dùng \verb|merge| hoặc \verb|rebase| để lịch sử rõ ràng hơn.
+
+Sau khi chép xong, nhóm nên chạy lại toàn bộ solution ASPX trên máy cá nhân rồi mới đẩy lên máy chủ, tránh mang lỗi biên dịch từ nhánh này sang nhánh khác.
+
+\subsection{Git bisect truy tìm commit gây lỗi}
+\label{sec:c32-bisect}
+
+Khi hệ thống ASPX bỗng dưng đổ vỡ mà không ai nhớ thay đổi nào gây ra, lệnh \verb|git bisect| sẽ tìm giúp commit thủ phạm bằng chiến lược tìm kiếm nhị phân, mỗi bước loại bỏ một nửa số commit nghi vấn \cite{progit}.
+
+Toàn bộ quy trình gồm sáu bước, lặp đi lặp lại cho đến khi Git chỉ còn đúng một commit khả nghi:
+
+\begin{enumerate}
+\item Chuẩn bị một cách kiểm lỗi nhanh và lặp lại được, ví dụ biên dịch solution bằng \verb|msbuild| hoặc mở trang \verb|Default.aspx| để xem lỗi còn tái hiện hay không.
+\item Khởi động phiên tìm kiếm bằng \verb|git bisect start| để Git ghi nhớ điểm xuất phát.
+\item Đánh dấu commit hiện tại đang lỗi bằng \verb|git bisect bad|.
+\item Đánh dấu một commit cũ chắc chắn còn tốt bằng \verb|git bisect good|, ví dụ thẻ phiên bản phát hành trước đó.
+\item Kiểm tra commit ở giữa mà Git tự động chọn, rồi đánh dấu \verb|git bisect good| hoặc \verb|git bisect bad|; lặp lại bước này cho đến khi Git báo đã tìm thấy commit gây lỗi đầu tiên.
+\item Ghi nhận kết quả, kết thúc phiên bằng \verb|git bisect reset| để quay về nhánh ban đầu, rồi tiến hành sửa lỗi.
+\end{enumerate}
+
+Ví dụ sau minh họa đầy đủ một phiên tìm lỗi trong project Web Forms có mười commit gần nhất:
+
+\begin{lstlisting}[language=bash, caption={Quy trinh git bisect tim commit gay loi dau tien}, label={lst:c32-bisect}]
+git bisect start
+git bisect bad HEAD
+git bisect good v1.0
+# Git checkout commit o giua, vi du f6g7h8i, ta kiem thu:
+msbuild AspxDemo.sln /p:Configuration=Release
+# Bien dich loi, trang Default.aspx trang tinh, danh dau xau:
+git bisect bad
+# Git thu hep pham vi, checkout commit tiep theo de kiem tra:
+msbuild AspxDemo.sln /p:Configuration=Release
+# Lan nay bien dich tot, trang hien thi binh thuong:
+git bisect good
+# Lap lai vai vong, cuoi cung Git bao:
+# d3e4f5g is the first bad commit
+git bisect reset
+# Ve nhanh ban dau, bat dau doc commit d3e4f5g de sua loi
+\end{lstlisting}
+
+Với project lớn có hàng trăm commit, có thể tự động hóa bước kiểm tra bằng \verb|git bisect run|, ví dụ \verb|git bisect run msbuild AspxDemo.sln| để Git tự chạy lệnh sau mỗi lần chuyển commit và tự kết luận tốt hay xấu theo mã thoát.
+
+Hình \ref{fig:c32-bisect} tóm tắt vòng lặp thu hẹp phạm vi của \verb|git bisect| từ khoảng nghi vấn ban đầu đến commit gây lỗi đầu tiên.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Chon khoang};
+\node[box, right=1.2cm of a] (b) {Thu commit giua};
+\node[box, right=1.2cm of b] (c) {Danh gia tot xau};
+\node[box, right=1.2cm of c] (d) {Tim commit loi};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {bisect} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {kiem tra} (c);
+\draw[->] (c) -- node[midway, above, font=\footnotesize] {thu hep} (d);
+\end{tikzpicture}
+\caption{Vong lap thu hep pham vi cua git bisect}
+\label{fig:c32-bisect}
+\end{figure}
+
+Sau khi tìm ra commit thủ phạm, nhóm nên đọc kỹ thay đổi bằng \verb|git show| rồi quyết định sửa tiếp bằng commit mới hay hoàn tác bằng \verb|git revert|, tuyệt đối không xóa lịch sử đã công khai.
+
+\subsection{Rerere và worktree}
+\label{sec:c32-rerere-worktree}
+
+Hai tính năng \verb|rerere| và \verb|worktree| ít được nhắc tới nhưng lại tiết kiệm rất nhiều thời gian cho nhóm sinh viên khi conflict lặp đi lặp lại hoặc khi cần làm nhiều nhánh cùng lúc \cite{progit}.
+
+\subsubsection{Cơ chế ghi nhớ cách giải conflict của rerere}
+
+Tên \verb|rerere| là viết tắt của cụm từ tiếng Anh reuse recorded resolution, nghĩa là tái sử dụng cách giải conflict đã ghi nhớ; sau khi bật, Git tự lưu lại hình ảnh trước và sau mỗi lần người dùng giải conflict thành công.
+
+Những lần sau gặp đúng mẫu conflict đó, Git tự áp dụng lại cách giải cũ và chỉ thông báo để người dùng kiểm tra, thay vì bắt giải lại từ đầu; cơ chế này đặc biệt hữu ích khi rebase dài ngày hoặc hợp nhất nhánh release lặp đi lặp lại.
+
+Cách bật và kiểm tra \verb|rerere| trên máy cá nhân gồm hai lệnh đơn giản, trong đó cờ \verb|--global| áp dụng cho mọi repo của người dùng:
+
+\begin{lstlisting}[language=bash, caption={Bat rerere va kiem tra thu muc ghi nho}, label={lst:c32-rerere}]
+git config --global rerere.enabled true
+git config --global rerere.autoupdate true
+# Tu bay gio, moi lan giai conflict xong, Git tu ghi nho cach giai
+# Kiem tra cac mau conflict da luu trong repo hien tai:
+git rerere status
+git rerere diff
+\end{lstlisting}
+
+Trong đồ án ASPX, mẫu conflict lặp lại nhiều nhất nằm ở file \verb|Web.config| khi mỗi thành viên thêm một đoạn cấu hình khác nhau; nhờ \verb|rerere|, từ lần thứ hai trở đi Git tự gộp lại đúng như lần đầu và nhóm chỉ cần mở file kiểm tra rồi commit.
+
+\subsubsection{Làm nhiều nhánh cùng lúc với worktree}
+
+Mặc định mỗi thư mục chỉ checkout được một nhánh tại một thời điểm, nhưng lệnh \verb|git worktree| cho phép tạo thêm các thư mục liên kết, mỗi thư mục giữ một nhánh khác nhau mà vẫn dùng chung một kho \verb|.git| duy nhất.
+
+Nhờ đó sinh viên có thể vừa chạy thử nhánh \verb|release/v1.0| trên máy chủ IIS Express ở thư mục chính, vừa phát triển tiếp nhánh \verb|feature/thanh-toan| ở thư mục bên cạnh mà không cần đóng mở hay cất tạm công việc \cite{atlassiangit}.
+
+Ví dụ sau tạo một worktree mới cho nhánh tính năng, liệt kê toàn bộ worktree rồi dọn dẹp khi làm xong:
+
+\begin{lstlisting}[language=bash, caption={Tao liet ke va don dep worktree}, label={lst:c32-worktree}]
+git worktree add ../aspx-hotfix feature/thanh-toan
+# Thu muc ../aspx-hotfix nay checkout nhanh feature/thanh-toan
+git worktree list
+# D:/TuHoc_ASPX        ab12cd3 [main]
+# D:/TuHoc_ASPX-hotfix ef45gh6 [feature/thanh-toan]
+cd ../aspx-hotfix
+msbuild AspxDemo.sln /p:Configuration=Release
+cd ../TuHoc_ASPX
+git worktree remove ../aspx-hotfix
+\end{lstlisting}
+
+Cần nhớ hai giới hạn: mỗi nhánh chỉ được checkout ở đúng một worktree tại một thời điểm, và không nên xóa thư mục worktree bằng tay mà hãy dùng \verb|git worktree remove| để Git dọn dẹp cả siêu dữ liệu liên quan.
+
+Kết hợp cả hai công cụ, quy trình nhóm trở nên gọn gàng: bật \verb|rerere| một lần rồi quên đi, dùng \verb|worktree| khi cần song song hai nhánh, dùng rebase cho nhánh riêng, merge cho nhánh chung và \verb|cherry-pick| cho bản vá nóng.

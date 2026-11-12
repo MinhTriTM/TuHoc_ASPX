@@ -1,0 +1,293 @@
+\subsection{Khái niệm: workflow, job, step, runner và trigger}
+
+GitHub Actions là nền tảng tích hợp liên tục (Continuous Integration, viết tắt là CI)
+và phân phối liên tục (Continuous Delivery, viết tắt là CD) được tích hợp sẵn trong GitHub.
+Mỗi khi có sự kiện như đẩy code (\verb|push|) hoặc mở pull request, GitHub tự động thực hiện
+một chuỗi công việc kiểm tra, biên dịch và kiểm thử đã được mô tả sẵn \cite{ghactions}.
+
+Đơn vị cấu hình nhỏ nhất là một tệp tin YAML đặt trong thư mục
+\verb|.github/workflows| của repository, ví dụ \verb|ci-aspx-481.yml|.
+Khi tệp tin này tồn tại trên nhánh mặc định, thẻ Actions trên GitHub sẽ liệt kê
+lịch sử chạy, nhật ký từng bước và kết quả đạt hay không đạt của mỗi lần chạy.
+
+\begin{description}
+\item[Workflow] Một tiến trình tự động hoàn chỉnh, được định nghĩa bởi một tệp tin YAML.
+Ví dụ: workflow \verb|CI ASPX 4.8.1| chạy mỗi khi có \verb|push| hoặc \verb|pull_request|.
+Một repository có thể chứa nhiều workflow chạy độc lập cho các mục đích khác nhau.
+\item[Job] Một công việc lớn trong workflow, gồm nhiều bước chạy nối tiếp trên cùng một máy ảo.
+Các job mặc định chạy song song; dùng \verb|needs| để bắt job kiểm thử đợi job biên dịch xong.
+Ví dụ: job \verb|build| biên dịch solution, job \verb|test| chạy kiểm thử đơn vị.
+\item[Step] Một bước nhỏ trong job, hoặc chạy lệnh shell qua \verb|run| hoặc tái sử dụng hành động có sẵn qua \verb|uses|.
+Ví dụ: bước khôi phục gói chạy lệnh \verb|nuget restore|, bước kiểm thử chạy \verb|vstest.console.exe|.
+Mỗi bước có nhật ký riêng nên khi lỗi rất dễ xác định bước nào gây ra.
+\item[Runner] Máy ảo hoặc máy thật thực thi job, do GitHub cung cấp hoặc nhóm tự quản lý.
+Project ASPX 4.8.1 bắt buộc dùng runner \verb|windows-latest| vì cần MSBuild và .NET Framework.
+Runner Ubuntu không biên dịch được project Web Forms dùng .NET Framework truyền thống.
+\item[Trigger] Sự kiện khởi động workflow, khai báo trong khối \verb|on| của tệp tin YAML.
+Hai trigger phổ biến nhất là \verb|push| và \verb|pull_request| kèm bộ lọc nhánh.
+Ngoài ra còn trigger lịch định kỳ, trigger thủ công và trigger khi phát hành phiên bản mới.
+\end{description}
+
+Ba trigger được dùng nhiều nhất trong đồ án môn học là:
+\begin{itemize}
+\item \verb|push| lên các nhánh \verb|main| và \verb|develop| để kiểm tra mọi commit mới.
+\item \verb|pull_request| nhắm vào nhánh \verb|main| để kiểm tra code trước khi hợp nhất.
+\item Kích hoạt thủ công để chạy lại pipeline khi cần kiểm tra gấp mà không đẩy commit mới.
+\end{itemize}
+
+Hiểu rõ năm khái niệm trên giúp đọc được mọi tệp tin workflow: trigger quyết định khi nào chạy,
+runner quyết định chạy ở đâu, còn job và step quyết định chạy cái gì theo thứ tự nào.
+Phần tiếp theo trình bày một workflow CI hoàn chỉnh cho project ASPX 4.8.1 từ khâu
+lấy code, khôi phục gói NuGet, biên dịch, kiểm thử đến lưu trữ kết quả.
+
+\subsection{Workflow CI đầy đủ cho ASPX 4.8.1}
+
+\subsubsection{Tệp workflow hoàn chỉnh}
+
+Tệp tin \verb|ci-aspx-481.yml| dưới đây là workflow CI hoàn chỉnh cho một solution ASP.NET Web Forms
+viết bằng C\# với mục tiêu .NET Framework 4.8.1. Workflow chạy trên runner \verb|windows-latest|,
+gồm tám bước: lấy code, cài MSBuild, cài NuGet, dùng cache, khôi phục gói,
+biên dịch chế độ Release, chạy kiểm thử và tải kết quả lên artifact.
+Mỗi bước đều có chú thích tiếng Anh để tương thích với quy tắc chỉ dùng ký tự ASCII trong khối liệt kê code.
+
+\begin{lstlisting}[language=yaml, caption={Workflow CI đầy đủ cho project ASPX 4.8.1}, label={lst:c42-ci}]
+name: CI ASPX 4.8.1
+
+# Trigger: run on push and pull requests to main branches.
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+# Cancel older runs of the same branch or pull request.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # .NET Framework 4.8.1 requires a Windows runner.
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: check out the repository source code.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: install MSBuild on the runner PATH.
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # Step 3: install NuGet CLI on the runner PATH.
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      # Step 4: restore the NuGet cache to speed up restore.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      # Step 5: restore all NuGet packages for the solution.
+      - name: Restore NuGet packages
+        run: nuget restore AspxDemo.sln
+
+      # Step 6: build the solution in Release mode.
+      - name: Build solution
+        run: msbuild AspxDemo.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+      # Step 7: run unit tests with VSTest.
+      - name: Run tests
+        run: vstest.console.exe Tests\bin\Release\AspxDemo.Tests.dll /Logger:trx
+
+      # Step 8: upload the published site as an artifact.
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspx-site
+          path: WebApp\obj\Release\Package
+          retention-days: 7
+\end{lstlisting}
+
+Workflow trên có thể sao chép vào thư mục \verb|.github/workflows| của repository demo
+và chạy ngay sau khi đẩy lên GitHub, với điều kiện solution có tên \verb|AspxDemo.sln|
+và project kiểm thử đã được biên dịch ra \verb|AspxDemo.Tests.dll|.
+
+\subsubsection{Giải thích từng bước}
+\begin{enumerate}
+\item \textbf{Lấy code:} hành động \verb|actions/checkout@v4| tải mã nguồn tại đúng commit kích hoạt.
+Không có bước này, các bước sau không có code để biên dịch và kiểm thử.
+\item \textbf{Cài MSBuild:} hành động \verb|microsoft/setup-msbuild@v2| đưa \verb|MSBuild.exe| vào biến PATH.
+MSBuild là công cụ duy nhất biên dịch đầy đủ project Web Forms mục tiêu .NET Framework 4.8.1.
+\item \textbf{Cài NuGet:} hành động \verb|nuget/setup-nuget@v2| đưa \verb|nuget.exe| vào biến PATH.
+Lệnh \verb|nuget restore| sau đó đọc \verb|packages.config| và tải các gói còn thiếu về máy chạy.
+\item \textbf{Dùng cache:} hành động \verb|actions/cache@v4| lưu thư mục \verb|~/.nuget/packages| giữa các lần chạy.
+Khóa cache gồm hệ điều hành và giá trị băm của tệp khóa gói nên khi không đổi thư viện thì bỏ qua tải lại.
+\item \textbf{Khôi phục gói:} lệnh \verb|nuget restore AspxDemo.sln| tải phần gói còn thiếu sau khi đã dùng cache.
+Bước này bắt buộc đứng trước biên dịch, nếu thiếu gói thì MSBuild sẽ báo lỗi ngay.
+\item \textbf{Biên dịch:} lệnh \verb|msbuild AspxDemo.sln /p:Configuration=Release| biên dịch toàn bộ solution.
+Mọi lỗi biên dịch làm workflow báo đỏ và chặn pull request cho đến khi được sửa.
+\item \textbf{Kiểm thử:} lệnh \verb|vstest.console.exe| chạy các DLL kiểm thử và xuất nhật ký định dạng \verb|.trx|.
+Chỉ cần một test không đạt, toàn bộ workflow được đánh dấu thất bại.
+\item \textbf{Lưu artifact:} hành động \verb|actions/upload-artifact@v4| lưu gói triển khai trong 7 ngày.
+Dùng tham số \verb|retention-days| để kiểm soát dung lượng lưu trữ của repository.
+\end{enumerate}
+
+Với tám bước trên, mọi pull request đều được biên dịch và kiểm thử tự động trước khi review.
+Nhóm nên bật quy tắc yêu cầu workflow đạt mới được hợp nhất để nhánh chính luôn biên dịch được.
+Phần tiếp theo trình bày cách quản lý secret và môi trường triển khai an toàn.
+
+\subsection{Secrets và Environments}
+
+Secret là biến môi trường được mã hóa, dùng để lưu thông tin nhạy cảm như chuỗi kết nối cơ sở dữ liệu,
+mật khẩu tài khoản triển khai hoặc khóa ký gói. Giá trị secret không bao giờ hiển thị trong nhật ký:
+GitHub tự động che thành \verb|***| khi secret vô tình được in ra. Khai báo secret tại thẻ Settings,
+mục Secrets and variables, nút New repository secret; secret cấp môi trường thì khai báo trong từng environment.
+
+\begin{itemize}
+\item Secret cấp repository: mọi workflow trong repository đều đọc được.
+Dùng cho khóa dùng chung như token đọc gói nội bộ của nhóm.
+\item Secret cấp môi trường: chỉ workflow gắn đúng environment mới đọc được.
+Dùng cho chuỗi kết nối, vì staging và production dùng cơ sở dữ liệu khác nhau.
+\item Biến môi trường thường: giá trị hiển thị công khai trong nhật ký.
+Chỉ dùng cho dữ liệu không nhạy cảm như tên thư mục đầu ra hoặc cờ bật chi tiết nhật ký.
+\end{itemize}
+
+Trong tệp tin YAML, đọc secret bằng cú pháp \verb|${{ secrets.TEN_SECRET }}|, ví dụ
+\verb|${{ secrets.STAGING_CONN_STRING }}|. Cú pháp này do GitHub thay thế lúc chạy,
+nên tuyệt đối không ghi giá trị thật vào code mà chỉ ghi tên secret.
+Tài liệu chính thức tại \url{https://docs.github.com/actions} mô tả đầy đủ cú pháp và phạm vi áp dụng.
+
+\begin{lstlisting}[language=yaml, caption={Đọc secret theo môi trường staging và production}, label={lst:c42-secrets}]
+jobs:
+  deploy-staging:
+    # Deploy job bound to the staging environment.
+    runs-on: windows-latest
+    environment: staging
+    steps:
+      # Read the staging connection string from secrets.
+      - name: Deploy to staging
+        run: deploy.cmd ${{ secrets.STAGING_CONN_STRING }}
+  deploy-production:
+    # Production requires manual approval in settings.
+    runs-on: windows-latest
+    environment: production
+    steps:
+      # Read the production connection string from secrets.
+      - name: Deploy to production
+        run: deploy.cmd ${{ secrets.PROD_CONN_STRING }}
+\end{lstlisting}
+
+Environment gom secret, quy tắc bảo vệ và lịch sử triển khai của một môi trường.
+Môi trường staging cho phép triển khai tự động mỗi khi hợp nhất vào nhánh develop để kiểm thử sớm.
+Môi trường production yêu cầu ít nhất một người review phê duyệt trước khi triển khai,
+đồng thời giới hạn chỉ nhánh chính mới được triển khai để tránh phát hành nhầm code thử nghiệm.
+
+\begin{itemize}
+\item Không bao giờ đẩy tệp tin chứa secret thật như bản \verb|Web.config| trên máy cá nhân lên repository.
+\item Xoay vòng secret ngay khi thành viên rời nhóm hoặc nghi ngờ lộ, rồi cập nhật lại trên GitHub.
+\item Dùng secret khác nhau cho staging và production để lộ môi trường thử nghiệm không ảnh hưởng hệ thống thật.
+\end{itemize}
+
+\subsection{Cache NuGet và artifacts}
+
+Mỗi lần pipeline chạy, lệnh khôi phục gói phải tải hàng trăm MB thư viện từ Internet,
+chiếm phần lớn thời gian và dễ thất bại khi mạng chậm. Cache lưu thư mục gói toàn cục
+\verb|~/.nuget/packages| sau lần chạy đầu, các lần sau chỉ tải phần thay đổi nên thường
+rút ngắn bước khôi phục từ vài phút xuống còn vài chục giây \cite{githubdocs}.
+
+Khóa cache gồm tên hệ điều hành và giá trị băm của các tệp tin khóa gói như
+\verb|packages.lock.json| hoặc \verb|packages.config|. Khi không đổi thư viện, khóa trùng khớp
+và cache được dùng lại; khi thêm hoặc nâng cấp gói, khóa thay đổi nên cache cũ bị bỏ,
+đồng thời khóa dự phòng bảo đảm vẫn tái sử dụng được phần lớn gói đã lưu.
+
+\begin{lstlisting}[language=yaml, caption={Cache NuGet và tải kết quả kiểm thử lên artifact}, label={lst:c42-cache}]
+steps:
+  # Cache the global NuGet folder between runs.
+  - name: Cache NuGet packages
+    uses: actions/cache@v4
+    with:
+      path: ~/.nuget/packages
+      key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/packages.config') }}
+      restore-keys: |
+        nuget-${{ runner.os }}-
+
+  # Packages missing from cache are downloaded by restore.
+  - name: Restore packages
+    run: nuget restore AspxDemo.sln
+
+  # Keep the build output for download and deploy jobs.
+  - name: Upload test results
+    uses: actions/upload-artifact@v4
+    with:
+      name: test-results
+      path: TestResults/*.trx
+\end{lstlisting}
+
+Artifact là nơi lưu kết quả đầu ra của pipeline: gói triển khai website, tệp tin nhật ký kiểm thử
+định dạng \verb|.trx| hoặc bản dựng để job triển khai tải về dùng tiếp. Khác với cache vốn có thể
+bị xóa bất cứ lúc nào, artifact được đảm bảo tồn tại đúng số ngày đã cấu hình qua \verb|retention-days|.
+Nhờ artifact, thành viên review có thể tải đúng bản đã kiểm thử về chạy thử mà không cần biên dịch lại.
+
+\begin{itemize}
+\item Luôn đặt cache ngay trước bước khôi phục gói để bước này hưởng lợi trực tiếp.
+\item Đưa tệp tin khóa gói vào repository để khóa cache ổn định giữa các lần chạy.
+\item Chỉ tải artifact thật sự cần thiết và đặt thời gian lưu ngắn để tiết kiệm dung lượng.
+\end{itemize}
+
+\subsection{Runner Windows và Ubuntu cho .NET Framework 4.8.1}
+
+Project ASP.NET Web Forms mục tiêu .NET Framework 4.8.1 chỉ biên dịch đầy đủ trên Windows,
+vì bộ công cụ gồm MSBuild, trình biên dịch trang ASPX và thư viện tham chiếu .NET Framework
+đều là thành phần gắn chặt với hệ điều hành Windows \cite{msmsbuild}. Nền tảng .NET Framework
+khác với .NET hiện đại đa nền tảng: thư viện và công cụ của nó không có bản Linux \cite{msnetfx}.
+
+Runner \verb|ubuntu-latest| khởi động nhanh và miễn phí nhiều phút hơn, nhưng không có MSBuild đầy đủ,
+không có .NET Framework 4.8.1 và không chạy được \verb|vstest.console.exe|. Lệnh \verb|dotnet build|
+trên Ubuntu chỉ biên dịch project SDK-style dùng .NET hiện đại, không hiểu project Web Forms
+kiểu cũ với tệp tin \verb|packages.config| và quy trình biên dịch trang ASPX.
+
+\begin{table}[H]
+\centering
+\caption{So sánh runner cho project ASPX 4.8.1}
+\label{tab:c42-runner}
+\begin{tabular}{p{3.4cm}p{4.2cm}p{4.2cm}}
+\toprule
+Tiêu chí & Runner Windows & Runner Ubuntu \\
+\midrule
+Hệ điều hành & Windows Server 2022 & Ubuntu 22.04 \\
+MSBuild đầy đủ & Có sẵn qua \texttt{setup-msbuild} & Không có \\
+Biên dịch .NET Framework 4.8.1 & Hỗ trợ đầy đủ & Không hỗ trợ \\
+Trang ASPX Web Forms & Biên dịch được & Không biên dịch được \\
+Kiểm thử VSTest & Chạy được & Không chạy được \\
+Tốc độ và chi phí & Khởi động chậm hơn & Nhanh và rẻ hơn \\
+Khuyến nghị & Bắt buộc cho ASPX 4.8.1 & Chỉ dùng cho .NET hiện đại \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bảng \ref{tab:c42-runner} tóm tắt sự khác biệt: với project ASPX 4.8.1, runner Windows là lựa chọn bắt buộc,
+dù tốn thời gian khởi động hơn. Hình \ref{fig:c42-pipeline} minh họa chuỗi công việc CI
+chạy trên runner này từ lúc lấy code đến khi có artifact.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Checkout};
+\node[box, right=1.0cm of a] (b) {Restore};
+\node[box, right=1.0cm of b] (c) {Build};
+\node[box, right=1.0cm of c] (d) {Test};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {push} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {cache} (c);
+\draw[->] (c) -- node[midway, above, font=\footnotesize] {pass} (d);
+\caption{Chuỗi công việc CI cho project ASPX trên runner Windows}
+\label{fig:c42-pipeline}
+\end{figure}
+
+Tóm lại, GitHub Actions giúp nhóm ASPX tự động hóa toàn bộ vòng kiểm tra mỗi khi đẩy code,
+với điều kiện chọn đúng runner Windows cho .NET Framework 4.8.1. Kết hợp workflow CI đạt,
+secret quản lý tập trung và cache hợp lý, nhóm có thể hợp nhất pull request nhanh mà vẫn an toàn.

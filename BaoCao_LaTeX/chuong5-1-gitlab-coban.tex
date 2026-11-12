@@ -1,0 +1,262 @@
+\section{GitLab}
+\label{sec:c51-gitlab}
+
+GitLab là nền tảng DevOps tích hợp toàn diện, kết hợp quản lý mã nguồn Git,
+theo dõi công việc, review code, kiểm thử và triển khai trong một ứng dụng duy nhất.
+Với đồ án ASPX trên .NET Framework 4.8.1, GitLab giúp nhóm ba sinh viên làm việc
+trên cùng một kho mã mà vẫn kiểm soát được chất lượng qua Merge Request,
+Approval rules, protected branch và pipeline tự động.
+Chương này trình bày các khái niệm GitLab cơ bản nhất mà nhóm đã dùng thật cho đồ án:
+Groups, Projects, Issues, Boards, Milestones, Wiki, Snippets, Merge Request và bảo vệ nhánh.
+Nội dung phần CI/CD nâng cao với Windows runner và \texttt{msbuild} được trình bày ở chương tiếp theo,
+để chương này tập trung vào quy trình cộng tác hằng ngày \cite{gitlabdocs}.
+
+\subsection{Tổng quan GitLab: nền tảng DevOps tích hợp}
+\label{subsec:c51-tong-quan}
+
+GitLab đi theo triết lý DevOps Platform: một vòng đời khép kín từ ý tưởng tới vận hành.
+Thay vì ghép nhiều công cụ rời rạc, nhóm chỉ cần một nơi duy nhất để lập kế hoạch,
+viết code, review, kiểm thử, phát hành và giám sát.
+Cách tiếp cận này đặc biệt phù hợp với đồ án môn học, vì nhóm nhỏ, thời gian ngắn,
+nhưng vẫn phải thể hiện được quy trình chuyên nghiệp giống doanh nghiệp \cite{gitlabdocs}.
+
+Ba trụ cột mà nhóm khai thác nhiều nhất gồm quản lý mã nguồn Git, cộng tác qua Merge Request,
+và quản trị công việc qua Issues cùng Boards.
+Mọi thay đổi trên form \texttt{Default.aspx}, code-behind \texttt{Default.aspx.cs} hay
+\texttt{Web.config} đều đi qua một Merge Request có người review, thay vì đẩy thẳng lên nhánh chính.
+Nhờ vậy, lịch sử commit sạch, dễ truy vết ai sửa gì, vì sao sửa, và có thể hoàn tác an toàn.
+
+GitLab được cung cấp theo hai mô hình triển khai chính.
+Mô hình SaaS tại \url{https://gitlab.com} do GitLab vận hành sẵn, nhóm chỉ cần đăng ký tài khoản là dùng ngay.
+Mô hình self-hosted cho phép khoa hoặc doanh nghiệp tự cài đặt GitLab lên máy chủ riêng để toàn quyền kiểm soát.
+Bảng \ref{tab:c51-saas-selfhosted} so sánh hai mô hình theo năm tiêu chí quan trọng với đồ án môn học \cite{gitlabdocs}.
+
+\begin{table}[H]
+\centering
+\caption{So sánh GitLab SaaS và GitLab self-hosted}
+\label{tab:c51-saas-selfhosted}
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & SaaS gitlab.com & Self-hosted \\
+\midrule
+Cài đặt và vận hành & Đăng ký là dùng ngay & Tự cài đặt và bảo trì máy chủ \\
+Chi phí & Miễn phí cho nhóm nhỏ & Tốn máy chủ và công quản trị \\
+Kiểm soát dữ liệu & Dữ liệu đặt trên cloud & Dữ liệu nằm hoàn toàn nội bộ \\
+Runner cho ASPX 4.8.1 & Dùng runner cloud có sẵn & Tự gắn Windows runner riêng \\
+Nâng cấp và tùy biến & Tự động nâng cấp & Chủ động chọn phiên bản \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Với đồ án ASPX của nhóm, mô hình SaaS là lựa chọn hợp lý vì không tốn máy chủ,
+vẫn đủ tính năng cho ba thành viên, và dễ chia sẻ link công khai cho giảng viên chấm bài.
+Nhóm tạo một Group chung, bên trong là Project chứa toàn bộ source Web Forms,
+bật Issues và Merge Request ngay từ đầu để mọi trao đổi đều lưu lại trên GitLab.
+Lệnh dưới đây cho thấy thao tác đầu tiên của thành viên mới: clone kho về máy,
+tạo nhánh tính năng và đẩy lên GitLab để chuẩn bị mở Merge Request.
+
+\begin{lstlisting}[language=bash, caption={Clone kho ASPX và đẩy nhánh tính năng lên GitLab}, label={lst:c51-clone-push}]
+# Clone the ASPX demo project from GitLab
+git clone https://gitlab.com/nhom3/aspxdemo-net481.git
+cd aspxdemo-net481
+git config user.name "Sinh Vien 3"
+git config user.email "sv3@example.com"
+git checkout -b feature/login-aspx
+# Edit Default.aspx and Default.aspx.cs, then commit
+git add Default.aspx Default.aspx.cs Web.config
+git commit -m "feat: them form dang nhap ASPX"
+git push -u origin feature/login-aspx
+\end{lstlisting}
+
+Sau khi đẩy nhánh, GitLab hiển thị nút tạo Merge Request ngay trên trang Project.
+Thành viên chỉ cần bấm nút, ghi mô tả thay đổi, gán reviewer là một bạn khác trong nhóm,
+rồi chờ pipeline chạy và chờ approve trước khi merge.
+Quy trình này tuy thêm một bước so với đẩy thẳng, nhưng loại bỏ phần lớn lỗi do sửa nhầm file dùng chung.
+
+\subsection{Groups, Projects, Issues, Boards, Milestones, Wiki, Snippets}
+\label{subsec:c51-cong-cu-cong-tac}
+
+Bảy khái niệm dưới đây tạo thành bộ khung cộng tác hằng ngày của nhóm trên GitLab.
+Mỗi khái niệm được giải thích gắn trực tiếp với đồ án ASPX, để người đọc hình dung ngay cách dùng.
+
+\begin{description}
+\item[Groups] Group là đơn vị tổ chức cao nhất mà nhóm dùng, đại diện cho cả nhóm ba sinh viên.
+Nhóm đặt tên Group theo tên đề tài, thêm cả ba thành viên với vai trò Developer,
+còn giảng viên được thêm với vai trò Reporter để xem code và pipeline mà không sửa được.
+Mọi Project con trong Group đều kế thừa thành viên, giúp phân quyền một lần cho tất cả kho.
+
+\item[Projects] Project là một kho Git kèm đầy đủ Issues, Merge Request, Wiki và pipeline.
+Đồ án ASPX chỉ cần một Project duy nhất chứa toàn bộ solution .NET Framework 4.8.1,
+gồm thư mục web, file \texttt{Web.config}, file solution và thư mục tài liệu.
+Nhóm bật tính năng Issues, Wiki và Container Registry ngay khi tạo Project,
+để không phải cấu hình rời rạc về sau.
+
+\item[Issues] Issue là đơn vị công việc nhỏ nhất, dùng để ghi nhận việc cần làm hoặc lỗi cần sửa.
+Ví dụ, khi form đăng nhập báo lỗi sai chuỗi kết nối, nhóm tạo Issue với tiêu đề mô tả lỗi,
+gán nhãn \texttt{bug} và \texttt{priority-high}, rồi gán cho thành viên phụ trách xử lý.
+Mỗi Issue đều có số thứ tự, người được gán, nhãn, hạn chót và luồng thảo luận riêng.
+Nhờ vậy, không còn tình trạng giao việc bằng tin nhắn rồi quên mất ai làm gì.
+
+\item[Boards] Board là bảng Kanban trực quan, kéo thả các Issue qua các cột như To do, Doing và Done.
+Nhóm họp nhanh mỗi tối, mở Board ra là thấy ngay ai đang làm dở việc gì, việc nào tắc.
+Khi bắt đầu sửa form đăng nhập, thành viên kéo Issue sang cột Doing và tự gán cho mình.
+Khi Merge Request tương ứng được merge, Issue tự đóng và thẻ biến mất khỏi Board.
+Cách làm này giúp tiến độ đồ án luôn hiển thị công khai, không cần báo cáo thủ công.
+
+\item[Milestones] Milestone là mốc thời gian gom nhiều Issue lại, tương ứng với một đợt nộp bài.
+Nhóm đặt ba mốc: bản nháp giao diện, bản tích hợp đầy đủ chức năng, và bản nộp cuối cùng.
+Mỗi Issue khi tạo đều được gắn vào một mốc, nên trang Milestone luôn cho biết còn bao nhiêu việc chưa xong.
+Giảng viên chỉ cần mở trang Milestone là đánh giá được tiến độ, thay vì phải hỏi từng thành viên.
+
+\item[Wiki] Wiki là nơi viết tài liệu nội bộ: hướng dẫn cài môi trường, cách cấu hình IIS,
+cách khôi phục cơ sở dữ liệu mẫu và danh sách tài khoản thử nghiệm.
+Khác với file văn bản trong kho code, Wiki có lịch sử sửa đổi riêng và sửa trực tiếp trên trình duyệt.
+Nhóm ghi vào Wiki các bước build bằng \texttt{msbuild} cho .NET Framework 4.8.1,
+để thành viên mới chỉ cần đọc Wiki là dựng được môi trường trong một buổi.
+
+\item[Snippets] Snippet là đoạn code hoặc cấu hình ngắn được chia sẻ nhanh trong nhóm.
+Ví dụ, đoạn chuỗi kết nối mẫu, đoạn cấu hình lại \texttt{Web.config} hay hàm kiểm tra đăng nhập viết bằng C\#,
+đều được lưu thành Snippet thay vì gửi qua tin nhắn dễ thất lạc.
+Mỗi Snippet có tiêu đề, định dạng ngôn ngữ và lịch sử phiên bản, dùng lại được nhiều lần.
+\end{description}
+
+Khi đã quen, nhóm tạo Issue trực tiếp bằng GitLab API trong các script tự động.
+Ví dụ dưới đây tạo một Issue báo lỗi xung đột \texttt{Web.config} bằng lệnh \verb|curl|,
+rất hữu ích khi pipeline phát hiện lỗi và muốn ghi nhận tự động.
+
+\begin{lstlisting}[language=bash, caption={Tạo Issue tự động bằng GitLab API}, label={lst:c51-create-issue}]
+# Create an issue via GitLab API (needs a personal token)
+export GITLAB_TOKEN="glpat-xxxxxxxx"
+export PROJECT_ID="12345678"
+curl --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data "title=Fix Web.config conflict on develop" \
+  --data "description=Merge develop gay xung dot muc connectionStrings" \
+  --data "labels=bug,ASPX,priority-high" \
+  "https://gitlab.com/api/v4/projects/$PROJECT_ID/issues"
+\end{lstlisting}
+
+\subsection{Merge Request và Approval rules}
+\label{subsec:c51-mr-approval}
+
+Merge Request, viết tắt là MR, là cơ chế review code trung tâm của GitLab,
+tương đương với Pull Request trên GitHub nhưng gắn chặt hơn với pipeline và Approval rules.
+Mọi thay đổi cho đồ án ASPX, từ sửa giao diện tới đổi chuỗi kết nối, đều phải đi qua MR.
+Quy định này giúp nhóm ba người không bao giờ ghi đè lẫn nhau trên nhánh chính.
+
+Vòng đời điển hình của một MR trong đồ án gồm sáu bước.
+
+\begin{enumerate}
+\item Tạo nhánh tính năng từ \texttt{develop}, đặt tên rõ ràng như \texttt{feature-login}.
+\item Viết code, commit theo Conventional Commits rồi đẩy nhánh lên GitLab.
+\item Mở MR từ nhánh tính năng về \texttt{develop} hoặc \texttt{main}, ghi mô tả và ảnh chụp màn hình.
+\item Pipeline tự động chạy build và kiểm tra cơ bản trên chính MR đó.
+\item Một hoặc hai thành viên khác review code, bình luận và approve.
+\item Merge MR khi đủ approve và pipeline báo thành công, sau đó xóa nhánh tính năng.
+\end{enumerate}
+
+Approval rules là quy tắc bắt buộc về số người phê duyệt trước khi được merge.
+Với đồ án môn học, nhóm cấu hình nhánh \texttt{main} yêu cầu hai approve,
+nghĩa là cả hai thành viên còn lại đều phải đồng ý thì MR mới được merge.
+Quy tắc này ngăn trường hợp một người tự merge code chưa ai xem vào bản nộp cuối.
+Nhánh \texttt{develop} yêu cầu nhẹ hơn, chỉ cần một approve để tốc độ làm bài không bị chậm.
+
+Hình \ref{fig:c51-mr-flow} tóm tắt luồng MR từ nhánh tính năng tới nhánh chính,
+nhấn mạnh hai chốt chặn quan trọng là pipeline và số lượng approve.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (feat) {Nhanh tinh nang};
+\node[box, right=1.2cm of feat] (mr) {Mo MR};
+\node[box, right=1.2cm of mr] (review) {Review va\\Approve};
+\node[box, right=1.2cm of review] (merge) {Merge vao\\main};
+\draw[->] (feat) -- node[midway, above, font=\footnotesize] {push} (mr);
+\draw[->] (mr) -- node[midway, above, font=\footnotesize] {pipeline} (review);
+\draw[->] (review) -- node[midway, above, font=\footnotesize] {2 approve} (merge);
+\end{tikzpicture}
+\caption{Luong Merge Request tu nhanh tinh nang toi nhanh chinh}
+\label{fig:c51-mr-flow}
+\end{figure}
+
+Ví dụ dưới đây tạo MR bằng API rồi tạo Approval rule yêu cầu hai người phê duyệt.
+Trong thực tế nhóm cấu hình bằng giao diện web, nhưng các lệnh này giúp hiểu rõ bản chất
+và có thể dùng lại khi dựng Project mới cho môn học khác \cite{gitlabdocs}.
+
+\begin{lstlisting}[language=bash, caption={Tạo Merge Request và Approval rule bằng API}, label={lst:c51-mr-approve}]
+# Create a merge request from feature branch to main
+curl --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data "source_branch=feature/login-aspx" \
+  --data "target_branch=main" \
+  --data "title=Merge login form to main" \
+  "https://gitlab.com/api/v4/projects/$PROJECT_ID/merge_requests"
+# Require 2 approvals before merge (approval rule)
+curl --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data "name=Require 2 approvers" \
+  --data "approvals_required=2" \
+  "https://gitlab.com/api/v4/projects/$PROJECT_ID/approval_rules"
+\end{lstlisting}
+
+\subsection{Bảo vệ nhánh và tag}
+\label{subsec:c51-bao-ve-nhanh}
+
+Bảo vệ nhánh là lớp khóa cuối cùng giữ cho các nhánh quan trọng không bị ghi đè trực tiếp.
+GitLab phân biệt hai quyền riêng: Allowed to push quyết định ai được đẩy trực tiếp lên nhánh,
+còn Allowed to merge quyết định ai được bấm nút merge MR vào nhánh đó.
+Tách bạch hai quyền này giúp nhóm áp dụng quy tắc nghiêm cho bản nộp cuối,
+nhưng vẫn linh hoạt cho nhánh phát triển hằng ngày \cite{gitlabdocs}.
+
+Nhóm áp dụng cấu hình trong Bảng \ref{tab:c51-protected} cho hai nhánh quan trọng nhất.
+
+\begin{table}[H]
+\centering
+\caption{Cấu hình bảo vệ cho hai nhánh main và develop}
+\label{tab:c51-protected}
+\begin{tabular}{llll}
+\toprule
+Nhánh & Allowed to push & Allowed to merge & Yêu cầu bổ sung \\
+\midrule
+main & Không ai & Maintainers & 2 approve, pipeline thành công \\
+develop & Developers & Developers & 1 approve, pipeline thành công \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Với cấu hình trên, nhánh \texttt{main} không cho phép đẩy trực tiếp bằng lệnh \verb|git push|,
+mọi thay đổi bắt buộc phải qua MR và được hai người phê duyệt.
+Nhánh \texttt{develop} cho phép thành viên đẩy trực tiếp khi sửa lỗi nhỏ,
+nhưng các tính năng lớn như thêm trang quản trị vẫn phải mở MR để có người kiểm tra chéo.
+Cách phân quyền này cân bằng giữa an toàn và tốc độ, rất phù hợp với nhóm ba người.
+
+Ngoài nhánh, GitLab còn cho phép bảo vệ tag để khóa các mốc phát hành.
+Nhóm gắn tag \texttt{v1.0} cho bản nộp giữa kỳ và tag \texttt{v2.0} cho bản nộp cuối,
+sau đó cấu hình chỉ Maintainers mới được tạo tag, tránh việc gắn nhầm tag lên commit lỗi.
+Khi cần chấm lại bản cũ, giảng viên chỉ cần checkout đúng tag là có đúng bản đã nộp.
+
+Các lệnh dưới đây minh họa cách bảo vệ nhánh bằng API, tương đương với thao tác trên giao diện web.
+Mức quyền số 0 nghĩa là không ai được đẩy trực tiếp, mức 30 là Developers, mức 40 là Maintainers.
+
+\begin{lstlisting}[language=bash, caption={Bảo vệ nhánh main và develop bằng API}, label={lst:c51-protect}]
+# Protect main: no direct push, only maintainers can merge
+curl --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data "name=main" \
+  --data "push_access_level=0" \
+  --data "merge_access_level=40" \
+  "https://gitlab.com/api/v4/projects/$PROJECT_ID/protected_branches"
+# Protect develop: developers can push and merge with review
+curl --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data "name=develop" \
+  --data "push_access_level=30" \
+  --data "merge_access_level=30" \
+  "https://gitlab.com/api/v4/projects/$PROJECT_ID/protected_branches"
+\end{lstlisting}
+
+Tóm lại, GitLab cung cấp cho nhóm đầy đủ công cụ cộng tác từ Group tới Snippets,
+với Merge Request và Approval rules làm trung tâm kiểm soát chất lượng.
+Khi kết hợp thêm bảo vệ nhánh và tag, nhóm ba sinh viên có thể làm việc song song
+mà không sợ mất code hay ghi đè bản nộp cuối của nhau.
+Đây chính là nền tảng để chương tiếp theo xây dựng pipeline CI/CD tự động cho đồ án ASPX 4.8.1.

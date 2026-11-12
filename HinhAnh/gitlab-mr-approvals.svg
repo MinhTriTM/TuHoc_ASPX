@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="910" height="560" viewBox="0 0 910 560" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+<defs>
+<marker id="mui" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#1f2328"/>
+</marker>
+</defs>
+<rect x="1" y="1" width="908" height="558" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="2"/>
+<text x="455" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#1f2328">Quy trình Merge Request trên GitLab</text>
+<text x="455" y="60" text-anchor="middle" font-size="13" fill="#1f2328">Từ nhánh feature vào develop — đủ 2 Approve và pipeline xanh mới được Merge</text>
+<rect x="20" y="78" width="200" height="62" fill="#ffffff" stroke="#1f6feb" stroke-width="2"/>
+<text x="120" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f6feb">Bước 1: Nhánh mới</text>
+<text x="120" y="121" text-anchor="middle" font-size="12" fill="#1f2328">feature/login-aspx</text>
+<rect x="242" y="78" width="200" height="62" fill="#ffffff" stroke="#8250df" stroke-width="2"/>
+<text x="342" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#8250df">Bước 2: Tạo MR</text>
+<text x="342" y="121" text-anchor="middle" font-size="12" fill="#1f2328">Push rồi Open MR !42</text>
+<rect x="464" y="78" width="200" height="62" fill="#ffffff" stroke="#9a6700" stroke-width="2"/>
+<text x="564" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a6700">Bước 3: Review</text>
+<text x="564" y="121" text-anchor="middle" font-size="12" fill="#1f2328">2 reviewer bấm Approve</text>
+<rect x="686" y="78" width="200" height="62" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/>
+<text x="786" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a7f37">Bước 4: Merge</text>
+<text x="786" y="121" text-anchor="middle" font-size="12" fill="#1f2328">Pipeline xanh, nút sáng</text>
+<line x1="220" y1="109" x2="240" y2="109" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<line x1="442" y1="109" x2="462" y2="109" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<line x1="664" y1="109" x2="684" y2="109" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<rect x="20" y="158" width="560" height="118" fill="#ffffff" stroke="#1f6feb" stroke-width="2"/>
+<text x="40" y="184" font-size="14" font-weight="bold" fill="#1f6feb">Merge Request !42: Đăng nhập Web Forms</text>
+<text x="40" y="206" font-size="13" fill="#1f2328">Nguồn: feature/login-aspx</text>
+<text x="40" y="228" font-size="13" fill="#1f2328">Đích: develop — Tác giả: TV3</text>
+<text x="40" y="250" font-size="12" fill="#1f2328">Có 3 commit, sửa Login.aspx và Web.config mẫu</text>
+<text x="40" y="268" font-size="12" fill="#8250df">Trạng thái: Open — chờ review và pipeline</text>
+<rect x="600" y="158" width="290" height="118" fill="#ffffff" stroke="#9a6700" stroke-width="2"/>
+<text x="745" y="184" text-anchor="middle" font-size="14" font-weight="bold" fill="#9a6700">Approval rule của nhóm</text>
+<text x="620" y="208" font-size="13" fill="#1f2328">Yêu cầu đủ 2 Approve</text>
+<text x="620" y="230" font-size="13" fill="#cf222e">Tác giả không tự Approve</text>
+<text x="620" y="252" font-size="12" fill="#1f2328">Thiếu Approve thì nút Merge mờ</text>
+<text x="620" y="270" font-size="12" fill="#1f2328">Mờ: chưa đủ điều kiện Merge</text>
+<rect x="20" y="294" width="560" height="128" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="80" cy="352" r="28" fill="#1f6feb"/>
+<text x="80" y="358" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">TV1</text>
+<text x="125" y="342" font-size="13" font-weight="bold" fill="#1f2328">Reviewer TV1</text>
+<rect x="125" y="352" width="120" height="28" fill="#1a7f37"/>
+<text x="185" y="371" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">Approve ✓</text>
+<circle cx="360" cy="352" r="28" fill="#8250df"/>
+<text x="360" y="358" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">TV2</text>
+<text x="405" y="342" font-size="13" font-weight="bold" fill="#1f2328">Reviewer TV2</text>
+<rect x="405" y="352" width="120" height="28" fill="#1a7f37"/>
+<text x="465" y="371" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">Approve ✓</text>
+<text x="300" y="408" text-anchor="middle" font-size="12" fill="#1a7f37">Đã đủ 2 trên 2 Approve theo rule</text>
+<rect x="600" y="294" width="290" height="128" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/>
+<text x="745" y="318" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a7f37">Pipeline CI chạy xanh</text>
+<circle cx="655" cy="352" r="16" fill="#1a7f37"/>
+<text x="655" y="357" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">✓</text>
+<circle cx="745" cy="352" r="16" fill="#1a7f37"/>
+<text x="745" y="357" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">✓</text>
+<circle cx="835" cy="352" r="16" fill="#1a7f37"/>
+<text x="835" y="357" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">✓</text>
+<text x="655" y="384" text-anchor="middle" font-size="11" fill="#1f2328">build</text>
+<text x="745" y="384" text-anchor="middle" font-size="11" fill="#1f2328">test</text>
+<text x="835" y="384" text-anchor="middle" font-size="11" fill="#1f2328">deploy</text>
+<text x="745" y="408" text-anchor="middle" font-size="12" fill="#1a7f37">Passed 3 trên 3 job</text>
+<line x1="300" y1="276" x2="300" y2="292" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<line x1="745" y1="276" x2="745" y2="292" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<line x1="300" y1="422" x2="380" y2="448" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<line x1="745" y1="422" x2="620" y2="448" stroke="#1f2328" stroke-width="2" marker-end="url(#mui)"/>
+<rect x="395" y="450" width="220" height="56" fill="#1a7f37" stroke="#1a7f37" stroke-width="4"/>
+<text x="505" y="474" text-anchor="middle" font-size="18" font-weight="bold" fill="#ffffff">Merge</text>
+<text x="505" y="493" text-anchor="middle" font-size="12" fill="#ffffff">Nút sáng: đủ điều kiện</text>
+<text x="180" y="480" text-anchor="middle" font-size="12" fill="#1a7f37">2 Approve đã đủ</text>
+<text x="730" y="480" text-anchor="middle" font-size="12" fill="#1a7f37">Pipeline xanh hoàn tất</text>
+<text x="455" y="532" text-anchor="middle" font-size="12" fill="#1f2328">Nhánh develop chỉ nhận code qua MR đã duyệt — đúng quy trình nhóm ASPX</text>
+<text x="455" y="549" text-anchor="middle" font-size="11" fill="#8250df">Ví dụ gắn project AspxDemo_NET481: Login.aspx trang đăng nhập Web Forms</text>
+</svg>

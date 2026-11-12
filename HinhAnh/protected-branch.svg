@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="620" viewBox="0 0 910 620" font-family="Segoe UI, Arial, sans-serif">
+<defs>
+<marker id="muiTen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 Z" fill="#1f2328"/>
+</marker>
+</defs>
+<rect x="0" y="0" width="910" height="620" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="2"/>
+<text x="455" y="38" text-anchor="middle" font-size="24" font-weight="bold" fill="#1f2328">Bảo vệ nhánh main bằng Branch Protection</text>
+<text x="455" y="62" text-anchor="middle" font-size="14" fill="#1f2328">5 quy tắc bao quanh nhánh main, mọi thay đổi phải đi qua pull request</text>
+<path d="M110,90 H250 V140 C250,180 210,200 180,210 C150,200 110,180 110,140 Z" fill="#1f6feb" stroke="#d1d9e0" stroke-width="2"/>
+<text x="180" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Cấm push</text>
+<text x="180" y="162" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">thẳng</text>
+<path d="M380,90 H520 V140 C520,180 480,200 450,210 C420,200 380,180 380,140 Z" fill="#8250df" stroke="#d1d9e0" stroke-width="2"/>
+<text x="450" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Yêu cầu</text>
+<text x="450" y="162" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">1 approve</text>
+<path d="M650,90 H790 V140 C790,180 750,200 720,210 C690,200 650,180 650,140 Z" fill="#1a7f37" stroke="#d1d9e0" stroke-width="2"/>
+<text x="720" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">CI phải</text>
+<text x="720" y="162" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">xanh</text>
+<path d="M80,270 H220 V320 C220,360 180,380 150,390 C120,380 80,360 80,320 Z" fill="#cf222e" stroke="#d1d9e0" stroke-width="2"/>
+<text x="150" y="320" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Cấm</text>
+<text x="150" y="342" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">force-push</text>
+<path d="M680,270 H820 V320 C820,360 780,380 750,390 C720,380 680,360 680,320 Z" fill="#9a6700" stroke="#d1d9e0" stroke-width="2"/>
+<text x="750" y="320" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">CODEOWNERS</text>
+<text x="750" y="342" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">review</text>
+<rect x="350" y="280" width="200" height="82" rx="10" fill="#1f6feb" stroke="#1f2328" stroke-width="2"/>
+<text x="405" y="332" text-anchor="middle" font-size="24" font-weight="bold" fill="#ffffff">main</text>
+<path d="M444,314 v-8 a12,12 0 0 1 24,0 v8" fill="none" stroke="#ffffff" stroke-width="5"/>
+<rect x="438" y="312" width="36" height="28" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<circle cx="456" cy="326" r="5" fill="#1f6feb"/>
+<line x1="180" y1="214" x2="360" y2="276" stroke="#1f2328" stroke-width="2" marker-end="url(#muiTen)"/>
+<line x1="450" y1="214" x2="450" y2="276" stroke="#1f2328" stroke-width="2" marker-end="url(#muiTen)"/>
+<line x1="720" y1="214" x2="540" y2="276" stroke="#1f2328" stroke-width="2" marker-end="url(#muiTen)"/>
+<line x1="224" y1="330" x2="346" y2="330" stroke="#1f2328" stroke-width="2" marker-end="url(#muiTen)"/>
+<line x1="676" y1="330" x2="554" y2="330" stroke="#1f2328" stroke-width="2" marker-end="url(#muiTen)"/>
+<line x1="40" y1="412" x2="870" y2="412" stroke="#d1d9e0" stroke-width="2"/>
+<text x="455" y="436" text-anchor="middle" font-size="17" font-weight="bold" fill="#1f2328">Ví dụ xét duyệt pull request</text>
+<rect x="60" y="450" width="370" height="140" rx="8" fill="#ffffff" stroke="#cf222e" stroke-width="3"/>
+<circle cx="115" cy="520" r="24" fill="#cf222e"/>
+<text x="115" y="529" text-anchor="middle" font-size="26" font-weight="bold" fill="#ffffff">X</text>
+<text x="275" y="500" text-anchor="middle" font-size="16" font-weight="bold" fill="#1f2328">PR thiếu approve</text>
+<text x="275" y="526" text-anchor="middle" font-size="15" fill="#1f2328">Thiếu review, CI chưa chạy</text>
+<text x="275" y="552" text-anchor="middle" font-size="15" font-weight="bold" fill="#cf222e">Bị chặn merge</text>
+<rect x="480" y="450" width="370" height="140" rx="8" fill="#ffffff" stroke="#1a7f37" stroke-width="3"/>
+<circle cx="535" cy="520" r="24" fill="#1a7f37"/>
+<path d="M524,520 l8,9 l18,-20" fill="none" stroke="#ffffff" stroke-width="5"/>
+<text x="700" y="500" text-anchor="middle" font-size="16" font-weight="bold" fill="#1f2328">PR đủ điều kiện</text>
+<text x="700" y="526" text-anchor="middle" font-size="15" fill="#1f2328">Có approve, CI xanh</text>
+<text x="700" y="552" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a7f37">Được merge</text>
+</svg>

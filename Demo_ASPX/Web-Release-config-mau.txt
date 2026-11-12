@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ========================================================================== -->
+<!-- Web.Release.config MAU - ASP.NET Web Forms (.NET Framework 4.8.1)         -->
+<!-- File mau XDT transform cho cau hinh Release (MSBuild, Windows runner).   -->
+<!-- Dat file nay cung thu muc voi Web.config. MSBuild tu ap dung khi build: -->
+<!--   msbuild AspxDemo_NET481.sln /p:Configuration=Release                   -->
+<!--   msbuild AspxDemo_NET481.sln /p:Configuration=Release /p:DeployOnBuild=true -->
+<!-- HUONG DAN SECRET (DOC KY TRUOC KHI DUNG):                                -->
+<!--   - KHONG commit secret THAT (connection string, password, API key).     -->
+<!--   - Secret THAT do pipeline bom luc build/release.                       -->
+<!--   - GitHub Actions: dung Secrets, vi du secrets RELEASE_DB.              -->
+<!--   - GitLab CI: dung CI/CD Variables (masked + protected).                -->
+<!--   - Trong file nay chi giu token mau __TEN_BIEN__. Pipeline thay token  -->
+<!--     bang gia tri that truoc khi deploy.                                  -->
+<!--   - Neu da lo commit secret: xoay secret ngay, dung git filter-repo de  -->
+<!--     xoa lich su, force push co kiem soat, xoay lai toan bo secret.      -->
+<!-- THUAN ASCII: file nay chi dung ky tu ASCII de tranh loi encoding CI.    -->
+<!-- ========================================================================== -->
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+<!-- ======================== connectionStrings ======================= -->
+<!-- Replace DefaultConnection bang gia tri MAU an toan. Pipeline se   -->
+<!-- thay toan bo connectionString nay bang secret that luc release.   -->
+<connectionStrings>
+<add name="DefaultConnection"
+connectionString="Data Source=RELEASE_SQL_SERVER;Initial Catalog=AspxDemoDb;Integrated Security=False;User ID=__DB_USER_FROM_PIPELINE__;Password=__DB_PASSWORD_FROM_PIPELINE__;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+providerName="System.Data.SqlClient"
+xdt:Transform="Replace"
+xdt:Locator="Match(name)" />
+</connectionStrings>
+<!-- ============================ appSettings ========================== -->
+<!-- Replace ApiBaseUrl sang endpoint Release mau chay HTTPS.          -->
+<appSettings>
+<add key="ApiBaseUrl"
+value="https://api-release.example.com/"
+xdt:Transform="Replace"
+xdt:Locator="Match(key)" />
+<!-- Cac key khac giu nguyen: khong can khai bao them o day. -->
+</appSettings>
+<!-- ============================= system.web =========================== -->
+<system.web>
+<!-- Tat debug o Release: xoa thuoc tinh debug khoi compilation. -->
+<!-- Web.config goc co the de debug true cho Dev, Release se xoa. -->
+<compilation xdt:Transform="RemoveAttributes(debug)" />
+<!-- Bat customErrors RemoteOnly cho Release. -->
+<!-- Localhost xem chi tiet loi, trinh duyet xa chi thay trang than thien. -->
+<customErrors mode="RemoteOnly" defaultRedirect="~/Error.aspx"
+xdt:Transform="Replace">
+<error statusCode="404" redirect="~/NotFound.aspx" />
+<error statusCode="500" redirect="~/Error.aspx" />
+</customErrors>
+<!-- Cung co cookie: HttpOnly + Secure o moi truong HTTPS. -->
+<httpCookies httpOnlyCookies="true" requireSSL="true" lockItem="true"
+xdt:Transform="SetAttributes" />
+<!-- Tat trace o Release de tranh ro ri thong tin. -->
+<trace enabled="false" requestLimit="10" pageOutput="false"
+xdt:Transform="SetAttributes" />
+</system.web>
+<!-- ========================== system.webServer ======================== -->
+<!-- An chi tiet loi IIS voi client xa khi chay Release. -->
+<system.webServer>
+<httpErrors errorMode="RemoteOnly"
+xdt:Transform="SetAttributes(errorMode)" />
+</system.webServer>
+<!-- ======================= Kiem tra sau transform ===================== -->
+<!-- 1. Build Release local: -->
+<!--    msbuild AspxDemo_NET481.sln /p:Configuration=Release /t:Rebuild -->
+<!-- 2. Mo file ket qua trong: -->
+<!--    obj/Release/Package/PackageTmp/Web.config -->
+<!--    hoac thu muc publish / artifact CI tra ve. -->
+<!-- 3. Kiem tra bang mat: -->
+<!--    - DefaultConnection la ban MAU (chua co secret that). -->
+<!--    - ApiBaseUrl la https://api-release.example.com/ -->
+<!--    - Khong con debug true. -->
+<!--    - customErrors mode RemoteOnly. -->
+<!-- 4. Kiem tra nhanh bang PowerShell: -->
+<!--    Select-String -Pattern RemoteOnly -Path Web.config -->
+<!--    Select-String -Pattern api-release.example.com -Path Web.config -->
+<!--    Select-String -Pattern DefaultConnection -Path Web.config -->
+<!-- 5. Tren CI dung Windows runner + MSBuild 17: -->
+<!--    - GitHub Actions: runs-on windows-latest, msbuild + nuget restore. -->
+<!--    - GitLab CI: tags windows + msbuild, thay token truoc khi build. -->
+<!-- 6. Quy trinh thay token goi y: -->
+<!--    Doc Web.config, replace __DB_USER_FROM_PIPELINE__ bang bien DB_USER. -->
+<!--    Ket hop mask secret de secret khong hien trong log. -->
+<!-- Mo rong: copy file nay thanh Web.Staging.config neu can them moi truong. -->
+<!-- Khi copy, doi lai ApiBaseUrl va connection string mau cho Staging. -->
+<!-- Het file mau. -->
+</configuration>

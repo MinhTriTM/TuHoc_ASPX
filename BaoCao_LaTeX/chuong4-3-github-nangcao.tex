@@ -1,0 +1,287 @@
+\subsection{Packages và Pages: gói NuGet nội bộ và trang tài liệu}
+
+GitHub không chỉ lưu mã nguồn mà còn cung cấp kho gói tích hợp mang tên
+GitHub Packages, cho phép nhóm đồ án publish các thư viện dùng chung ở dạng
+gói \verb|*.nupkg| thay vì chép file \verb|.dll| thủ công qua USB hay email.
+Mỗi gói gắn với một repository, kế thừa quyền truy cập của repository đó,
+nên thành viên nào đọc được code thì mới tải được gói nội bộ \cite{githubdocs}.
+
+Quy trình publish gói cho project ASP.NET Web Forms gồm ba bước chính:
+đóng gói project thư viện bằng \verb|dotnet pack| hoặc \verb|nuget pack|,
+thêm nguồn gói trỏ về \verb|nuget.pkg.github.com|, rồi đẩy gói lên bằng
+\verb|dotnet nuget push| với token xác thực \verb|GITHUB_TOKEN|.
+Token này cần quyền \verb|write:packages|, còn khi cài gói chỉ cần
+quyền \verb|read:packages| nên rất phù hợp để cấp cho máy cá nhân của từng
+thành viên mà không lo lộ quyền ghi \cite{githubdocs}.
+
+\begin{lstlisting}[language=bash]
+# Buoc 1: dong goi thu vien dung chung (ASCII only comments)
+dotnet pack MyLib/MyLib.csproj -c Release -o ./nupkg
+# Buoc 2: them nguon GitHub Packages (OWNER = ten user hoac org)
+dotnet nuget add source https://nuget.pkg.github.com/OWNER/index.json \
+  --name github --username OWNER --password $GITHUB_TOKEN --store-password-in-clear-text
+# Buoc 3: day goi len GitHub Packages
+dotnet nuget push ./nupkg/MyLib.1.0.0.nupkg --source github
+# Cai goi tu may thanh vien khac trong nhom
+dotnet add package MyLib --version 1.0.0 --source https://nuget.pkg.github.com/OWNER/index.json
+\end{lstlisting}
+
+Với project Web Forms trên .NET Framework 4.8.1, lệnh \verb|dotnet pack|
+không dùng trực tiếp cho project \verb|.aspx| mà dùng cho project thư viện
+\verb|Class Library| đi kèm, ví dụ project chứa lớp tiện ích mã hóa mật khẩu
+hay lớp phân trang dùng chung cho ba thành viên \cite{msnetfx}.
+Phiên bản gói nên đặt theo quy tắc Semantic Versioning, ví dụ \verb|1.2.0|,
+kết hợp Conventional Commits để sinh changelog tự động \cite{convcommits}.
+
+GitHub Pages là dịch vụ host trang web tĩnh miễn phí ngay từ repository,
+rất phù hợp để công bố tài liệu đồ án: đặc tả yêu cầu, sơ đồ cơ sở dữ liệu,
+hướng dẫn cài đặt và nhật ký demo từng tuần.
+Nhóm chỉ cần đưa file HTML tĩnh hoặc source Jekyll vào nhánh \verb|main|
+hoặc thư mục \verb|docs|, bật Pages trong phần Settings là có ngay địa chỉ
+\verb|https://nhom3tuhoc.github.io/AspxDemo-NET481/| để nộp kèm báo cáo.
+
+Cách hiện đại nhất là deploy Pages bằng GitHub Actions: mỗi lần merge vào
+nhánh \verb|main|, workflow tự động build tài liệu và publish, khỏi cần giữ
+nhánh \verb|gh-pages| thủ công như trước đây \cite{ghactions}.
+Ví dụ tối thiểu dưới đây build thư mục \verb|docs| và đẩy lên Pages:
+
+\begin{lstlisting}[language=yaml]
+# Workflow deploy tai lieu do an len GitHub Pages
+name: docs-to-pages
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**']
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - uses: actions/deploy-pages@v4
+\end{lstlisting}
+
+Tóm lại, Packages giải quyết bài toán chia sẻ thư viện nội bộ có phiên bản,
+còn Pages giải quyết bài toán công bố tài liệu công khai với chi phí bằng không.
+Cả hai đều tận dụng sẵn quyền truy cập của repository nên nhóm không cần
+dựng thêm server riêng trong phạm vi đồ án môn học.
+
+\subsection{Codespaces: môi trường phát triển trên mây}
+
+GitHub Codespaces là môi trường phát triển đầy đủ chạy trên mây, mở trực tiếp
+từ repository bằng trình duyệt hoặc Visual Studio Code \cite{githubdocs}.
+Mỗi codespace là một container có sẵn Git, .NET SDK, Node và các extension,
+được mô tả bằng file \verb|devcontainer.json| nên mọi thành viên mở lên đều
+có môi trường giống hệt nhau, chấm dứt cảnh máy chạy được máy thì không.
+
+Với đồ án ASP.NET Web Forms 4.8.1, cần lưu ý Codespaces chạy trên Linux nên
+không build trực tiếp project Web Forms vốn cần MSBuild trên Windows.
+Nhóm vẫn dùng Codespaces hiệu quả cho các việc không cần build Windows:
+viết báo cáo LaTeX, soạn tài liệu, review pull request, viết YAML cho Actions
+và chạy các script kiểm tra chính tả hay kiểm tra link hỏng \cite{msmsbuild}.
+Việc build thật project \verb|.aspx| vẫn giao cho GitHub Actions với runner
+\verb|windows-latest|, như vậy mỗi người đóng góp đúng thế mạnh của từng nền tảng.
+
+Ba thao tác Codespaces dùng nhiều nhất trong đồ án:
+
+\begin{itemize}
+\item Tạo codespace mới từ nhánh \verb|main| hoặc từ một pull request để review code.
+\item Mở terminal trong codespace, chạy \verb|git status| và \verb|git log| như máy local.
+\item Commit và push về repository, pipeline Actions tự động chạy kiểm tra.
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+# Cai dat CLI de dieu khien Codespaces tu terminal
+gh extension install github/gh-codespace
+# Liet ke cac codespace hien co
+gh codespace list
+# Tao codespace moi tu repo do an (nhanh main)
+gh codespace create --repo OWNER/AspxDemo_NET481 --branch main
+# Mo SSH vao codespace de lam viec
+gh codespace ssh --codespace my-codespace-name
+# Xoa codespace khi xong viec de tiet kiem quota
+gh codespace delete --codespace my-codespace-name
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Codespaces};
+\node[box, right=1.2cm of a] (b) {git push};
+\node[box, right=1.2cm of b] (c) {Actions};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {commit} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {build} (c);
+\end{tikzpicture}
+\caption{Luong lam viec tu Codespaces den Actions}
+\label{fig:c43-codespaces-flow}
+\end{figure}
+
+Hình trên tóm tắt luồng làm việc: soạn thảo trên Codespaces, đẩy code về
+repository, Actions trên runner Windows build project ASPX 4.8.1 và báo kết quả.
+Sinh viên dùng gói GitHub Education được cấp quota Codespaces miễn phí mỗi tháng,
+đủ cho nhu cầu viết tài liệu và review code của đồ án (xem mục Giáo dục ở cuối).
+
+\subsection{Copilot: trợ lý gợi ý code bằng AI}
+
+Muse là trợ lý lập trình dùng mô hình ngôn ngữ lớn,
+gợi ý ngay trong editor khi sinh viên gõ comment hoặc tên hàm \cite{githubdocs}.
+Với đồ án Web Forms, Copilot giúp sinh code lặp lại nhanh hơn khoảng 30\%,
+ví dụ tạo validator, sinh truy vấn, viết unit test cho lớp tiện ích.
+Tuy nhiên Copilot chỉ gợi ý chứ không hiểu nghiệp vụ, nên mọi đoạn code sinh ra
+đều phải đọc lại, chạy thử và review như code của người viết.
+
+Ví dụ: sinh viên gõ comment mô tả hàm kiểm tra đăng nhập, Copilot gợi ý khung
+hàm C\# kiểm tra tên đăng nhập và mật khẩu cho trang \verb|Login.aspx|.
+Đoạn code dưới đây mô phỏng kết quả gợi ý sau khi đã chỉnh sửa để an toàn hơn:
+
+\begin{lstlisting}[language=[Sharp]C]
+// Check login for page Login.aspx (demo only)
+public bool KiemTraDangNhap(string tenDangNhap, string matKhau)
+{
+    if (string.IsNullOrWhiteSpace(tenDangNhap)) return false;
+    if (string.IsNullOrEmpty(matKhau)) return false;
+    string sql = "SELECT MatKhauHash, Muoi FROM NguoiDung WHERE TenDangNhap = @u";
+    using (var conn = new SqlConnection(_chuoiKetNoi))
+    using (var cmd = new SqlCommand(sql, conn))
+    {
+        cmd.Parameters.AddWithValue("@u", tenDangNhap);
+        conn.Open();
+        using (var rd = cmd.ExecuteReader())
+        {
+            if (!rd.Read()) return false;
+            string hashLuu = rd.GetString(0);
+            string muoi = rd.GetString(1);
+            string hashNhap = HamBamMatKhau(matKhau, muoi);
+            return hashLuu == hashNhap;
+        }
+    }
+}
+\end{lstlisting}
+
+Ba điểm cần tự kiểm tra sau khi nhận gợi ý từ Copilot:
+
+\begin{enumerate}
+\item Truy vấn phải tham số hóa bằng \verb|@u| như trên, tuyệt đối không nối chuỗi
+tên đăng nhập vào câu lệnh SQL vì sẽ dính lỗi SQL injection.
+\item Mật khẩu phải băm kèm muối bằng thuật toán mạnh, không lưu hay so sánh
+mật khẩu gốc, không gắn cứng mật khẩu mẫu trong code.
+\item Chuỗi kết nối lấy từ file cấu hình hoặc Secret, không dán trực tiếp vào
+code hay vào prompt chat với Copilot.
+\end{enumerate}
+
+Về bản quyền và bảo mật, nhóm cần nhớ ba nguyên tắc \cite{githubdocs}:
+
+\begin{itemize}
+\item Không dán mã nguồn độc quyền, đề thi hay dữ liệu cá nhân vào prompt,
+vì nội dung prompt có thể được dùng theo chính sách của nhà cung cấp.
+\item Đoạn gợi ý dài giống hệt code nổi tiếng cần kiểm tra giấy phép trước khi
+dùng, tránh vi phạm bản quyền của project nguồn mở.
+\item Secret như token, connection string, khóa API không bao giờ xuất hiện
+trong prompt, trong code mẫu hay trong lịch sử commit.
+\end{itemize}
+
+Khi dùng đúng cách, Copilot là gia sư kiên nhẫn: giải thích code khó,
+gợi ý test case, đề xuất refactor tên biến rõ nghĩa hơn cho sinh viên năm nhất.
+
+\subsection{Bảo mật nâng cao: quét secret, Dependabot và CodeQL}
+
+Repository đồ án thường chứa file \verb|Web.config| với chuỗi kết nối cơ sở dữ liệu,
+nên tính năng bảo mật của GitHub có giá trị thực tế ngay từ buổi đầu \cite{githubdocs}.
+Secret scanning tự động quét lịch sử commit để tìm token, khóa API hay mật khẩu
+bị vô tình đẩy lên, rồi gửi cảnh báo cho người maintain repository.
+
+Mạnh hơn một bước, push protection chặn ngay tại thời điểm push: nếu commit chứa
+ví dụ một connection string của SQL Server, lệnh push bị từ chối kèm hướng dẫn
+xóa secret khỏi commit, thay vì để lọt lên server rồi mới cảnh báo sau.
+Ví dụ dưới đây mô phỏng lần push bị chặn và cách khắc phục:
+
+\begin{lstlisting}[language=bash]
+# Vo tinh commit file cau hinh chua secret that
+git add Web.config
+git commit -m "Update connection string"
+git push origin feature/login
+# Ket qua: remote tu choi vi phat hien secret (push protection)
+# remote: error: GH013: Repository rule violations found for refs/heads/feature/login
+# Giai phap: dua secret ra khoi code, doc tu bien moi truong
+# 1) Xoa commit chua secret (nhanh ca nhan, chua merge)
+git reset --soft HEAD~1
+# 2) Thay connection string that bang gia tri gia an toan
+# 3) Commit lai va push, sau do xoay (rotate) secret bi lo
+git commit -m "fix: move connection string to environment variable"
+git push origin feature/login
+\end{lstlisting}
+
+Dependabot tự động mở pull request nâng cấp các gói phụ thuộc có lỗ hổng,
+ví dụ nâng cấp thư viện JavaScript trong thư mục \verb|Scripts| hay gói NuGet
+cũ trong project \verb|packages.config| \cite{githubdocs}.
+Nhóm chỉ cần review và merge pull request của Dependabot như pull request thường,
+pipeline Actions sẽ build lại để xác nhận bản nâng cấp không phá vỡ đồ án.
+
+CodeQL là công cụ phân tích tĩnh: nó dựng cơ sở dữ liệu ngữ nghĩa của mã nguồn
+rồi chạy các truy vấn tìm mẫu lỗ hổng như SQL injection hay cross-site scripting.
+CodeQL chạy như một workflow Actions, báo kết quả ngay trong thẻ Security của
+repository, rất phù hợp để rà soát trang đăng nhập trước buổi demo \cite{ghactions}.
+
+\begin{table}[H]
+\centering
+\caption{Bon tinh nang bao mat nang cao cua GitHub}
+\label{tab:c43-bao-mat}
+\begin{tabular}{llll}
+\toprule
+Tính năng & Phát hiện gì & Chặn ở đâu & Ai xử lý \\
+\midrule
+Secret scanning & Token và khóa API bị lộ & Sau khi push & Người maintain \\
+Push protection & Secret trong commit mới & Trước khi push & Người push \\
+Dependabot & Gói phụ thuộc có lỗ hổng & Pull request mới & Người review \\
+CodeQL & Mẫu code dễ bị tấn công & Workflow Actions & Cả nhóm \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bảng trên giúp nhóm phân công rõ ràng: người push chịu trách nhiệm gỡ secret,
+người review chịu trách nhiệm merge bản vá Dependabot, cả nhóm cùng đọc báo cáo
+CodeQL trước mỗi mốc nộp bài.
+
+\subsection{Gói GitHub Education cho sinh viên}
+
+GitHub Education là gói ưu đãi miễn phí dành cho sinh viên, giảng viên và nhà
+trường, gom nhiều công cụ trả phí thành một gói duy nhất \cite{githubdocs}.
+Với sinh viên, ba lợi ích thiết thực nhất cho đồ án ASPX là: Copilot miễn phí
+trong thời gian học, quota Codespaces miễn phí mỗi tháng và không giới hạn
+repository private cùng cộng tác viên cho nhóm đồ án.
+
+Ngoài ra gói còn kèm nhiều ưu đãi từ đối tác như tên miền miễn phí, credit
+cloud để demo và khóa học bổ trợ, giúp nhóm công bố sản phẩm môn học nghiêm túc
+mà không tốn chi phí hạ tầng.
+
+Các bước đăng ký gói sinh viên:
+
+\begin{enumerate}
+\item Chuẩn bị email do trường cấp, ví dụ email có đuôi \verb|@edu.vn| hoặc
+\verb|@st.university.edu.vn|, kèm thẻ sinh viên hoặc giấy xác nhận đang học.
+\item Truy cập trang \url{https://education.github.com/} và chọn mục đăng ký
+gói Student Developer Pack.
+\item Điền thông tin trường, tải minh chứng sinh viên và chờ GitHub xét duyệt,
+thường từ vài giờ đến vài ngày.
+\item Sau khi được duyệt, bật Copilot và kiểm tra quota Codespaces trong phần
+cài đặt tài khoản, rồi mời hai thành viên còn lại cộng tác repository đồ án.
+\end{enumerate}
+
+Lưu ý: ưu đãi gắn với trạng thái sinh viên nên cần gia hạn sau mỗi chu kỳ học,
+khi tốt nghiệp một số tính năng sẽ chuyển về gói miễn phí thông thường.
+Nhóm nên đăng ký sớm từ đầu học kỳ để tận dụng Copilot và Codespaces cho toàn bộ
+quá trình làm đồ án thay vì chờ đến tuần nộp bài mới đăng ký \cite{githubdocs}.
+
+Như vậy, từ Packages, Pages, Codespaces, Copilot đến bộ công cụ bảo mật và gói
+Education, GitHub cung cấp một hệ sinh thái khép kín cho nhóm sinh viên: viết code,
+chia sẻ thư viện, công bố tài liệu, rà soát bảo mật và demo sản phẩm trên một
+nền tảng duy nhất, sẵn sàng liên thông sang GitLab ở chương tiếp theo.

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" font-family="Segoe UI, Arial, sans-serif">
+<rect width="920" height="360" rx="14" fill="#f6f8fa"/>
+<text x="460" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">GitHub Actions cho ASP.NET Web Forms 4.8.1</text>
+<text x="460" y="56" text-anchor="middle" font-size="13" fill="#59636e">File: .github/workflows/ci-aspx-481.yml — runs-on: windows-latest (cần MSBuild + .NET Framework)</text>
+<defs><marker id="g" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1f2328"/></marker></defs>
+<rect x="60" y="80" width="800" height="52" rx="10" fill="#24292f"/>
+<text x="80" y="111" font-size="14" font-weight="700" fill="#fff">on: push + pull_request → jobs: build (windows-latest)</text>
+<rect x="60" y="150" width="150" height="120" rx="10" fill="#ddf4ff" stroke="#1f6feb" stroke-width="2"/>
+<text x="135" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#1f6feb">1. Checkout</text>
+<text x="135" y="196" text-anchor="middle" font-size="12" fill="#1f2328">actions/</text>
+<text x="135" y="213" text-anchor="middle" font-size="12" fill="#1f2328">checkout@v4</text>
+<rect x="240" y="150" width="150" height="120" rx="10" fill="#ddf4ff" stroke="#1f6feb" stroke-width="2"/>
+<text x="315" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#1f6feb">2. Setup</text>
+<text x="315" y="196" text-anchor="middle" font-size="12" fill="#1f2328">setup-msbuild</text>
+<text x="315" y="213" text-anchor="middle" font-size="12" fill="#1f2328">setup-nuget</text>
+<rect x="420" y="150" width="150" height="120" rx="10" fill="#fbefff" stroke="#8250df" stroke-width="2"/>
+<text x="495" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#8250df">3. Restore</text>
+<text x="495" y="196" text-anchor="middle" font-size="12" fill="#1f2328">nuget restore</text>
+<text x="495" y="213" text-anchor="middle" font-size="12" fill="#1f2328">+ cache</text>
+<rect x="600" y="150" width="120" height="120" rx="10" fill="#fff8c5" stroke="#9a6700" stroke-width="2"/>
+<text x="660" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#9a6700">4. Build</text>
+<text x="660" y="196" text-anchor="middle" font-size="12" fill="#1f2328">msbuild /p:</text>
+<text x="660" y="213" text-anchor="middle" font-size="12" fill="#1f2328">Release</text>
+<rect x="750" y="150" width="120" height="120" rx="10" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+<text x="810" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="#1a7f37">5. Test</text>
+<text x="810" y="196" text-anchor="middle" font-size="12" fill="#1f2328">vstest +</text>
+<text x="810" y="213" text-anchor="middle" font-size="12" fill="#1f2328">artifact</text>
+<line x1="212" y1="210" x2="236" y2="210" stroke="#1f2328" stroke-width="2" marker-end="url(#g)"/>
+<line x1="392" y1="210" x2="416" y2="210" stroke="#1f2328" stroke-width="2" marker-end="url(#g)"/>
+<line x1="572" y1="210" x2="596" y2="210" stroke="#1f2328" stroke-width="2" marker-end="url(#g)"/>
+<line x1="722" y1="210" x2="746" y2="210" stroke="#1f2328" stroke-width="2" marker-end="url(#g)"/>
+<rect x="60" y="290" width="800" height="52" rx="8" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5"/>
+<text x="460" y="312" text-anchor="middle" font-size="13" fill="#1f2328">Vì sao windows-latest? .NET Framework 4.8.1 chỉ build bằng MSBuild trên Windows.</text>
+<text x="460" y="332" text-anchor="middle" font-size="13" fill="#1f2328">Secrets (connection string) nằm ở Settings → Secrets, đọc qua ${{ secrets.NAME }}.</text>
+</svg>

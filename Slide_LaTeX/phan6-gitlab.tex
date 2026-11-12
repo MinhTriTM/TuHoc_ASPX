@@ -1,0 +1,94 @@
+\begin{frame}{GitLab là gì? SaaS vs self-hosted}
+\begin{itemize}
+\item Nền tảng DevOps all-in-one trên Git: repo, Merge Request, Issues, CI/CD tích hợp sẵn.
+\item Một vòng đời khép kín: plan, code, review, test, release, monitor trong cùng project.
+\item Dùng ngay bản SaaS tại \texttt{gitlab.com} hoặc tự vận hành bản self-hosted.
+\end{itemize}
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & SaaS & Self-hosted \\
+\midrule
+Hạ tầng & GitLab quản lý & Nhóm tự cài đặt \\
+Chi phí \& bảo trì & Trả theo gói, không lo máy chủ & Miễn phí bản Community, tốn công admin \\
+Phù hợp & Đồ án môn học, demo nhanh & Doanh nghiệp cần kiểm soát dữ liệu \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Groups, Projects, Issues, Boards}
+\begin{itemize}
+\item Groups gom nhiều project theo nhóm/lớp: phân quyền member, chia sẻ runner chung.
+\item Projects chứa repo Git, Merge Request, pipeline, wiki; gắn ASPX qua \texttt{main} bảo vệ.
+\item Issues theo dõi task/bug với label, milestone, assignee; đóng bằng \texttt{Closes} khi merge.
+\item Boards kiểu Kanban kéo thả Issues qua các cột To Do, Doing, Done theo milestone.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Merge Request và Approval rules}
+\begin{enumerate}
+\item Tạo nhánh \texttt{feature} từ \texttt{main}, push và mở Merge Request kèm mô tả rõ ràng.
+\item Hệ thống chạy pipeline kiểm tra build và test tự động trên nhánh nguồn.
+\item Reviewer nhận xét từng dòng, yêu cầu chỉnh sửa cho đến khi đạt yêu cầu.
+\item Đủ lượt approve theo rule mới được phép merge, đảm bảo ít nhất 2 người đồng ý.
+\item Nhấn merge, xóa nhánh nguồn, Issues liên quan tự đóng theo từ khóa.
+\end{enumerate}
+\vspace{0.3em}
+Ví dụ rule: nhánh \texttt{main} yêu cầu 2 approve từ maintainer và pipeline phải xanh 100\%.
+\end{frame}
+
+\begin{frame}[fragile]{Tệp gitlab-ci YAML cho ASPX 4.8.1}
+\begin{itemize}
+\item Khai báo \texttt{stages}, \texttt{variables}, job theo từng giai đoạn build, test, deploy.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+stages:
+  - build
+  - test
+  - deploy
+variables:
+  SOLUTION: AspxDemo.sln
+  CONFIG: Release
+build:aspx:
+  stage: build
+  tags: [windows-481]
+  script:
+    - nuget restore %SOLUTION%
+    - msbuild %SOLUTION% /p:Config=%CONFIG%
+  artifacts:
+    paths: [bin/Release/]
+    expire_in: 1 week
+test:aspx:
+  stage: test
+  tags: [windows-481]
+  script: [vstest.console.exe bin/Release/*.Tests.dll]
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Runners và tags Windows}
+\begin{itemize}
+\item Runner là agent chạy job: shell runner trên Windows Server cài Visual Studio và \texttt{msbuild}.
+\item Tags điều phối job đúng máy: job ASPX 4.8.1 gắn tag \texttt{windows-481}, runner cùng tag mới nhận.
+\item Runner nhóm dùng chung cho 3 thành viên; bật cache NuGet để build lần sau nhanh hơn.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Environments và Registry}
+\begin{itemize}
+\item Environments quản lý staging và production, hỗ trợ deploy thủ công và rollback một nút bấm.
+\item Review Apps tự tạo môi trường xem trước cho mỗi Merge Request, xóa khi merge xong.
+\item Container Registry lưu image Docker và gói NuGet nội bộ, dùng token nhóm để pull an toàn.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Demo TV3: MR và pipeline}
+\begin{itemize}
+\item[$\square$] Mirror repo ASPX sang GitLab, bảo vệ nhánh \texttt{main} và bật Approval 2 người.
+\item[$\square$] Mở Merge Request từ \texttt{feature} kèm mô tả, label và người review cụ thể.
+\item[$\square$] Theo dõi pipeline build \texttt{msbuild} trên runner Windows đến khi báo xanh.
+\item[$\square$] Thu đủ approve, merge vào \texttt{main} và kiểm tra deploy staging thành công.
+\item[$\square$] Chụp pipeline xanh và bảng so sánh đưa vào báo cáo Chương 5 và Chương 6.
+\end{itemize}
+\end{frame}

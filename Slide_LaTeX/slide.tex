@@ -1,0 +1,73 @@
+% Slide Beamer: GIT -- GitHub -- GitLab cho hoc phan ASPX (.NET Framework 4.8.1)
+% File goc (root): nap 8 fragment phan1..phan8 qua \input. Bien dich: pdflatex slide.tex (2 lan).
+% Compiler: pdfLaTeX -- TeX Live / MiKTeX / Overleaf; ti le 16:9 cho man hinh rong.
+\documentclass[10pt,aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usetikzlibrary{arrows.meta,positioning}
+
+% Cau hinh listings dung chung cho cac frame fragile (vi du lenh bash, chi ASCII).
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true}
+\lstset{keywordstyle=\color{blue},commentstyle=\color{gray},showstringspaces=false}
+\lstset{numbers=none,frame=single,tabsize=2,keepspaces=true}
+
+% Metadata: tieu de, tac gia, don vi, ngay trinh bay.
+\title[GIT -- GitHub -- GitLab]{GIT -- GitHub -- GitLab \\ cho học phần ASPX (.NET Framework 4.8.1)}
+\author{TV1 (MSSV1), TV2 (MSSV2), TV3 (MSSV3)}
+\institute{Học phần ASPX -- Nhóm 3 thành viên}
+\date{\today}
+
+% Chan slide gon: chi hien so frame; an bieu tuong dieu huong cho sach.
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+
+% Slide tieu de mo dau bai trinh bay.
+\frame{\titlepage}
+
+% Muc luc tong quan 8 phan cua bai trinh bay.
+\begin{frame}{Mục lục}
+\tableofcontents
+\end{frame}
+
+% Phan 1: gioi thieu de tai, muc tieu, pham vi, lien he hoc phan ASPX.
+\section{Mở đầu}
+\input{phan1-modau}
+
+% Phan 2: cai dat, cau hinh, vung lam viec, commit, nhanh, merge co ban.
+\section{Git căn bản}
+\input{phan2-git-coban}
+
+% Phan 3: rebase, stash, reflog, hooks, GPG, GitFlow, Conventional Commits.
+\section{Git nâng cao}
+\input{phan3-git-nangcao}
+
+% Phan 4: repo, Issues, Fork, Pull Request, review, branch protection.
+\section{GitHub}
+\input{phan4-github}
+
+% Phan 5: pipeline CI build msbuild + test cho project ASPX 4.8.1.
+\section{CI với GitHub Actions}
+\input{phan5-github-actions}
+
+% Phan 6: Groups, Merge Request, Approval, GitLab CI tren Windows runner.
+\section{GitLab}
+\input{phan6-gitlab}
+
+% Phan 7: bang so sanh GitHub -- GitLab va quy trinh nhom 3 nguoi.
+\section{So sánh và quy trình nhóm}
+\input{phan7-sosanh-quytrinh}
+
+% Phan 8: tong ket bai hoc, han che, huong phat trien va hoi dap.
+\section{Kết luận và hỏi đáp}
+\input{phan8-ketluan-qa}
+
+\end{document}

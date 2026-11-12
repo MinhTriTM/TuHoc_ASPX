@@ -1,0 +1,201 @@
+\subsection{Git hooks: kiểm soát tự động với pre-commit, commit-msg và pre-push}
+
+Git hooks là các script mà Git tự động thực thi khi một sự kiện xảy ra, ví dụ trước khi tạo commit, trước khi đẩy code lên máy chủ hay sau khi hợp nhất nhánh. Mỗi repo đều có thư mục mẫu \verb|.git/hooks| chứa các file ví dụ kết thúc bằng \verb|.sample|; muốn kích hoạt hook nào thì đổi tên bỏ đuôi \verb|.sample| và cấp quyền thực thi cho file đó \cite{progit}.
+
+Ba hooks hữu ích nhất cho nhóm làm đồ án ASPX được tóm tắt như sau:
+
+\begin{itemize}
+\item \verb|pre-commit|: chạy trước khi Git tạo commit. Dùng để chặn commit chứa chuỗi cấm, chặn file quá lớn hoặc yêu cầu định dạng code thống nhất.
+\item \verb|commit-msg|: chạy sau khi lập trình viên nhập thông điệp commit. Dùng để kiểm tra thông điệp có đúng định dạng đã thống nhất hay không.
+\item \verb|pre-push|: chạy trước khi Git đẩy commit lên máy chủ. Dùng để chạy kiểm tra cuối, ví dụ cấm push trực tiếp lên nhánh \verb|main| hoặc cấm push khi còn lỗi biên dịch.
+\end{itemize}
+
+Ví dụ thực tế: nhóm quy định không ai được commit chuỗi \verb|connStrThat| vì đây là dấu hiệu lập trình viên đã dán nhầm chuỗi kết nối thật vào mã nguồn. Script \verb|pre-commit| dưới đây quét toàn bộ nội dung chuẩn bị commit và chặn lại khi phát hiện chuỗi cấm:
+
+\begin{lstlisting}[language=bash, caption={Hook pre-commit chan commit chua chuoi cam}, label={lst:c33-precommit}]
+#!/bin/sh
+# Block commit when staged content contains connStrThat
+if git diff --cached | grep -q "connStrThat"; then
+echo "ERROR: found connStrThat in staged changes."
+echo "Remove the real connection string and use Web.config.transform instead."
+exit 1
+fi
+exit 0
+\end{lstlisting}
+
+Để kích hoạt, lưu file trên thành \verb|.git/hooks/pre-commit| rồi chạy \verb|chmod +x .git/hooks/pre-commit| trên Git Bash. Từ lúc đó, mỗi lần gõ \verb|git commit|, Git sẽ chạy script trước; nếu script trả về mã lỗi khác không thì commit bị hủy và lập trình viên phải sửa code rồi commit lại. Cách làm này rẻ, chạy ngay trên máy cá nhân và ngăn lỗi lộ thông tin nhạy cảm từ rất sớm \cite{atlassiangit}.
+
+Cần lưu ý hooks trong thư mục \verb|.git/hooks| không được Git theo dõi nên không tự lan sang máy của thành viên khác khi clone. Nhóm nên lưu bản chuẩn của hooks vào thư mục \verb|tools/hooks| trong repo rồi thêm bước sao chép vào tài liệu hướng dẫn cài đặt, hoặc dùng biến cấu hình \verb|core.hooksPath| để trỏ mọi máy về cùng một thư mục hooks dùng chung.
+
+\subsection{Git LFS: quản lý file lớn như video, bộ cài đặt và thư viện dll}
+
+Git lưu toàn bộ lịch sử dưới dạng các đối tượng nén, vì vậy các file nhị phân lớn như video demo, bộ cài đặt hay thư viện \verb|dll| của bên thứ ba sẽ làm repo phình to rất nhanh và mỗi lần clone đều phải tải lại toàn bộ các phiên bản cũ. Git LFS (Large File Storage) giải quyết vấn đề này bằng cách thay nội dung file lớn trong repo bằng một con trỏ văn bản nhỏ, còn nội dung thật được lưu trên máy chủ LFS \cite{progit}.
+
+Ba lệnh cơ bản đủ để nhóm bắt đầu với LFS như sau:
+
+\begin{enumerate}
+\item Cài đặt và kích hoạt LFS một lần trên mỗi máy với \verb|git lfs install|.
+\item Khai báo mẫu file cần theo dõi, ví dụ \verb|git lfs track "*.mp4"| cho video demo và \verb|git lfs track "*.dll"| cho thư viện ngoài, rồi commit file \verb|.gitattributes| sinh ra.
+\item Thêm, commit và push như bình thường; các lệnh \verb|git add|, \verb|git commit| và \verb|git push| vẫn giữ nguyên, LFS tự động tải nội dung lớn lên máy chủ.
+\end{enumerate}
+
+\begin{lstlisting}[language=bash, caption={Ba lenh Git LFS co ban cho file lon}, label={lst:c33-lfs}]
+# One-time setup on each machine
+git lfs install
+# Track large files, then commit the .gitattributes file
+git lfs track "*.mp4"
+git lfs track "*.dll"
+git add .gitattributes
+git commit -m "chore: track large media with LFS"
+# Use add, commit and push as usual
+git add Demo_Video.mp4 ThirdParty.dll
+git commit -m "docs: add demo video and vendor lib"
+git push origin main
+\end{lstlisting}
+
+Với project ASPX, quy tắc thực tế là chỉ đưa vào LFS các file bắt buộc phải ở trong repo như video demo hay thư viện không có trên NuGet; các gói khôi phục được bằng NuGet và thư mục \verb|bin| hay \verb|obj| phải cho vào \verb|.gitignore| thay vì LFS. Cả GitHub và GitLab đều hỗ trợ LFS nhưng giới hạn băng thông và dung lượng miễn phí, vì vậy nhóm sinh viên nên giữ số lượng file LFS ở mức tối thiểu \cite{githubdocs,gitlabdocs}.
+
+\subsection{Submodule và subtree: tái sử dụng mã nguồn giữa các repo}
+
+Khi đồ án ASPX cần dùng chung một thư viện, ví dụ bộ kiểm tra dữ liệu hay bộ giao diện dùng cho nhiều project, nhóm có hai cách chính để tái sử dụng mà không sao chép thủ công: submodule và subtree. Submodule nhúng một repo khác vào thư mục con và ghi lại đúng mã commit đang dùng; subtree hợp nhất lịch sử của repo khác vào repo chính như một thư mục bình thường \cite{progit}.
+
+\begin{table}[H]
+\centering
+\caption{So sanh submodule va subtree}
+\label{tab:c33-submodule}
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & Submodule & Subtree \\
+\midrule
+Lịch sử & Nằm ở repo riêng, repo chính chỉ giữ con trỏ & Gộp chung vào lịch sử repo chính \\
+Lệnh clone & Cần thêm \verb|--recurse-submodules| & Clone bình thường, không cần cờ đặc biệt \\
+Cập nhật & Hai bước: kéo repo con rồi commit con trỏ mới & Một bước: kéo và hợp nhất như thư mục thường \\
+Đẩy sửa lên thư viện & Commit trong thư mục con rồi push riêng & Tách và đẩy bằng lệnh \verb|subtree push| \\
+Độ phức tạp & Cao hơn, dễ quên cập nhật con trỏ & Thấp hơn, thân thiện với người mới \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Khuyến nghị cho nhóm ba người: dùng subtree khi thư viện do chính nhóm sở hữu và ít tách ra phát triển độc lập, vì mọi thành viên chỉ cần học các lệnh Git thông thường. Chỉ dùng submodule khi thư viện là repo ngoài do nhóm khác bảo trì và cần ghim đúng một phiên bản đã kiểm thử, ví dụ ghim đúng commit đã chạy ổn định của bộ điều khiển dùng chung. Trong cả hai trường hợp, nhóm đều phải ghi rõ trong tài liệu hướng dẫn câu lệnh clone và cập nhật để thành viên mới không bị thiếu code \cite{atlassiangit}.
+
+\subsection{Ký commit bằng GPG và SSH: chống giả mạo tác giả}
+
+Mặc định Git tin hoàn toàn tên và email do người dùng khai báo, vì vậy bất kỳ ai cũng có thể giả tên người khác khi tạo commit. Ký commit (commit signing) gắn một chữ ký số vào mỗi commit để máy chủ xác thực đúng tác giả; trên GitHub và GitLab, commit đã xác thực sẽ hiện nhãn Verified rất tin cậy khi chấm bài \cite{githubdocs,gitlabdocs}.
+
+Bốn lệnh cấu hình đủ cho sinh viên bắt đầu ký bằng khóa SSH đã có như sau. Nhóm dùng khóa SSH vì đơn giản hơn GPG mà vẫn được cả hai nền tảng chấp nhận:
+
+\begin{lstlisting}[language=bash, caption={Cau hinh ky commit bang khoa SSH}, label={lst:c33-sign}]
+# 1. Create an SSH signing key (skip if you already have one)
+ssh-keygen -t ed25519 -C "sv03@example.com" -f ~/.ssh/id_sign
+# 2. Tell Git to sign with SSH and use your key
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_sign.pub
+# 3. Sign every commit automatically
+git config --global commit.gpgsign true
+# 4. Show signatures in the log to verify
+git log --show-signature -n 3
+\end{lstlisting}
+
+Sau khi cấu hình, mỗi lần chạy \verb|git commit| thì Git sẽ ký tự động; nếu muốn ký thủ công từng commit thì thêm cờ \verb|-S| như \verb|git commit -S -m "feat: them kiem tra"| . Bước còn lại là dán nội dung file \verb|id_sign.pub| vào mục SSH and GPG keys trên GitHub và mục SSH Keys trên GitLab để máy chủ nhận diện chữ ký. Với đồ án môn học, nhóm nên yêu cầu ít nhất nhánh \verb|main| chỉ nhận commit đã ký, vừa chống giả mạo vừa tạo thói quen bảo mật tốt \cite{progit}.
+
+\subsection{Sparse-checkout và partial clone cho repo khổng lồ}
+
+Một số repo môn học hoặc repo công ty chứa hàng nghìn thư mục nhưng mỗi sinh viên chỉ làm trên một phần nhỏ, ví dụ chỉ thư mục \verb|BaoCao_LaTeX| hoặc chỉ project \verb|AspxDemo|. Tải toàn bộ cây thư mục vừa chậm vừa tốn ổ cứng. Sparse-checkout cho phép chỉ lấy ra (check out) một số thư mục cần thiết, còn partial clone cho phép tải trước khung lịch sử rồi tải nội dung file khi thật sự cần \cite{progit}.
+
+Quy trình gọn nhất gồm ba bước: clone với bộ lọc để bỏ nội dung file lớn, bật sparse-checkout ở chế độ hình nón rồi liệt kê các thư mục muốn giữ lại. Ví dụ dưới đây chỉ lấy báo cáo và slide, bỏ qua toàn bộ video demo:
+
+\begin{lstlisting}[language=bash, caption={Clone loc va giu hai thu muc can thiet}, label={lst:c33-sparse}]
+# 1. Clone without file contents, download on demand
+git clone --filter=blob:none --no-checkout https://github.com/lop/aspx-group.git
+cd aspx-group
+# 2. Enable cone-mode sparse checkout
+git sparse-checkout init --cone
+# 3. Keep only the report and slide folders
+git sparse-checkout set BaoCao_LaTeX Slide_LaTeX
+git checkout main
+# Later, add one more folder when needed
+git sparse-checkout add AspxDemo
+\end{lstlisting}
+
+Khi cần quay lại đầy đủ repo, chạy \verb|git sparse-checkout disable| rồi \verb|git checkout| để khôi phục toàn bộ cây thư mục. Lưu ý sparse-checkout chỉ ẩn file khỏi thư mục làm việc chứ không xóa lịch sử trên máy chủ, vì vậy các lệnh \verb|git log| và \verb|git diff| vẫn thấy đầy đủ thông tin. Với máy cấu hình yếu hoặc mạng ký túc xá chậm, đây là kỹ thuật tiết kiệm thời gian rõ rệt nhất khi làm việc với repo lớn \cite{atlassiangit}.
+
+\subsection{Viết lại lịch sử an toàn với filter-repo khi lộ connection string}
+
+Tình huống kinh điển của nhóm ASPX: một thành viên vô tình commit file \verb|Web.config| chứa chuỗi kết nối thật có tên máy chủ và mật khẩu, rồi push lên repo chung. Xóa file ở commit mới không đủ vì chuỗi nhạy cảm vẫn nằm trong lịch sử cũ và bất kỳ ai cũng xem lại được. Công cụ khuyên dùng hiện nay là \verb|git filter-repo|, nhanh và an toàn hơn lệnh \verb|filter-branch| đã lỗi thời \cite{progit}.
+
+Quy trình xử lý gồm bốn bước: thông báo cho cả nhóm dừng push, sao lưu repo, chạy filter-repo để thay chuỗi nhạy cảm trong toàn bộ lịch sử, rồi push đè có kiểm soát và xoay lại mật khẩu ngay. Ví dụ dưới đây thay chuỗi \verb|connStrThat| bằng văn bản giữ chỗ trong mọi commit:
+
+\begin{lstlisting}[language=bash, caption={Xoa chuoi ket noi that khoi toan bo lich su}, label={lst:c33-filterrepo}]
+# 0. Backup first, history rewrite is destructive
+git clone --mirror https://github.com/lop/aspx-group.git backup.git
+# 1. Install filter-repo once (Windows example with pip)
+pip install git-filter-repo
+# 2. Replace the leaked secret in every commit
+git filter-repo --replace-text <(echo "connStrThat==>REMOVED_SECRET")
+# 3. Reconnect the remote and force-push with lease
+git remote add origin https://github.com/lop/aspx-group.git
+git push --force-with-lease origin main
+\end{lstlisting}
+
+Cảnh báo quan trọng: viết lại lịch sử đổi toàn bộ mã định danh commit nên mọi thành viên phải xóa bản cũ và clone lại, tuyệt đối không hợp nhất bản cũ vào bản mới. Luôn dùng \verb|--force-with-lease| thay vì \verb|--force| để Git từ chối push đè khi có người vừa đẩy commit mới mà mình chưa thấy. Sau khi push đè, nhóm phải đổi mật khẩu cơ sở dữ liệu và chuỗi kết nối ngay vì bí mật đã lộ không thể coi là an toàn nữa, đồng thời chuyển sang dùng biến môi trường và kho secret của pipeline \cite{githubdocs,gitlabdocs}.
+
+\subsection{Quy trình nhánh: GitFlow, GitHub Flow và Trunk-Based Development}
+
+Quy trình nhánh quy định code đi từ máy cá nhân lên nhánh chính bằng con đường nào và kiểm soát chất lượng ở đâu. Ba mô hình phổ biến nhất là GitFlow với nhiều nhánh dài hạn, GitHub Flow gọn nhẹ xoay quanh nhánh chính và pull request, cùng Trunk-Based Development nơi mọi người tích hợp trực tiếp vào thân chính mỗi ngày \cite{gitflow}.
+
+\begin{table}[H]
+\centering
+\caption{So sanh ba quy trinh nhanh pho bien}
+\label{tab:c33-workflow}
+\begin{tabular}{llll}
+\toprule
+Tiêu chí & GitFlow & GitHub Flow & Trunk-Based \\
+\midrule
+Nhánh dài hạn & \verb|main| và \verb|develop| & Chỉ \verb|main| & Chỉ \verb|main| hoặc \verb|trunk| \\
+Nhánh tính năng & Có, hợp nhất vào \verb|develop| & Có, hợp nhất vào \verb|main| & Ngắn, tồn tại dưới một ngày \\
+Phát hành & Nhánh \verb|release| riêng & Thẻ và triển khai liên tục & Triển khai liên tục, cờ tính năng \\
+Mức phức tạp & Cao, nhiều quy tắc & Thấp, dễ học & Trung bình, cần kỷ luật cao \\
+Phù hợp & Sản phẩm có phiên bản & Nhóm nhỏ, web, đồ án & Nhóm lớn, triển khai mỗi ngày \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Hình dưới đây minh họa luồng GitHub Flow mà nhóm ba người nên dùng: mỗi tính năng là một nhánh ngắn tách từ \verb|main|, hoàn thành thì mở pull request để một bạn review, pipeline chạy xanh mới được hợp nhất trở lại \verb|main|.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Nhanh main};
+\node[box, right=1.2cm of a] (b) {Nhanh tinh nang};
+\node[box, right=1.2cm of b] (c) {Pull request};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {tach nhanh} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {mo review} (c);
+\draw[->] (c) -- node[midway, below, font=\footnotesize] {merge khi xanh} (a);
+\end{tikzpicture}
+\caption{Luong GitHub Flow cho nhom ba sinh vien}
+\label{fig:c33-githubflow}
+\end{figure}
+
+Khuyến nghị chốt cho nhóm ba người làm đồ án ASPX: chọn GitHub Flow vì chỉ có một nhánh dài hạn nên ít nhầm lẫn, mỗi pull request là một bằng chứng review để đưa vào báo cáo, và pipeline kiểm tra tự động ngay trên pull request. GitFlow chỉ nên dùng khi đồ án yêu cầu quản lý nhiều phiên bản phát hành song song; Trunk-Based Development tuy hiện đại nhưng đòi hỏi kiểm thử tự động rất mạnh và thói quen commit mỗi ngày mà sinh viên khó duy trì \cite{gitflow,atlassiangit}.
+
+\subsection{Conventional Commits: chuẩn hóa thông điệp commit cho cả nhóm}
+
+Khi ba người cùng commit vào một repo, thông điệp tùy hứng như đã sửa hay cập nhật code khiến lịch sử không thể đọc được và giảng viên khó chấm điểm đóng góp. Conventional Commits quy định một định dạng thống nhất \verb|type(scope): subject| gồm loại thay đổi, phạm vi tác động trong ngoặc đơn và mô tả ngắn ở thì hiện tại \cite{convcommits}.
+
+Các loại phổ biến gồm \verb|feat| cho tính năng mới, \verb|fix| cho sửa lỗi, \verb|docs| cho tài liệu, \verb|style| cho định dạng không đổi logic, \verb|refactor| cho tái cấu trúc, \verb|test| cho kiểm thử và \verb|chore| cho việc vặt như cập nhật công cụ. Phần \verb|scope| nêu rõ module chịu ảnh hưởng, ví dụ \verb|auth| cho đăng nhập hay \verb|aspx| cho trang Web Forms, giúp chỉ đọc một dòng log cũng biết commit chạm vào đâu.
+
+Sáu ví dụ đúng chuẩn gắn với đồ án ASPX của nhóm như sau:
+
+\begin{lstlisting}[language=bash, caption={Sau thong diep commit dung chuan}, label={lst:c33-convcommits}]
+# New feature, bug fix, docs, refactor, test, chores
+git commit -m "feat(auth): add login check for admin page"
+git commit -m "fix(aspx): correct Web.config transform path"
+git commit -m "docs(report): describe Git LFS for demo video"
+git commit -m "refactor(cart): split checkout into small methods"
+git commit -m "test(login): add cases for wrong password"
+git commit -m "chore(ci): cache NuGet packages in pipeline"
+\end{lstlisting}
+
+Để ép cả nhóm tuân thủ, kết hợp ba biện pháp: mẫu commit-msg hook kiểm tra định dạng ngay trên máy cá nhân, pipeline kiểm tra tên commit trong mỗi pull request, và quy ước người review từ chối các pull request có thông điệp sai chuẩn. Lợi ích thu được rất thiết thực: lệnh \verb|git log --oneline| trở thành nhật ký công việc rõ ràng, công cụ tự động sinh ghi chú phát hành từ tiền tố loại commit, và giảng viên chỉ cần đọc lịch sử cũng đánh giá được ai làm phần nào \cite{convcommits,progit}.
+
+Tóm lại, tám kỹ thuật trong mục này tạo thành bộ công cụ nâng cao cho nhóm: hooks và ký commit bảo vệ chất lượng từ máy cá nhân, LFS cùng sparse-checkout xử lý repo lớn, submodule và filter-repo quản lý mã dùng chung và sự cố lộ bí mật, còn quy trình nhánh và Conventional Commits giữ cho ba người phối hợp nhịp nhàng đến ngày nộp bài.

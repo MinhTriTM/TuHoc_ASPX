@@ -1,0 +1,94 @@
+% Fragment: Phan 5 - GitHub Actions cho ASPX 4.8.1 (TV2)
+% File nay chi chua cac frame Beamer, duoc \input vao slide.tex.
+
+\begin{frame}{GitHub Actions: workflow, job, step, runner}
+\begin{itemize}
+\item \textbf{Workflow}: tệp YAML trong \texttt{.github/workflows}, tự chạy khi \texttt{push}, mở \texttt{PR} hoặc theo lịch.
+\item \textbf{Job}: nhóm các step chạy trên cùng một runner; các job chạy song song, dùng \texttt{needs} để xếp nối tiếp.
+\item \textbf{Step}: từng bước nhỏ trong job, dùng \texttt{uses} gọi action có sẵn hoặc \texttt{run} chạy lệnh shell.
+\item \textbf{Runner}: máy ảo thực thi job; ASPX 4.8.1 bắt buộc \texttt{windows-latest} vì cần \texttt{msbuild} bản full.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Pipeline CI cho ASPX 4.8.1}
+\begin{itemize}
+\item Mọi \texttt{push} và \texttt{PR} đều kích hoạt build và test tự động.
+\item \texttt{msbuild} biên dịch \texttt{AspxDemo.sln}, \texttt{vstest} chạy test, artifact lưu gói web.
+\end{itemize}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+name: CI ASPX 4.8.1
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+      - name: Restore packages
+        run: nuget restore AspxDemo.sln
+      - name: Build solution
+        run: msbuild AspxDemo.sln /p:Config=Release
+      - name: Run tests
+        run: vstest.console.exe Tests.dll
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with: {name: webapp, path: bin/}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Vì sao ASPX 4.8.1 bắt buộc Windows runner}
+\begin{itemize}
+\item .NET Framework 4.8.1 và \texttt{msbuild} bản full chỉ có trên Windows.
+\item Lệnh \texttt{dotnet} trên Ubuntu không biên dịch được Web Forms cũ.
+\item Chốt: mọi job build ASPX đều đặt \texttt{windows-latest}.
+\end{itemize}
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\toprule
+Tiêu chí & Windows & Ubuntu \\
+\midrule
+MSBuild + Framework 4.8.1 & Có sẵn & Không có \\
+Build Web Forms cũ & Được & Không được \\
+IIS, \texttt{vstest} & Hỗ trợ & Không hỗ trợ \\
+Tốc độ, chi phí & Chậm, đắt hơn & Nhanh, rẻ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Secrets và Environments}
+\begin{itemize}
+\item \textbf{Secret}: biến mã hóa trong Settings, không bao giờ in ra log (bị che thành \texttt{***}).
+\item \textbf{Environment}: nhóm secret theo \texttt{dev}, \texttt{staging}, \texttt{prod}, kèm người duyệt deploy.
+\item Không commit connection string vào \texttt{Web.config}; secret được thay đúng lúc deploy.
+\item Cách đọc secret trong workflow và lệnh build:
+\end{itemize}
+\begin{lstlisting}[language=bash, basicstyle=\ttfamily\scriptsize]
+echo "Checking ${{ secrets.DB_SERVER }}"
+nuget restore AspxDemo.sln
+msbuild AspxDemo.sln /p:Conn="${{ secrets.CONN_STR }}"
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Demo TV2: PR và pipeline xanh}
+\begin{enumerate}
+\item Tạo nhánh \texttt{feature/github-actions}, thêm file workflow, push lên GitHub.
+\item Mở \texttt{PR} sang \texttt{main}, gắn TV1 hoặc TV3 làm reviewer.
+\item Reviewer review code rồi Approve; chờ Actions chạy xong báo tick xanh.
+\item Merge \texttt{PR} rồi xóa nhánh; kiểm tra \texttt{main} vẫn xanh.
+\item Chiếu pipeline xanh và gói artifact lên màn hình lớp.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Bảo mật: secret scanning, Dependabot, CodeQL}
+\begin{itemize}
+\item \textbf{Secret scanning}: quét token và key lộ trong code, chặn push chứa secret mới.
+\item \textbf{Dependabot}: tự mở \texttt{PR} nâng cấp gói NuGet dính lỗi CVE.
+\item \textbf{CodeQL}: phân tích tĩnh, tìm SQL injection và XSS trong code C\#.
+\item Bật cả ba trong mục Security; job thất bại khi phát hiện lỗi nghiêm trọng.
+\end{itemize}
+\end{frame}

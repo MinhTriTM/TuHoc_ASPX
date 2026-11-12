@@ -1,0 +1,217 @@
+\section{Bảng lệnh Git tra cứu nhanh}
+\label{sec:pa-banglenh}
+
+Phụ lục này tổng hợp các lệnh Git dùng thường xuyên nhất trong học phần ASPX,
+sắp xếp theo nhóm công việc từ khởi tạo kho chứa đến thao tác nâng cao.
+Mỗi bảng gồm bốn cột: nhóm công việc, lệnh, mục đích và ví dụ chạy được.
+Sinh viên nên đọc kèm Chương 2 và Chương 3 của báo cáo để hiểu ngữ cảnh sử dụng,
+cùng tài liệu chính thức của Git \cite{progit} và hướng dẫn tham khảo của Atlassian \cite{atlassiangit}.
+
+Hai ví dụ tổng hợp dưới đây minh họa luồng làm việc cơ bản và luồng làm việc theo nhánh
+với project Web Forms. Mọi lệnh đều chạy được trên Git Bash hoặc PowerShell đã cài Git.
+
+\begin{lstlisting}[language=bash]
+# Basic workflow: config once, then add and commit
+git config --global user.name "Nguyen Van A"
+git config --global user.email "nguyenvana@example.com"
+git init AspxDemo
+cd AspxDemo
+git status
+git add .
+git commit -m "feat: khoi tao project ASPX"
+git log --oneline -n 5
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+# Branch workflow: feature branch, merge, push to remote
+git checkout -b feature/login-form
+git add Default.aspx Default.aspx.cs
+git commit -m "feat: them form dang nhap"
+git checkout main
+git merge feature/login-form
+git remote add origin https://github.com/lop-hk/AspxDemo.git
+git push -u origin main
+\end{lstlisting}
+
+\subsection{Nhóm Khởi tạo}
+Tạo kho chứa mới hoặc lấy kho chứa có sẵn về máy trước khi bắt đầu mọi công việc khác.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Khởi tạo & \verb|git init| & Tạo kho Git mới trong thư mục hiện tại & \verb|git init AspxDemo| \\
+Khởi tạo & \verb|git clone <url>| & Sao chép toàn bộ kho chứa từ xa về máy & \verb|git clone --depth 1 <url>| \\
+Khởi tạo & \verb|git config user.name| & Khai báo tên tác giả cho commit & \verb|git config user.name "An"| \\
+Khởi tạo & \verb|git config user.email| & Khai báo email tác giả cho commit & \verb|git config user.email a@b.vn| \\
+Khởi tạo & \verb|git config --list| & Liệt kê toàn bộ cấu hình đang áp dụng & \verb|git config --global --list| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Khởi tạo}
+\label{tab:pa-khoitao}
+\end{table}
+
+\subsection{Nhóm Commit}
+Ghi lại thay đổi theo từng bước nhỏ với thông điệp rõ ràng theo Conventional Commits.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Commit & \verb|git status| & Xem trạng thái Working và Staging & \verb|git status -s| \\
+Commit & \verb|git add <file>| & Đưa một file vào vùng Staging & \verb|git add Default.aspx| \\
+Commit & \verb|git add .| & Đưa mọi thay đổi vào vùng Staging & \verb|git add -A| \\
+Commit & \verb|git commit -m| & Chụp ảnh Staging thành một commit & \verb|git commit -m "feat: login"| \\
+Commit & \verb|git commit --amend| & Sửa commit gần nhất thay vì tạo mới & \verb|git commit --amend --no-edit| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Commit}
+\label{tab:pa-commit}
+\end{table}
+
+\subsection{Nhóm Lịch sử}
+Xem lại quá khứ của kho chứa để hiểu ai đã sửa gì và so sánh các phiên bản.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Lịch sử & \verb|git log| & Xem lịch sử commit dạng đầy đủ & \verb|git log -n 5| \\
+Lịch sử & \verb|git log --oneline| & Xem lịch sử gọn một dòng một commit & \verb|git log --oneline --graph| \\
+Lịch sử & \verb|git diff| & So sánh Working với Staging & \verb|git diff Default.aspx| \\
+Lịch sử & \verb|git diff --staged| & So sánh Staging với commit gần nhất & \verb|git diff --cached| \\
+Lịch sử & \verb|git show <commit>| & Xem chi tiết một commit cụ thể & \verb|git show HEAD~1| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Lịch sử}
+\label{tab:pa-lichsu}
+\end{table}
+
+\subsection{Nhóm Nhánh}
+Mỗi tính năng làm trên một nhánh riêng để tránh đè code khi ba người cùng sửa project.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Nhánh & \verb|git branch| & Liệt kê các nhánh trong kho chứa & \verb|git branch -a| \\
+Nhánh & \verb|git branch <ten>| & Tạo nhánh mới từ HEAD hiện tại & \verb|git branch feature/x| \\
+Nhánh & \verb|git switch <nhanh>| & Chuyển sang nhánh khác an toàn & \verb|git switch main| \\
+Nhánh & \verb|git switch -c <ten>| & Tạo và chuyển ngay sang nhánh mới & \verb|git switch -c feature/y| \\
+Nhánh & \verb|git branch -d <ten>| & Xóa nhánh đã merge xong & \verb|git branch -d feature/x| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Nhánh}
+\label{tab:pa-nhanh}
+\end{table}
+
+\subsection{Nhóm Merge/Rebase}
+Gộp công việc từ các nhánh lại với nhau và xử lý conflict khi hai người sửa cùng một chỗ.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Merge & \verb|git merge <nhanh>| & Gộp nhánh chỉ định vào nhánh hiện tại & \verb|git merge feature/x| \\
+Merge & \verb|git merge --abort| & Hủy bỏ lần merge đang dở dang & \verb|git merge --abort| \\
+Rebase & \verb|git rebase <nhanh>| & Đặt lại commit lên đầu nhánh khác & \verb|git rebase main| \\
+Rebase & \verb|git rebase -i HEAD~3| & Rebase tương tác để gộp và sửa commit & \verb|git rebase -i HEAD~5| \\
+Rebase & \verb|git cherry-pick <c>| & Sao chép một commit sang nhánh hiện tại & \verb|git cherry-pick a1b2c3d| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Merge/Rebase}
+\label{tab:pa-merge}
+\end{table}
+
+\subsection{Nhóm Hoàn tác}
+Sửa sai an toàn: ưu tiên các lệnh tạo commit mới thay vì xóa lịch sử đã chia sẻ.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Hoàn tác & \verb|git restore <file>| & Hủy sửa trong Working về bản commit & \verb|git restore Web.config| \\
+Hoàn tác & \verb|git restore --staged| & Gỡ file khỏi Staging giữ nguyên sửa & \verb|git restore --staged .| \\
+Hoàn tác & \verb|git reset --soft HEAD~1| & Lùi một commit giữ Staging nguyên & \verb|git reset --soft HEAD~2| \\
+Hoàn tác & \verb|git reset --hard HEAD| & Xóa mọi sửa chưa commit về HEAD & \verb|git reset --hard origin/main| \\
+Hoàn tác & \verb|git revert <commit>| & Tạo commit mới đảo ngược commit cũ & \verb|git revert HEAD| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Hoàn tác}
+\label{tab:pa-hoantac}
+\end{table}
+
+\subsection{Nhóm Stash/Tag}
+Cất tạm công việc đang dở và đánh dấu các mốc phiên bản quan trọng của đồ án.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Stash & \verb|git stash push -m| & Cất tạm sửa chưa commit kèm ghi chú & \verb|git stash push -m "wip"| \\
+Stash & \verb|git stash list| & Liệt kê các bản cất tạm đang giữ & \verb|git stash list| \\
+Stash & \verb|git stash pop| & Khôi phục bản cất tạm gần nhất & \verb|git stash pop stash@{0}| \\
+Tag & \verb|git tag <ten>| & Gắn thẻ phiên bản tại commit hiện tại & \verb|git tag v1.0| \\
+Tag & \verb|git tag -a <ten>| & Gắn thẻ có chú thích cho bản phát hành & \verb|git tag -a v1.0 -m "release"| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Stash/Tag}
+\label{tab:pa-stash}
+\end{table}
+
+\subsection{Nhóm Remote}
+Đồng bộ kho chứa nội bộ với GitHub và GitLab để cả nhóm cùng thấy code mới nhất.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Remote & \verb|git remote -v| & Liệt kê các kho chứa từ xa & \verb|git remote -v| \\
+Remote & \verb|git remote add origin| & Gắn kho chứa từ xa tên origin & \verb|git remote add upstream <url>| \\
+Remote & \verb|git fetch| & Tải commit mới về chưa gộp & \verb|git fetch origin| \\
+Remote & \verb|git pull| & Tải về và gộp nhánh từ xa & \verb|git pull --rebase| \\
+Remote & \verb|git push| & Đẩy commit lên kho chứa từ xa & \verb|git push -u origin main| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Remote}
+\label{tab:pa-remote}
+\end{table}
+
+\subsection{Nhóm Nâng cao}
+Các lệnh cứu hộ và dọn dẹp kho chứa khi gặp sự cố hoặc cần kiểm tra lịch sử sâu.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.7cm} p{3.2cm} p{4.5cm} p{4.6cm}}
+\toprule
+Nhóm & Lệnh & Mục đích & Ví dụ \\
+\midrule
+Nâng cao & \verb|git reflog| & Xem lịch sử di chuyển của HEAD & \verb|git reflog -n 10| \\
+Nâng cao & \verb|git bisect start| & Bắt đầu tìm commit gây lỗi & \verb|git bisect bad HEAD| \\
+Nâng cao & \verb|git clean -fd| & Xóa file và thư mục chưa theo dõi & \verb|git clean -fdn| \\
+Nâng cao & \verb|git rm --cached| & Ngừng theo dõi file giữ lại trên đĩa & \verb|git rm --cached app.log| \\
+Nâng cao & \verb|git worktree list| & Liệt kê các cây làm việc đang dùng & \verb|git worktree add ../hotfix| \\
+\bottomrule
+\end{tabular}
+\caption{Bảng lệnh nhóm Nâng cao}
+\label{tab:pa-nangcao}
+\end{table}
+
+Tổng cộng phụ lục này liệt kê 45 lệnh thuộc 9 nhóm công việc, đủ cho sinh viên
+tra cứu nhanh trong suốt quá trình làm đồ án ASPX theo nhóm ba người.

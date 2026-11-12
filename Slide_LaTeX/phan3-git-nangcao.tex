@@ -1,0 +1,98 @@
+\begin{frame}[fragile]{Bên trong Git: blob, tree, commit và SHA}
+\begin{itemize}
+\item \texttt{blob} lưu nội dung file, \texttt{tree} lưu cây thư mục, \texttt{commit} trỏ tới một \texttt{tree}.
+\item Mỗi \texttt{commit} gồm tác giả, thời gian, thông điệp và SHA của \texttt{commit} cha.
+\item SHA-1 định danh mỗi đối tượng: đổi 1 byte thì SHA đổi hoàn toàn.
+\item Ví dụ ASPX: sửa \texttt{Default.aspx} sẽ tạo \texttt{blob} mới và \texttt{commit} mới.
+\item Kiểm tra đối tượng bằng lệnh \texttt{cat-file} như ví dụ dưới đây.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git cat-file -p HEAD
+git cat-file -t HEAD
+git hash-object Default.aspx
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Rebase và merge}
+\begin{itemize}
+\item \texttt{merge} giữ nguyên lịch sử và tạo thêm một \texttt{merge commit}.
+\item \texttt{rebase} viết lại lịch sử thành một đường thẳng, log sạch hơn.
+\item \texttt{merge} an toàn cho nhánh public vì không đổi SHA cũ.
+\item \texttt{rebase} chỉ dùng cho nhánh riêng chưa chia sẻ với ai.
+\item Cấm \texttt{rebase} nhánh public: đổi SHA, gây xung đột cho cả nhóm.
+\end{itemize}
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & merge & rebase \\
+\midrule
+Lịch sử & phân nhánh, trung thực & đường thẳng, sạch \\
+Merge commit & có & không \\
+Xung đột & giải một lần & giải lại từng commit \\
+Dùng khi nào & nhánh public & nhánh riêng \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Cherry-pick và bisect}
+\begin{itemize}
+\item \texttt{cherry-pick} sao chép một \texttt{commit} sang nhánh hiện tại.
+\item Dùng khi cần lấy một bản sửa lỗi mà không \texttt{merge} cả nhánh.
+\item \texttt{bisect} tìm \texttt{commit} gây lỗi bằng tìm kiếm nhị phân.
+\item Kết hợp \texttt{bisect run} với lệnh build để tìm lỗi tự động.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git cherry-pick a1b2c3d
+git cherry-pick --continue
+\end{lstlisting}
+\begin{lstlisting}[language=bash]
+git bisect start
+git bisect bad
+git bisect good v1.0
+git bisect run msbuild AspxDemo.sln
+git bisect reset
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Hooks và LFS}
+\begin{itemize}
+\item \texttt{Hook} là script tự chạy khi \texttt{commit}, \texttt{push} hay \texttt{merge}.
+\item Ví dụ: \texttt{pre-commit} kiểm tra build, \texttt{commit-msg} kiểm tra định dạng.
+\item \texttt{LFS} lưu file lớn như DLL hay ảnh ngoài repo, giữ repo nhẹ.
+\item Trong repo chỉ là con trỏ text, nội dung thật nằm trên server LFS.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+ls .git/hooks
+git lfs track "*.dll"
+git lfs ls-files
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Quy trình nhánh: GitFlow, GitHub Flow, Trunk-Based}
+\begin{itemize}
+\item GitFlow nhiều nhánh, hợp với phát hành theo phiên bản lớn.
+\item GitHub Flow đơn giản: một nhánh \texttt{main} cộng feature và PR.
+\item Trunk-Based commit nhỏ liên tục lên \texttt{main}, đòi hỏi CI mạnh.
+\item Nhóm 3 người làm ASPX 4.8.1 nên chọn GitHub Flow.
+\item Mọi thay đổi đi qua PR với ít nhất một người review.
+\end{itemize}
+\begin{tabular}{lll}
+\toprule
+Quy trình & Nhánh chính & Phù hợp \\
+\midrule
+GitFlow & main, develop, feature & phát hành theo bản \\
+GitHub Flow & main, feature & nhóm nhỏ, web \\
+Trunk-Based & main & CI mạnh, nhịp nhanh \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Conventional Commits}
+\begin{itemize}
+\item Định dạng chung: \texttt{type(scope): mô tả ngắn gọn}.
+\item \texttt{feat(auth): thêm trang đăng nhập Web Forms}
+\item \texttt{fix(config): sửa connection string Web config}
+\item \texttt{docs(slide): bổ sung hình git flow}
+\item \texttt{test(build): thêm test msbuild pipeline}
+\item Lợi ích: log dễ đọc, dễ lọc và tự sinh changelog.
+\end{itemize}
+\end{frame}

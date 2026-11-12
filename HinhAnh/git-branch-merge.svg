@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" font-family="Segoe UI, Arial, sans-serif">
+<rect width="900" height="320" rx="14" fill="#f6f8fa"/>
+<text x="450" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">Nhánh (branch) và hợp nhất (merge)</text>
+<defs><marker id="b" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#8250df"/></marker></defs>
+<rect x="20" y="60" width="90" height="30" rx="15" fill="#1f6feb"/><text x="65" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">main</text>
+<line x1="120" y1="75" x2="860" y2="75" stroke="#1f6feb" stroke-width="3"/>
+<circle cx="180" cy="75" r="12" fill="#fff" stroke="#1f6feb" stroke-width="3"/><text x="180" y="79" text-anchor="middle" font-size="10" font-weight="700" fill="#1f6feb">A</text>
+<circle cx="320" cy="75" r="12" fill="#fff" stroke="#1f6feb" stroke-width="3"/><text x="320" y="79" text-anchor="middle" font-size="10" font-weight="700" fill="#1f6feb">B</text>
+<circle cx="800" cy="75" r="14" fill="#1f6feb"/><text x="800" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">M</text>
+<text x="800" y="105" text-anchor="middle" font-size="12" fill="#1f6feb">merge commit</text>
+<rect x="20" y="150" width="150" height="30" rx="15" fill="#8250df"/><text x="95" y="170" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">feature/login-aspx</text>
+<path d="M320,75 C320,150 300,165 250,165 L700,165 C740,165 770,120 795,88" fill="none" stroke="#8250df" stroke-width="3" marker-end="url(#b)"/>
+<circle cx="420" cy="165" r="12" fill="#fff" stroke="#8250df" stroke-width="3"/><text x="420" y="169" text-anchor="middle" font-size="10" font-weight="700" fill="#8250df">C1</text>
+<circle cx="560" cy="165" r="12" fill="#fff" stroke="#8250df" stroke-width="3"/><text x="560" y="169" text-anchor="middle" font-size="10" font-weight="700" fill="#8250df">C2</text>
+<text x="420" y="195" text-anchor="middle" font-size="12" fill="#1f2328">Login.aspx</text>
+<text x="560" y="195" text-anchor="middle" font-size="12" fill="#1f2328">Login.aspx.cs</text>
+<rect x="30" y="220" width="840" height="80" rx="10" fill="#fff" stroke="#d1d9e0" stroke-width="1.5"/>
+<text x="50" y="245" font-size="13" font-family="Consolas, monospace" fill="#1f2328">git checkout -b feature/login-aspx  # tách nhánh từ main tại B</text>
+<text x="50" y="267" font-size="13" font-family="Consolas, monospace" fill="#1f2328">git commit -m "feat: form dang nhap"  # C1, C2 chỉ nằm trên nhánh feature</text>
+<text x="50" y="289" font-size="13" font-family="Consolas, monospace" fill="#1f2328">git checkout main + git merge feature/login-aspx  # tạo M, giữ nguyên C1-C2</text>
+</svg>

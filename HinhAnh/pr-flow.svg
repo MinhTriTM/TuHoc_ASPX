@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="300" viewBox="0 0 920 300" font-family="Segoe UI, Arial, sans-serif">
+<rect width="920" height="300" rx="14" fill="#f6f8fa"/>
+<text x="460" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">Luồng Pull Request (GitHub) / Merge Request (GitLab)</text>
+<defs><marker id="p" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1f2328"/></marker></defs>
+<rect x="20" y="70" width="130" height="90" rx="10" fill="#ddf4ff" stroke="#1f6feb" stroke-width="2"/>
+<text x="85" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#1f6feb">1. Push nhánh</text>
+<text x="85" y="116" text-anchor="middle" font-size="12" fill="#1f2328">git push origin</text>
+<text x="85" y="134" text-anchor="middle" font-size="12" fill="#1f2328">feature/tv2-...</text>
+<rect x="180" y="70" width="130" height="90" rx="10" fill="#fbefff" stroke="#8250df" stroke-width="2"/>
+<text x="245" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#8250df">2. Mở PR/MR</text>
+<text x="245" y="116" text-anchor="middle" font-size="12" fill="#1f2328">mô tả + gán</text>
+<text x="245" y="134" text-anchor="middle" font-size="12" fill="#1f2328">reviewer</text>
+<rect x="340" y="70" width="130" height="90" rx="10" fill="#fff8c5" stroke="#9a6700" stroke-width="2"/>
+<text x="405" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#9a6700">3. Review code</text>
+<text x="405" y="116" text-anchor="middle" font-size="12" fill="#1f2328">comment +</text>
+<text x="405" y="134" text-anchor="middle" font-size="12" fill="#1f2328">approve/changes</text>
+<rect x="500" y="70" width="150" height="90" rx="10" fill="#ffebe9" stroke="#cf222e" stroke-width="2"/>
+<text x="575" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#cf222e">4. CI phải xanh</text>
+<text x="575" y="116" text-anchor="middle" font-size="12" fill="#1f2328">msbuild + test</text>
+<text x="575" y="134" text-anchor="middle" font-size="12" fill="#1f2328">ASPX 4.8.1</text>
+<rect x="680" y="70" width="130" height="90" rx="10" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+<text x="745" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#1a7f37">5. Merge</text>
+<text x="745" y="116" text-anchor="middle" font-size="12" fill="#1f2328">squash / merge</text>
+<text x="745" y="134" text-anchor="middle" font-size="12" fill="#1f2328">+ xoá nhánh</text>
+<line x1="152" y1="115" x2="176" y2="115" stroke="#1f2328" stroke-width="2" marker-end="url(#p)"/>
+<line x1="312" y1="115" x2="336" y2="115" stroke="#1f2328" stroke-width="2" marker-end="url(#p)"/>
+<line x1="472" y1="115" x2="496" y2="115" stroke="#1f2328" stroke-width="2" marker-end="url(#p)"/>
+<line x1="652" y1="115" x2="676" y2="115" stroke="#1f2328" stroke-width="2" marker-end="url(#p)"/>
+<path d="M405,162 C405,210 245,190 245,162" fill="none" stroke="#9a6700" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#p)"/>
+<text x="325" y="205" text-anchor="middle" font-size="12" fill="#9a6700">yêu cầu sửa → push thêm commit → review lại</text>
+<rect x="30" y="225" width="860" height="55" rx="8" fill="#fff" stroke="#d1d9e0" stroke-width="1.5"/>
+<text x="460" y="248" text-anchor="middle" font-size="13" fill="#1f2328">Protected branch chặn: push thẳng, merge khi chưa đủ approve, merge khi CI đỏ.</text>
+<text x="460" y="269" text-anchor="middle" font-size="13" fill="#1f2328">GitLab gọi là Merge Request + Approval rules; GitHub gọi là Pull Request + Required reviews.</text>
+</svg>

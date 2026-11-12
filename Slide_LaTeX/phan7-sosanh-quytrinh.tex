@@ -1,0 +1,115 @@
+\begin{frame}{Git, GitHub, GitLab khác nhau thế nào?}
+\begin{itemize}
+\item Git là công cụ quản lý phiên bản phân tán, chạy trên máy cá nhân.
+\item GitHub và GitLab là máy chủ chứa repo, cộng thêm cộng tác và CI/CD.
+\item Một project dùng Git ở local, đẩy lên GitHub hoặc GitLab để chia sẻ.
+\item Hiểu đúng: Git là nền tảng bắt buộc, GitHub và GitLab là lựa chọn bổ sung.
+\end{itemize}
+{\small
+\begin{tabular}{@{}p{2.0cm}p{3.4cm}p{4.2cm}@{}}
+\toprule
+Khía cạnh & Git & GitHub, GitLab \\
+\midrule
+Bản chất & Tool dòng lệnh & Dịch vụ hosting và cộng tác \\
+Nơi chạy & Máy cá nhân & Cloud hoặc self-host \\
+Lịch sử & Đầy đủ trong .git & Nhân bản cộng thêm PR, MR, CI \\
+Ví dụ & \texttt{git log} tại local & Mở PR trên web để review \\
+\bottomrule
+\end{tabular}}
+\end{frame}
+
+\begin{frame}{GitHub và GitLab: 8 tiêu chí cho đồ án}
+\begin{itemize}
+\item Bảng dưới so sánh 8 điểm ảnh hưởng trực tiếp tới đồ án ASPX.
+\item Nhóm môn học ưu tiên: miễn phí, CI dễ học, review nhanh.
+\item Cả hai đều hỗ trợ repo private miễn phí cho sinh viên.
+\item Chốt nhanh: chọn một nền tảng chính, mirror sang nền tảng còn lại.
+\end{itemize}
+{\footnotesize
+\renewcommand{\arraystretch}{0.9}
+\begin{tabular}{@{}p{2.6cm}p{3.3cm}p{3.7cm}@{}}
+\toprule
+Tiêu chí & GitHub & GitLab \\
+\midrule
+Giá sinh viên & Free và Education pack & Free và Ultimate giáo dục \\
+CI cho ASPX 4.8.1 & Actions, runner Windows & Pipeline, runner Windows \\
+Review code & PR và rulesets & MR và approval rules \\
+Quản lý việc & Issues, Projects & Issues, Boards, Epics \\
+Bảo mật & Dependabot, CodeQL & SAST, secret detection \\
+Self-host & Không, chỉ cloud & Có, bản community \\
+Tài liệu mẫu & Rất nhiều ví dụ & Đầy đủ, gắn DevOps \\
+Phù hợp ASPX & Tốt, Actions dễ học & Tốt, pipeline mạnh \\
+\bottomrule
+\end{tabular}}
+\end{frame}
+
+\begin{frame}[fragile]{Nên chọn nền tảng nào cho đồ án?}
+\begin{itemize}
+\item Khuyến nghị 1: chọn GitHub làm chính nếu nhóm mới học CI lần đầu.
+\item Khuyến nghị 2: chọn GitLab làm chính nếu muốn pipeline nhiều stage và review chặt.
+\item Khuyến nghị 3: dùng chính một nơi, mirror sang nơi còn lại để dự phòng.
+\item Mọi ví dụ ASPX 4.8.1 đều build bằng runner Windows và \texttt{msbuild}.
+\item Thầy cô chấm nhanh nhờ link PR hoặc MR cộng với pipeline xanh.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+# mirror GitHub -> GitLab (backup)
+git remote add gitlab <gitlab-url>
+git push gitlab main --tags
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Quy trình 3 người: main, develop, feature}
+\begin{itemize}
+\item Luật 1: cấm push thẳng \texttt{main} và \texttt{develop}, mọi đổi phải qua PR hoặc MR.
+\item Luật 2: mỗi PR cần một người review và pipeline xanh mới được merge.
+\item Luật 3: đặt tên nhánh \texttt{feature/ten-viec}, commit theo Conventional Commits.
+\item TV1 giữ \texttt{develop} ổn định, TV2 và TV3 làm trên nhánh feature riêng.
+\item Conflict file \texttt{Web.config}: người tạo PR tự merge bản mới nhất rồi sửa.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+# so do nhanh: main <- develop <- feature
+main    :  o--------o--------o  (release)
+develop :  o---o---o----o---o  (integration)
+feature :   \o/      \o/  (1 branch / person)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Review checklist và quản lý secret}
+\begin{columns}[t]
+\column{0.48\textwidth}
+Checklist review:
+\begin{itemize}
+\item Code build sạch, không warning mới, test chính pass.
+\item Không còn marker conflict, đã tự review diff trước khi nhờ review.
+\item Cập nhật ghi chú ngắn để thầy cô hiểu đổi gì, vì sao.
+\end{itemize}
+\column{0.48\textwidth}
+Quản lý secret:
+\begin{itemize}
+\item Không commit connection string thật, mật khẩu, file publish.
+\item Dùng biến môi trường và secret của CI cho \texttt{Web.config} khi build.
+\item Lỡ lộ secret: thu hồi ngay, xóa lịch sử, báo thầy cô.
+\end{itemize}
+\end{columns}
+\begin{lstlisting}[language=bash]
+# remove leaked config from history
+git rm --cached Web.config
+git commit -m "fix: stop tracking local config"
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Bài tập về nhà}
+\begin{itemize}
+\item Bài 1 (Git local): tạo nhánh \texttt{feature/them-trang}, commit 3 lần, merge vào \texttt{develop}.
+\item Bài 2 (PR và CI): mở PR, nhờ bạn review, pipeline build \texttt{msbuild} phải xanh.
+\item Bài 3 (Secret): chuyển connection string vào secret của CI, chứng minh lịch sử sạch.
+\item Nộp link PR hoặc MR kèm ảnh pipeline xanh trước buổi sau.
+\item Chấm điểm: đúng quy trình 40, CI xanh 30, review chất 30.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+# starter for homework
+git checkout -b feature/them-trang
+git log --oneline -5
+git push -u origin feature/them-trang
+\end{lstlisting}
+\end{frame}

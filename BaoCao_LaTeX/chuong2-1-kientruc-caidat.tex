@@ -1,0 +1,229 @@
+\section{Git căn bản}
+\label{sec:c2-1-git-can-ban}
+
+Git là hệ thống quản lý phiên bản phân tán phổ biến nhất hiện nay, được dùng làm nền tảng cho toàn bộ quy trình nhóm trong học phần ASPX: từ lưu trữ source code Web Forms, review bài qua pull request, đến tự động build project .NET Framework 4.8.1 trên GitHub Actions và GitLab CI. Hiểu đúng bản chất phân tán của Git giúp sinh viên tránh các lỗi kinh điển như ghi đè code của nhau, mất lịch sử sửa file \texttt{Web.config}, hay đẩy nhầm connection string lên kho chứa chung \cite{progit}.
+
+Chương này gồm ba phần. Mục~\ref{subsec:c2-1-lich-su} ôn lại lịch sử ra đời của Git và lý do mô hình phân tán thắng thế trước SVN hay CVS. Mục~\ref{subsec:c2-1-ba-vung} mổ xẻ kiến trúc ba vùng và cấu trúc thư mục \texttt{.git}. Mục~\ref{subsec:c2-1-cai-dat} hướng dẫn cài đặt Git trên ba hệ điều hành và cấu hình chuẩn cho một project ASPX mới.
+
+\subsection{Lịch sử Git và mô hình phân tán}
+\label{subsec:c2-1-lich-su}
+
+Git ra đời năm 2005 khi Linus Torvalds, tác giả nhân Linux, cần một công cụ quản lý phiên bản mới cho kernel sau khi dự án ngừng sử dụng hệ thống độc quyền BitKeeper. Yêu cầu đặt ra rất khắt khe: tốc độ cực nhanh với kho chứa hàng chục nghìn file, hỗ trợ hàng trăm nhánh phát triển song song, bảo đảm toàn vẹn dữ liệu tuyệt đối, và cho phép làm việc phân tán hoàn toàn \cite{progit}. Chỉ trong vài tuần, Torvalds đã hiện thực nhân đầu tiên của Git, rồi cộng đồng kernel tiếp tục hoàn thiện thành công cụ chuẩn mực như ngày nay.
+
+Bốn mục tiêu thiết kế cốt lõi của Git có thể tóm tắt như sau:
+
+\begin{itemize}
+\item Tốc độ: mọi thao tác thường dùng như xem lịch sử, so sánh phiên bản hay chuyển nhánh đều chạy cục bộ, nhanh hơn hẳn mô hình phải hỏi máy chủ qua mạng.
+\item Thiết kế đơn giản mà tin cậy: dữ liệu được mô hình hóa thành đồ thị các đối tượng bất biến, mỗi đối tượng định danh bằng mã băm SHA-1 của chính nội dung của nó.
+\item Hỗ trợ phát triển phi tuyến tính: tạo nhánh gần như tức thời, khuyến khích mỗi tính năng hay mỗi bản sửa lỗi đi trên một nhánh riêng rồi hợp nhất lại.
+\item Phân tán hoàn toàn: không có khái niệm máy khách yếu, mọi bản sao đều là một kho chứa đầy đủ, ngang hàng với nhau.
+\end{itemize}
+
+Điểm khác biệt căn bản giữa Git và các hệ thống tập trung như CVS hay SVN nằm ở chỗ đặt lịch sử. Với SVN, lịch sử duy nhất nằm trên máy chủ: muốn xem một phiên bản cũ hay tạo nhánh, máy trạm bắt buộc phải kết nối mạng. Với Git, lệnh \verb|git clone| tải về toàn bộ lịch sử, nên sinh viên có thể commit, tạo nhánh, xem log hay so sánh khác biệt ngay cả khi mất mạng trong phòng lab. Mỗi bản sao vì thế vừa là môi trường làm việc, vừa là một bản backup sống của cả dự án.
+
+Với đồ án ASPX của nhóm ba người, tính phân tán mang lại ba lợi ích trực tiếp. Thứ nhất, mỗi thành viên tự do commit nháp trên máy cá nhân rồi mới đẩy lên kho chứa chung khi code đã chạy. Thứ hai, nhóm có thể gắn nhiều remote song song, ví dụ vừa đẩy lên GitHub để chạy Actions, vừa mirror sang GitLab để chạy pipeline dự phòng. Thứ ba, rủi ro mất code vì hỏng một máy hay xóa nhầm kho chứa trên cloud giảm hẳn, vì bất kỳ bản clone nào cũng đủ sức dựng lại toàn bộ lịch sử \cite{atlassiangit}.
+
+Bảng~\ref{tab:c2-1-so-sanh} tổng hợp sự khác nhau giữa Git và hai hệ thống tập trung tiêu biểu theo năm tiêu chí quan trọng nhất \cite{progit}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{3.2cm}p{4.2cm}p{4.2cm}}
+\toprule
+Tiêu chí & Git & SVN và CVS \\
+\midrule
+Mô hình lưu trữ & Phân tán: mỗi bản sao chứa toàn bộ lịch sử và metadata & Tập trung: lịch sử duy nhất nằm trên máy chủ \\
+Làm việc ngoại tuyến & Đầy đủ: commit, branch, log, diff đều chạy cục bộ & Hạn chế: hầu hết thao tác cần kết nối máy chủ \\
+Nhánh và hợp nhất & Nhánh cực nhẹ, tạo trong tích tắc; merge là việc hằng ngày & Nhánh nặng nề, merge tốn kém và dễ phát sinh lỗi \\
+Toàn vẹn dữ liệu & Mọi đối tượng băm SHA-1, đổi một byte là lộ ngay & Kiểm tra toàn vẹn yếu hơn, dễ lệch phiên bản \\
+Tốc độ thao tác & Rất nhanh nhờ làm việc cục bộ và nén hiệu quả & Chậm hơn do phụ thuộc mạng và tải máy chủ \\
+\bottomrule
+\end{tabular}
+\caption{So sánh Git với SVN và CVS theo năm tiêu chí}
+\label{tab:c2-1-so-sanh}
+\end{table}
+
+Tóm lại, Git thắng thế không chỉ vì miễn phí hay phổ biến, mà vì mô hình phân tán khớp với cách làm phần mềm hiện đại: phát triển song song, review chéo qua mạng, tích hợp liên tục. Nắm được tinh thần này, sinh viên sẽ thấy các lệnh ở mục tiếp theo không còn là thao tác rời rạc mà là những bước di chuyển dữ liệu có chủ đích giữa ba vùng của Git.
+
+\subsection{Kiến trúc 3 vùng và thư mục .git}
+\label{subsec:c2-1-ba-vung}
+
+Mọi file trong project Git luôn nằm ở một trong ba vùng. Working Directory là thư mục làm việc mà sinh viên nhìn thấy và sửa trực tiếp trong Visual Studio, ví dụ các file \texttt{Default.aspx}, code-behind C\# hay \texttt{Web.config}. Staging Area, còn gọi là Index, là vùng đệm liệt kê chính xác những thay đổi sẽ đi vào phiên bản kế tiếp. Repository là cơ sở dữ liệu lịch sử nằm trong thư mục \texttt{.git}, nơi mỗi phiên bản được lưu bất biến dưới dạng một commit gắn với mã băm SHA-1.
+
+Luồng dữ liệu chuẩn chỉ gồm hai bước. Lệnh \verb|git add| chép nội dung đã chọn từ Working Directory lên Staging Area. Lệnh \verb|git commit| đóng gói toàn bộ Staging Area thành một commit mới trong Repository và gắn nhãn tác giả, thời điểm, thông điệp. Hình~\ref{fig:c2-1-ba-vung} minh họa luồng hai bước này cùng thao tác \texttt{checkout} đưa nội dung từ Repository trở lại Working Directory khi cần quay về phiên bản cũ.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.8cm, minimum height=1.1cm, align=center, font=\small}]
+\node[box] (work) {Working\\Directory};
+\node[box, right=1.0cm of work] (stage) {Staging\\Area};
+\node[box, right=1.0cm of stage] (repo) {Repository\\\texttt{.git}};
+\draw[->] (work) -- node[midway, above, font=\footnotesize] {\texttt{add}} (stage);
+\draw[->] (stage) -- node[midway, above, font=\footnotesize] {\texttt{commit}} (repo);
+\draw[->, dashed] (repo) to[bend right=18] node[midway, below, font=\footnotesize] {\texttt{checkout}} (work);
+\end{tikzpicture}
+\caption{Luồng dữ liệu giữa ba vùng trong Git}
+\label{fig:c2-1-ba-vung}
+\end{figure}
+
+Điểm hay nhất của Staging Area là cho phép commit từng phần: sinh viên sửa hai chức năng trong cùng một file nhưng vẫn có thể đưa từng phần lên Index bằng lệnh \verb|git add -p| rồi tạo hai commit gọn gàng với hai thông điệp khác nhau. Lệnh \verb|git status| cho biết file nào đang nằm ở vùng nào, còn lệnh \verb|git diff| so sánh Working Directory với Staging Area trong khi \verb|git diff --staged| so sánh Staging Area với commit gần nhất. Thói quen đọc kỹ output của \verb|git status| trước mỗi commit giúp tránh đưa nhầm file rác như \texttt{bin}, \texttt{obj} hay \texttt{packages} vào lịch sử.
+
+Để thấy ba vùng bằng mắt thường, sinh viên chỉ cần mở project ASPX mẫu đã khởi tạo Git rồi liệt kê thư mục \texttt{.git} như trong Liệt kê~\ref{lst:c2-1-dot-git}. Mọi chú thích trong khối lệnh đều viết không dấu theo đúng quy định ASCII của môi trường liệt kê.
+
+\begin{lstlisting}[language=bash, caption={Khám phá thư mục .git trong project ASPX mẫu}, label={lst:c2-1-dot-git}]
+cd AspxDemo-NET481
+ls .git
+# output: HEAD config description hooks index info logs objects refs
+cat .git/HEAD
+# output: ref: refs/heads/main
+cat .git/config
+# output shows remote origin url and branch main settings
+git status --short
+git log --oneline -5
+\end{lstlisting}
+
+Ý nghĩa của từng thành phần chính trong thư mục \texttt{.git} như sau:
+
+\begin{description}
+\item[objects] Kho chứa toàn bộ dữ liệu nội dung dưới dạng blob, tree và commit, mỗi đối tượng đặt tên theo mã băm SHA-1 của chính nó.
+\item[refs] Các con trỏ nhẹ trỏ tới commit: \texttt{refs/heads} giữ đầu các nhánh local còn \texttt{refs/tags} giữ các thẻ phiên bản.
+\item[HEAD] Con trỏ đặc biệt cho biết nhánh hiện tại đang checkout, thường là tham chiếu dạng \texttt{ref: refs/heads/main}.
+\item[config] File cấu hình riêng của kho chứa: địa chỉ remote, nhánh mặc định, thông tin người dùng ghi đè cấu hình toàn cục.
+\item[index] File nhị phân hiện thực Staging Area, ghi lại chính xác nội dung sẽ đi vào commit kế tiếp.
+\item[logs] Nhật ký di chuyển của HEAD và các nhánh, là dữ liệu thô để lệnh \texttt{reflog} cứu hộ commit tưởng đã mất.
+\item[hooks] Thư mục chứa script mẫu kích hoạt trước hoặc sau các sự kiện như commit và push, dùng để kiểm tra code tự động.
+\end{description}
+
+Xét ví dụ cụ thể với project ASPX: sinh viên sửa chuỗi kết nối trong file \texttt{Web.config} rồi chạy lệnh \verb|git add Web.config|. Lúc này Git băm nội dung mới, lưu một blob vào \texttt{objects} và ghi đường dẫn vào \texttt{index}, nhưng con trỏ \texttt{refs/heads/main} vẫn đứng yên. Khi chạy tiếp lệnh \verb|git commit -m "docs: sua chuoi ket noi co so du lieu"|, Git tạo một commit mới trỏ về commit cha trước đó rồi dời \texttt{refs/heads/main} tới commit vừa tạo. Nhờ đó lịch sử luôn là một chuỗi có thể truy vết ngược, và thao tác \verb|git log| chỉ đơn giản là đi ngược từ \texttt{HEAD} về quá khứ \cite{progit}.
+
+Một lưu ý thực hành: thư mục \texttt{.git} chính là toàn bộ kho chứa, nên chép cả thư mục project kèm \texttt{.git} sang máy khác tương đương với clone đầy đủ lịch sử. Ngược lại, xóa thư mục \texttt{.git} đồng nghĩa với việc bỏ quản lý phiên bản và mất toàn bộ lịch sử local, vì vậy tuyệt đối không xóa khi chưa đẩy code lên remote. Quy tắc này đặc biệt quan trọng trước mỗi buổi demo, khi sinh viên hay dọn dẹp thư mục một cách vội vàng.
+
+\subsection{Cài đặt và cấu hình đầu tiên}
+\label{subsec:c2-1-cai-dat}
+
+Trước khi cài mới, sinh viên nên kiểm tra Git đã có sẵn chưa bằng lệnh \verb|git --version|. Nếu máy báo nhận diện được phiên bản từ 2.x trở lên thì có thể dùng ngay. Nếu chưa có, cách nhanh nhất là tải bộ cài chính thức từ trang chủ tại \url{https://git-scm.com} hoặc dùng trình quản lý gói của từng hệ điều hành như trong Liệt kê~\ref{lst:c2-1-cai-dat}. Trên Windows, bộ cài Git for Windows đi kèm công cụ Git Bash mô phỏng môi trường dòng lệnh Linux, rất tiện để chạy thống nhất mọi ví dụ trong báo cáo này.
+
+\begin{lstlisting}[language=bash, caption={Cài đặt Git trên Windows, Linux và macOS}, label={lst:c2-1-cai-dat}]
+# Windows (PowerShell, dung winget)
+winget install --id Git.Git -e --source winget
+# Windows (lua chon khac voi Chocolatey)
+choco install git -y
+# Ubuntu/Debian
+sudo apt update && sudo apt install -y git
+# Fedora
+sudo dnf install -y git
+# macOS (dung Homebrew)
+brew install git
+# kiem tra phien ban sau khi cai
+git --version
+\end{lstlisting}
+
+Cài xong, việc bắt buộc đầu tiên là khai báo danh tính, vì mỗi commit Git đều ghi vĩnh viễn tên và email của tác giả. Sinh viên nên dùng họ tên thật và email trường cấp để giảng viên đối chiếu công sức đóng góp khi chấm điểm dựa trên lịch sử commit. Hai khóa cấu hình toàn cục \verb|user.name| và \verb|user.email| phục vụ đúng mục đích này, còn \verb|init.defaultBranch| đặt tên nhánh mặc định là \texttt{main} cho mọi kho chứa mới, thống nhất với quy ước hiện hành của GitHub và GitLab.
+
+Với project ASPX trên .NET Framework 4.8.1 \cite{msnetfx}, khóa \verb|core.autocrlf| cũng rất đáng quan tâm. Visual Studio trên Windows lưu file văn bản với ký tự xuống dòng CRLF, trong khi kho chứa Git chuẩn hóa về LF để tránh nhiễu khi so sánh khác biệt. Đặt \verb|core.autocrlf| thành \texttt{true} trên Windows giúp Git tự chuyển đổi hai chiều một cách trong suốt, còn trên Linux và macOS nên đặt \texttt{input} để chỉ chuẩn hóa khi commit\footnote{Trên Windows dùng giá trị \texttt{true}, trên Linux và macOS dùng giá trị \texttt{input}; không bao giờ đặt \texttt{false} cho project nhóm vì mỗi thành viên sẽ sinh ra diff rác do khác ký tự xuống dòng.}.
+
+Liệt kê~\ref{lst:c2-1-cau-hinh} minh họa toàn bộ quy trình cấu hình lần đầu, khởi tạo kho chứa trống bằng lệnh \verb|git init| và nhân bản một kho chứa có sẵn bằng lệnh \verb|git clone|.
+
+\begin{lstlisting}[language=bash, caption={Cấu hình đầu tiên, khởi tạo và nhân bản kho chứa}, label={lst:c2-1-cau-hinh}]
+git config --global user.name "Nguyen Van A"
+git config --global user.email "nguyenvana@example.com"
+git config --global init.defaultBranch main
+git config --global core.autocrlf true
+git config --global --list
+mkdir AspxDemo-NET481
+cd AspxDemo-NET481
+git init
+git status
+cd ..
+git clone https://github.com/example-org/AspxDemo-NET481.git
+cd AspxDemo-NET481
+git log --oneline -3
+git remote -v
+\end{lstlisting}
+
+Hai lệnh cuối trong liệt kê trên đại diện cho hai cách bắt đầu khác nhau nhưng bổ trợ cho nhau. Lệnh \verb|git init| tạo một kho chứa hoàn toàn mới: Git sinh thư mục \texttt{.git} rỗng với nhánh mặc định \texttt{main} và chưa có commit nào, phù hợp khi nhóm khởi động project ASPX từ con số không trong Visual Studio. Lệnh \verb|git clone| ngược lại tải về toàn bộ lịch sử của một kho chứa đã tồn tại kèm remote \texttt{origin} trỏ về địa chỉ gốc, phù hợp khi thành viên mới gia nhập nhóm giữa chừng.
+
+Ý nghĩa chi tiết của từng khóa cấu hình trong Liệt kê~\ref{lst:c2-1-cau-hinh} như sau:
+
+\begin{description}
+\item[user.name] Tên tác giả gắn vào mọi commit, nên đặt họ tên thật trùng với tên thành viên trong file phân công nhóm.
+\item[user.email] Email tác giả gắn vào mọi commit, nên dùng email trường cấp để đồng bộ thống kê đóng góp trên GitHub và GitLab.
+\item[init.defaultBranch] Tên nhánh khởi tạo cho kho chứa mới, đặt \texttt{main} để khớp với nhánh mặc định của các dịch vụ cloud hiện nay.
+\item[core.autocrlf] Chế độ chuẩn hóa ký tự xuống dòng, đặt \texttt{true} trên Windows và \texttt{input} trên Linux hay macOS cho project nhóm.
+\end{description}
+
+\subsubsection{Mức cấu hình và danh sách kiểm tra sau cài đặt}
+\label{subsubsec:c2-1-muc-cau-hinh}
+
+Git quản lý cấu hình theo ba mức xếp chồng.
+Mức system áp dụng cho mọi người dùng trên máy, lưu trong file cài đặt chung của Git.
+Mức global áp dụng cho mọi kho chứa của người dùng hiện tại, lưu trong file \texttt{.gitconfig} ở thư mục home.
+Mức local chỉ áp dụng cho một kho chứa duy nhất, lưu trong file \texttt{config} của thư mục \texttt{.git}.
+Mức local thắng global và global thắng system.
+Nhờ đó nhóm có thể đặt email trường học ở mức global, rồi ghi đè email riêng cho một repo bằng lệnh \verb|git config user.email| không kèm cờ \verb|--global|.
+Lệnh \verb|git config --list --show-origin| liệt kê toàn bộ cấu hình hiệu lực kèm file nguồn của từng dòng.
+Dòng nào bất ngờ đều truy được về đúng file để sửa, thay vì đoán mò.
+
+Sau khi chạy xong các lệnh cấu hình, sinh viên nên đi qua danh sách kiểm tra sau trước khi bắt tay vào code:
+
+\begin{enumerate}
+\item Lệnh \verb|git --version| in ra phiên bản 2.x.
+Chứng tỏ Git đã nằm trong biến môi trường PATH và chạy được từ mọi thư mục.
+\item Lệnh \verb|git config --global user.name| và \verb|git config --global user.email| trả về đúng họ tên và email đã khai báo.
+\item Lệnh \verb|git config --global init.defaultBranch| trả về \texttt{main}.
+Bảo đảm kho chứa mới không còn dùng tên nhánh cũ \texttt{master}.
+\item Lệnh \verb|git config --global core.autocrlf| trả về \texttt{true} trên Windows hoặc \texttt{input} trên Linux và macOS.
+\item Tạo thử một thư mục tạm, chạy \verb|git init| rồi \verb|git status|.
+Kết quả mong đợi là thông báo nhánh \texttt{main} sạch, không báo lỗi.
+\end{enumerate}
+
+Ngoài ra, sinh viên mới thường nhầm lẫn Git với GitHub.
+Git là công cụ quản lý phiên bản chạy trên máy local, hoạt động tốt ngay cả khi không có mạng.
+GitHub và GitLab là các dịch vụ lưu trữ và cộng tác trên cloud.
+Chúng cung cấp thêm pull request, review code và pipeline CI \cite{githubdocs} \cite{gitlabdocs}.
+Hiểu đúng ranh giới này giúp nhóm phân công hợp lý.
+Thành thạo Git local trước, rồi mới học cộng tác nhóm qua GitHub và GitLab ở các chương sau.
+
+\subsubsection{Commit đầu tiên cho project ASPX mẫu}
+\label{subsubsec:c2-1-commit-dau-tien}
+
+Với kho chứa vừa khởi tạo, trình tự năm bước sau tạo nên commit đầu tiên đúng chuẩn nhóm.
+Thứ nhất, tạo file solution và project Web Forms bằng Visual Studio 2022 với target .NET Framework 4.8.1 theo đúng yêu cầu học phần \cite{msnetfx}.
+Thứ hai, thêm file \texttt{.gitignore} chuẩn cho ASP.NET.
+File này loại ngay các thư mục \texttt{bin}, \texttt{obj}, \texttt{packages} và thư mục \texttt{.vs} khỏi tầm theo dõi của Git.
+Thứ ba, chạy lệnh \verb|git status| để đọc danh sách file Git đề xuất.
+Cần kiểm tra không còn file rác hay file chứa secret trước khi đi tiếp.
+Thứ tư, chạy lệnh \verb|git add -A| để đưa toàn bộ file hợp lệ lên Staging Area.
+Chạy lại \verb|git status| để xác nhận vùng đệm đúng ý.
+Thứ năm, chạy lệnh commit kèm thông điệp rõ ràng, ví dụ \verb|git commit -m "feat: khoi tao project ASPX 4.8.1"|.
+Kiểm tra kết quả bằng lệnh \verb|git log --oneline| và \verb|git show --stat|.
+
+Một kiểm tra nâng cao sau commit đầu tiên là xác nhận ký tự xuống dòng đã chuẩn hóa đúng.
+Lệnh \verb|git ls-files --eol| liệt kê từng file kèm định dạng trong Working Directory và trong Index.
+Nếu cột Index toàn \texttt{lf} trong khi cột Working Directory hiển thị \texttt{crlf} trên máy Windows thì cấu hình \verb|core.autocrlf| đã đúng.
+Commit đầu tiên chỉ nên gồm file solution, file project và \texttt{.gitignore}.
+Tuyệt đối chưa đưa thư mục \texttt{bin} hay \texttt{obj} vào lịch sử.
+Từ commit thứ hai trở đi, mỗi thay đổi logic đi kèm một commit riêng với thông điệp mô tả đúng việc đã làm.
+Thói quen này tạo tiền đề cho kỹ thuật nhánh và review code ở các chương sau.
+
+\subsubsection{Ghi nhớ credential và ba lỗi cấu hình phổ biến}
+\label{subsubsec:c2-1-credential-loi}
+
+Khi clone và đẩy code qua HTTPS, Git hỏi username và mật khẩu ở lần đầu tiên.
+Trên GitHub hiện nay, mật khẩu tài khoản không còn dùng được cho Git qua HTTPS.
+Sinh viên phải tạo Personal Access Token và dùng token thay cho mật khẩu.
+Lệnh \verb|git config --global credential.helper manager| bật kho credential của hệ điều hành để chỉ nhập token một lần duy nhất.
+
+Ba lỗi cấu hình phổ biến nhất của sinh viên năm nhất như sau:
+
+\begin{itemize}
+\item Quên khai báo danh tính nên commit gắn email mặc định của máy, khiến thống kê đóng góp trên GitHub không nhận ra tác giả.
+Cách sửa là khai báo lại \verb|user.name| và \verb|user.email|, rồi sửa commit gần nhất bằng \verb|git commit --amend --reset-author|.
+\item Đặt \verb|core.autocrlf| thành \texttt{false} khiến mỗi thành viên sinh ra diff rác do khác ký tự xuống dòng.
+Cách sửa là đặt lại đúng giá trị theo hệ điều hành rồi chuẩn hóa kho chứa bằng \verb|git add --renormalize .|.
+\item Clone bằng địa chỉ SSH khi chưa tạo SSH key nên Git báo lỗi quyền truy cập.
+Cách đơn giản nhất cho người mới là dùng địa chỉ HTTPS kèm Personal Access Token thay vì SSH.
+\end{itemize}
+
+Ghi nhớ ba lỗi trên giúp buổi lab đầu tiên trôi chảy, không ai bị kẹt ở bước đăng nhập hay commit lỗi tác giả.
+
+Sau khi cấu hình xong, sinh viên nên kiểm tra lại bằng lệnh \verb|git config --global --list| và chạy thử một vòng đời đầy đủ: tạo file \texttt{Default.aspx} đơn giản, rồi thực hiện lần lượt \verb|git status|, \verb|git add|, \verb|git commit| và \verb|git log| để cảm nhận dữ liệu di chuyển qua ba vùng như Hình~\ref{fig:c2-1-ba-vung}. Vòng đời này chính là nhịp làm việc hằng ngày trong suốt đồ án: sửa code, chọn thay đổi, đóng gói commit, đẩy lên remote để đồng đội review. Các mục tiếp theo của báo cáo sẽ xây dựng toàn bộ kỹ thuật nhánh, hợp nhất và cộng tác nhóm dựa trên nền tảng vững chắc này.

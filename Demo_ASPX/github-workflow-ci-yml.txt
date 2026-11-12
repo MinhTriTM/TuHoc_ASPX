@@ -1,0 +1,139 @@
+# GitHub Actions CI cho project ASP.NET Web Forms .NET Framework 4.8.1
+# File goc trong repo: .github/workflows/ci-aspx-481.yml
+# Mon ASPX - Nhom 3 TV: CI chay cho moi push va pull_request
+# Runner bat buoc la Windows vi can MSBuild + .NET Framework + VSTest
+# Copy noi dung file nay vao .github/workflows/ci-aspx-481.yml de dung
+
+name: ci-aspx-481
+
+# Kich hoat pipeline khi co push hoac pull_request
+on:
+  push:
+    branches: [ "main", "develop", "feature/**" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+# Bien dung chung cho ca pipeline
+env:
+  # Ten solution cua project ASPX demo
+  SOLUTION: AspxDemo_NET481.sln
+  # Cau hinh build Release cho ban nop bai
+  CONFIGURATION: Release
+  # Thu muc publish output sau khi build
+  PUBLISH_DIR: publish
+
+# Dinh nghia cac job trong pipeline
+jobs:
+  # Job 1: build - bien dich, test nhanh, dong goi publish
+  build:
+    # Ten hien thi tren tab Actions
+    name: Build ASPX 4.8.1
+    # Dung Windows moi nhat de co san VS2022 + MSBuild + VSTest
+    runs-on: windows-latest
+    # Timeout tranh job treo
+    timeout-minutes: 30
+    steps:
+      # Buoc 1: lay source code ve may runner
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Buoc 2: cai MSBuild va them vao PATH
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # Buoc 3: cai NuGet CLI de restore packages
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      # Buoc 4: cache goi NuGet de lan chay sau nhanh hon
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          # Thu muc cache mac dinh cua NuGet tren Windows
+          path: ~/.nuget/packages
+          # Key doi khi file packages.config hoac csproj doi
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config', '**/*.csproj') }}
+          # Key du phong neu khong khop key chinh
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # Buoc 5: tai cac thu vien phu thuoc ve truoc khi build
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION }}
+
+      # Buoc 6: bien dich solution che do Release bang MSBuild
+      - name: Build solution (Release)
+        run: msbuild ${{ env.SOLUTION }} /p:Configuration=${{ env.CONFIGURATION }} /m /v:minimal /p:DeployOnBuild=true /p:OutDir=${{ github.workspace }}\${{ env.PUBLISH_DIR }}\
+
+      # Buoc 7: liet ke file vua build de kiem tra output
+      - name: List build output
+        run: dir ${{ env.PUBLISH_DIR }}
+
+      # Buoc 8: chay unit test bang VSTest tren cac DLL test
+      - name: Run VSTest
+        run: vstest.console.exe ${{ env.PUBLISH_DIR }}\*Tests.dll /Logger:trx /Platform:x64
+
+      # Buoc 9: tai file ket qua test .trx lam artifact de tai ve xem
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          # Ten goi artifact chua ket qua test
+          name: test-results
+          # Thu muc chua file .trx do VSTest sinh ra
+          path: TestResults/*.trx
+          # Giu artifact 7 ngay
+          retention-days: 7
+
+      # Buoc 10: dong goi thu muc publish thanh artifact de job test dung lai
+      - name: Upload publish package
+        uses: actions/upload-artifact@v4
+        with:
+          # Ten goi artifact chua web da publish
+          name: aspx481-publish
+          # Toan bo thu muc publish sau MSBuild
+          path: ${{ env.PUBLISH_DIR }}/
+          # Giu artifact 7 ngay
+          retention-days: 7
+
+  # Job 2: test - tai lai goi publish va kiem tra doc lap
+  test:
+    # Ten hien thi tren tab Actions
+    name: Verify publish package
+    # Job test chi chay khi job build chay xong thanh cong
+    needs: build
+    # Van dung Windows de chay VSTest va kiem tra file ASPX
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      # Buoc 1: lay source de co file cau hinh test
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Buoc 2: cai MSBuild de co vstest.console.exe
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # Buoc 3: tai goi publish do job build day len
+      - name: Download publish package
+        uses: actions/download-artifact@v4
+        with:
+          # Ten phai khop voi name o job build
+          name: aspx481-publish
+          # Thu muc giai nen artifact
+          path: verify-publish
+
+      # Buoc 4: kiem tra cac file quan trong phai ton tai
+      - name: Check required files
+        run: |
+          dir verify-publish
+          if (!(Test-Path "verify-publish/Web.config")) { throw "Thieu Web.config" }
+          if (!(Test-Path "verify-publish/bin")) { throw "Thieu thu muc bin" }
+
+      # Buoc 5: chay lai test tren goi vua tai ve
+      - name: Re-run VSTest on package
+        run: vstest.console.exe verify-publish/bin/*Tests.dll /Logger:trx /Platform:x64
+
+      # Buoc 6: ket luan trang thai kiem tra
+      - name: Done
+        run: echo "Verify OK: publish package co Web.config, bin va test xanh."

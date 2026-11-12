@@ -1,0 +1,68 @@
+\begin{frame}{Giới thiệu nhóm 3 thành viên}
+\begin{itemize}
+\item Nhóm 3 thành viên, mỗi người phụ trách 1 mảng rõ ràng.
+\item Mọi ví dụ gắn với project Web Forms trên .NET Framework 4.8.1.
+\item Làm việc theo nhánh \texttt{feature} và review chéo qua pull request.
+\item Bảng dưới đây chốt vai trò dùng xuyên suốt bài nói và demo.
+\end{itemize}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Thành viên & Mảng phụ trách & Demo chính \\
+\midrule
+TV1 & Git cục bộ và Internals & Nhánh, merge, conflict Web.config \\
+TV2 & GitHub và Actions & Pull request, build msbuild \\
+TV3 & GitLab và tổng hợp & Merge request, pipeline, so sánh \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Vì sao đồ án ASPX cần Git?}
+\begin{itemize}
+\item Gửi ZIP qua Drive hay chat nên dễ đè mất code của nhau.
+\item Sửa Web.config rồi mất bản chạy được, không biết cách hoàn tác.
+\item Xóa nhầm thư mục hay hỏng máy là mất cả đồ án vì không có lịch sử.
+\item Không biết ai sửa dòng nào nên khó truy vết lỗi và review.
+\item Máy này chạy được nhưng máy thầy build lỗi mà không tái hiện được.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Mục tiêu của đề tài}
+\begin{itemize}
+\item Nắm vững Git cục bộ: \texttt{commit}, \texttt{branch}, \texttt{merge} và hoàn tác an toàn.
+\item Hiểu Git Internals: blob, tree, \texttt{commit} và định danh SHA.
+\item Thành thạo GitHub: pull request, review và Actions build ASPX.
+\item Thành thạo GitLab: merge request, approval và pipeline Windows runner.
+\item Áp dụng quy trình 3 người cho đồ án Web Forms 4.8.1.
+\item Có repo demo thật với lịch sử mẫu và CI chạy xanh.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Roadmap bài nói}
+\begin{enumerate}
+\item Phần 1: Mở đầu, mục tiêu và quy ước demo chung.
+\item Phần 2: Git từ căn bản đến nâng cao cho project ASPX.
+\item Phần 3: GitHub, pull request và Actions build msbuild.
+\item Phần 4: GitLab, pipeline và bảng so sánh GitHub với GitLab.
+\item Demo live: nhánh, pull request, pipeline xanh và xử lý conflict.
+\item Kết luận, bài học nhóm và phần hỏi đáp Q\&A.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Quy ước demo chung}
+\begin{itemize}
+\item Dùng chung một repo demo AspxDemo\_NET481 cho cả nhóm.
+\item Ba nhánh \texttt{feature} song song, mỗi người phụ trách một nhánh.
+\item Không đẩy thẳng lên \texttt{main}, luôn đi qua pull request có review.
+\item Mọi pull request phải chờ CI chạy xanh mới được merge.
+\item Commit ngắn gọn theo Conventional Commits để dễ đọc lịch sử.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git clone https://github.com/nhom3/AspxDemo_NET481.git
+git checkout -b feature/login-aspx
+git add Login.aspx Login.aspx.cs
+git commit -m "feat: add login form"
+git push origin feature/login-aspx
+\end{lstlisting}
+\end{frame}

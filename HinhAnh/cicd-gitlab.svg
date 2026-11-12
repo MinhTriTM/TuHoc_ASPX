@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" font-family="Segoe UI, Arial, sans-serif">
+<rect width="920" height="360" rx="14" fill="#f6f8fa"/>
+<text x="460" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">GitLab CI/CD cho ASP.NET Web Forms 4.8.1</text>
+<text x="460" y="56" text-anchor="middle" font-size="13" fill="#59636e">File: .gitlab-ci.yml — stages: build → test → deploy (job build cần Windows runner + tags)</text>
+<defs><marker id="l" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1f2328"/></marker></defs>
+<rect x="60" y="80" width="800" height="46" rx="10" fill="#6e49cb"/>
+<text x="80" y="108" font-size="14" font-weight="700" fill="#fff">stages: [build, test, deploy] — image/tag: windows, shared runner hoặc runner riêng của nhóm</text>
+<rect x="60" y="145" width="240" height="120" rx="10" fill="#fbefff" stroke="#8250df" stroke-width="2"/>
+<text x="180" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#8250df">stage: build</text>
+<text x="180" y="192" text-anchor="middle" font-size="12" fill="#1f2328">nuget restore</text>
+<text x="180" y="210" text-anchor="middle" font-size="12" fill="#1f2328">msbuild /p:Release</text>
+<text x="180" y="228" text-anchor="middle" font-size="12" fill="#1f2328">artifacts: publish/</text>
+<rect x="340" y="145" width="240" height="120" rx="10" fill="#fff8c5" stroke="#9a6700" stroke-width="2"/>
+<text x="460" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#9a6700">stage: test</text>
+<text x="460" y="192" text-anchor="middle" font-size="12" fill="#1f2328">vstest.console</text>
+<text x="460" y="210" text-anchor="middle" font-size="12" fill="#1f2328">reports: junit</text>
+<text x="460" y="228" text-anchor="middle" font-size="12" fill="#1f2328">needs: [build]</text>
+<rect x="620" y="145" width="240" height="120" rx="10" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+<text x="740" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#1a7f37">stage: deploy</text>
+<text x="740" y="192" text-anchor="middle" font-size="12" fill="#1f2328">copy → IIS (staging)</text>
+<text x="740" y="210" text-anchor="middle" font-size="12" fill="#1f2328">environment: staging</text>
+<text x="740" y="228" text-anchor="middle" font-size="12" fill="#1f2328">rules: chỉ main</text>
+<line x1="302" y1="205" x2="336" y2="205" stroke="#1f2328" stroke-width="2" marker-end="url(#l)"/>
+<line x1="582" y1="205" x2="616" y2="205" stroke="#1f2328" stroke-width="2" marker-end="url(#l)"/>
+<rect x="60" y="285" width="800" height="56" rx="8" fill="#fff" stroke="#d1d9e0" stroke-width="1.5"/>
+<text x="460" y="308" text-anchor="middle" font-size="13" fill="#1f2328">Khác GitHub: GitLab dùng stages/jobs/artifacts/cache/rules; MR có Approval rules + Merge trains.</text>
+<text x="460" y="329" text-anchor="middle" font-size="13" fill="#1f2328">Biến bí mật: Settings → CI/CD → Variables (masked + protected), đọc qua $TEN_BIEN.</text>
+</svg>

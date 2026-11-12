@@ -1,0 +1,228 @@
+\section{Giới thiệu}
+\label{sec:c1-gioi-thieu}
+
+Đồ án môn ASPX được thực hiện theo nhóm ba sinh viên trên cùng một project ASP.NET Web Forms chạy trên .NET Framework 4.8.1.
+Mỗi thành viên cùng chỉnh sửa các file giao diện \texttt{Default.aspx}, file code-behind \texttt{Default.aspx.cs} và file cấu hình \texttt{Web.config} trong cùng một thư mục project.
+Khi ba người cùng sửa chung một bộ file mà không có công cụ quản lý phiên bản, nhóm rất dễ rơi vào tình trạng đè code của nhau, mất bài đã làm hoặc nộp thiếu file vào phút cuối.
+Đề tài \textbf{GIT --- GitHub --- GitLab} của nhóm ra đời từ chính nhu cầu thực tế đó: xây dựng một quy trình làm việc nhóm có kỷ luật, minh bạch và kiểm chứng được cho đồ án ASPX.
+Báo cáo này trình bày toàn bộ hành trình từ Git căn bản trên máy cá nhân, Git nâng cao, GitHub, GitLab cho đến pipeline CI/CD biên dịch thật project ASPX 4.8.1 và quy trình phối hợp của cả nhóm.
+Mọi lý thuyết đều đi kèm lệnh chạy được, hình minh họa và ví dụ gắn với project demo Web Forms để người đọc có thể làm theo từng bước và kiểm tra kết quả ngay.
+
+\subsection{Lý do chọn đề tài}
+
+Khi làm đồ án ASPX theo nhóm, cách làm phổ biến của sinh viên là nén cả thư mục project rồi gửi qua tin nhắn hoặc USB cho nhau.
+Cách làm này bộc lộ rất nhiều vấn đề ngay từ tuần đầu tiên, đặc biệt khi ba người cùng sửa các file \texttt{.aspx}, \texttt{.aspx.cs} và \texttt{Web.config}.
+Nhóm đã tổng hợp các nỗi đau điển hình nhất mà hầu như nhóm ASPX nào cũng từng gặp qua như sau.
+\begin{itemize}
+\item \textbf{Đè code và mất bài:} hai thành viên cùng sửa một trang, bản nộp cuối cùng chỉ giữ lại thay đổi của một người, công sức của người còn lại biến mất mà không để lại bất kỳ dấu vết nào.
+\item \textbf{Không truy vết được ai đã sửa gì:} khi trang web bỗng nhiên báo lỗi, nhóm không thể trả lời câu hỏi ai đã đổi dòng nào, đổi lúc nào và đổi vì lý do gì.
+\item \textbf{Xung đột file \texttt{Web.config}:} đây là file dùng chung chứa chuỗi kết nối cơ sở dữ liệu và cấu hình ứng dụng, nên hầu như mọi nhánh công việc đều chạm vào nó và gây xung đột mỗi lần gộp code.
+\item \textbf{Rò rỉ thông tin nhạy cảm:} chuỗi kết nối chứa mật khẩu thật bị gửi kèm trong file nén qua kênh chat chung, ai cũng đọc được và nhóm không có cách nào thu hồi.
+\item \textbf{Không quay lui được:} sau khi sửa hỏng một form phức tạp, nhóm không có bản tốt gần nhất để quay về nên đành mất hàng giờ viết lại từ đầu.
+\item \textbf{Nộp bài thiếu file:} lúc nén project, người nộp quên kèm thư mục \texttt{bin}, quên file cấu hình hoặc nộp nhầm bản cũ, khiến bài chạy trên máy của thầy cô khác hẳn máy của nhóm.\footnote{Thực tế nhiều nhóm còn nộp kèm cả thư mục \texttt{packages} nặng hàng trăm MB trong khi lại thiếu đúng file quan trọng nhất.}
+\end{itemize}
+
+Git giải quyết triệt để các vấn đề trên vì mọi thay đổi đều được ghi lại thành lịch sử có tác giả, thời điểm và lý do kèm theo \cite{atlassiangit}.
+Mỗi thành viên làm việc trên một nhánh riêng rồi gộp lại có kiểm soát, xung đột được phát hiện sớm và xử lý ngay thay vì dồn đến sát ngày nộp bài.
+GitHub và GitLab tiếp tục mở rộng Git từ máy cá nhân lên môi trường cộng tác trực tuyến với pull request, review code và pipeline tự động \cite{githubdocs, gitlabdocs}.
+Với project ASPX 4.8.1, pipeline còn tự động biên dịch bằng \verb|msbuild| sau mỗi lần đẩy code, giúp nhóm phát hiện lỗi vỡ build chỉ sau vài phút thay vì đến lúc nộp mới biết.
+Vì vậy nhóm chọn đề tài này với kỳ vọng kép: vừa học vững công cụ dùng cho mọi đồ án sau này, vừa xây dựng ngay một quy trình mẫu áp dụng được cho chính đồ án ASPX của nhóm.
+Điểm khởi đầu rất đơn giản: chỉ cần khởi tạo kho chứa và tạo commit đầu tiên như ví dụ dưới đây là nhóm đã có lịch sử để đối chiếu mỗi khi có sự cố.
+\begin{lstlisting}[language=bash]
+# Kiem tra Git va cau hinh danh tinh (chi lam mot lan)
+git --version
+git config --global user.name "Nguyen Van A"
+git config --global user.email "nva@student.edu.vn"
+# Tao thu muc project demo ASPX va tao commit dau tien
+mkdir AspxDemo-NET481
+cd AspxDemo-NET481
+git init
+git add .
+git commit -m "docs: khoi tao repo demo ASPX 4.8.1"
+git log --oneline
+git status
+\end{lstlisting}
+Từ commit đầu tiên này, mọi lần sửa trang \texttt{.aspx} hay file \texttt{Web.config} đều để lại vết trong lịch sử và nhóm không bao giờ còn cảnh mất bài không rõ nguyên nhân.
+Chương 2 sẽ hệ thống hóa toàn bộ thao tác Git hằng ngày mà thành viên nào trong nhóm cũng phải thành thạo.
+
+\subsubsection{Kịch bản mất bài điển hình trong một tuần}
+
+Để thấy rõ nỗi đau, nhóm kể lại một tuần làm việc có thật của chính nhóm trước khi áp dụng Git, với ba thành viên cùng sửa trang quản lý sinh viên.
+Sáng thứ hai, TV1 nén cả project gửi vào nhóm chat và dặn mọi người lấy đó làm ``bản gốc'' để bắt đầu tuần mới.
+Chiều thứ ba, TV2 sửa giao diện \texttt{Student.aspx} cho đẹp hơn rồi nén gửi lại, trong khi TV1 vẫn đang viết dở hàm lưu dữ liệu trên bản cũ tải từ hôm thứ hai.
+Sáng thứ tư, TV3 sửa \texttt{Web.config} để trỏ sang máy chủ mới rồi gửi bản của mình lên, lúc này trong nhóm chat đã có ba bản nén khác nhau mà không ai biết bản nào mới nhất.
+Tối thứ năm, TV1 gộp bằng tay: chép đè file \texttt{.aspx} của TV2 vào bản của mình, chép đè \texttt{Web.config} của TV3, rồi chạy thử và thấy trang báo lỗi vì hàm code-behind không khớp với giao diện mới.
+Cả ba thức đến nửa đêm để dò từng dòng, cuối cùng phát hiện TV2 đã đổi tên nút bấm mà TV1 không hề biết, còn chuỗi kết nối của TV3 lại trỏ về máy chủ cũ trên máy TV1.
+Sáng thứ sáu nộp bài, nhóm nộp vội bản chạy được trên máy TV1 nhưng thiếu form thống kê mà TV2 đã làm xong từ thứ tư, đơn giản vì file đó nằm trong bản nén bị bỏ quên.
+Hậu quả không chỉ là mất điểm bài nộp mà còn là mâu thuẫn nội bộ, vì không ai chứng minh được phần việc của mình đã hoàn thành đúng hạn.
+TV2 ấm ức vì form thống kê tâm huyết bị loại khỏi bản nộp, TV1 mệt mỏi vì phải gộp tay trong đêm, còn TV3 lo lắng vì mật khẩu máy chủ nằm trong file nén gửi công khai.
+Câu chuyện trên không phải cá biệt: bất kỳ nhóm nào cộng tác bằng file nén đều có nguy cơ lặp lại đúng kịch bản này mỗi tuần.
+Từ tuần lễ mất bài đó, nhóm rút ra năm bài học xương máu làm kim chỉ nam cho toàn bộ đề tài.
+\begin{itemize}
+\item Mọi thay đổi phải có tác giả và thời điểm, nếu không nhóm sẽ tranh cãi bất tận mỗi khi có lỗi mà chẳng ai chịu trách nhiệm.
+\item Mỗi người phải làm trên nhánh riêng, nếu không bản nộp cuối cùng chỉ là bản của người gửi file muộn nhất chứ không phải bản tốt nhất.
+\item File dùng chung như \texttt{Web.config} phải có chủ sở hữu và quy trình sửa đổi riêng, nếu không xung đột sẽ nổ ra ngay trước giờ nộp bài.
+\item Mật khẩu và chuỗi kết nối không bao giờ được gửi qua kênh chat chung, nếu không nhóm vừa mất an toàn vừa không thể thu hồi khi lộ.
+\item Bản nộp phải được lấy từ một nguồn duy nhất đã qua kiểm tra tự động, nếu không nhóm sẽ nộp thiếu file hoặc nộp nhầm bản cũ như cơm bữa.
+\end{itemize}
+Git cùng GitHub và GitLab đáp ứng cả năm bài học trên: ghi lại mọi thay đổi, tách mỗi người một nhánh, gộp có kiểm soát kèm review và biên dịch tự động trước khi cho phép gộp.
+Sau khi áp dụng Git, tuần làm việc của nhóm thay đổi hẳn: xung đột hiện ra ngay lúc gộp nhánh, ai sửa gì đều có tên trong lịch sử và bản nộp luôn được lấy từ nhánh \verb|main| đã qua pipeline.
+Thành viên mới chỉ cần đọc lịch sử commit là nắm được tiến độ nhóm, thay vì phải hỏi từng người xem bản mới nhất đang nằm ở đâu.
+Bảng phân công trong Bảng~\ref{tab:c1-phan-cong} ở cuối chương cũng được rút ra từ chính bài học phân việc rõ ràng này.
+
+\subsection{Mục tiêu đề tài}
+
+Đề tài đặt ra sáu mục tiêu cụ thể, mỗi mục tiêu tương ứng với một khối kiến thức mà nhóm phải làm chủ và chứng minh bằng sản phẩm chạy được.
+Sáu mục tiêu này cũng chính là sáu mảng nội dung của các chương tiếp theo trong báo cáo.
+\begin{itemize}
+\item \textbf{Nắm vững Git căn bản:} thành thạo khoảng hai mươi lệnh dùng hằng ngày gồm khởi tạo kho chứa, ghi nhận thay đổi, xem lịch sử, làm việc với nhánh, gộp nhánh và hoàn tác an toàn trên project ASPX demo.
+\item \textbf{Làm chủ Git nâng cao:} hiểu cấu trúc trong của Git gồm blob, tree và commit, đồng thời sử dụng được rebase tương tác, cherry-pick, stash, reflog, tag, hook và quy ước Conventional Commits cho lịch sử sạch đẹp.
+\item \textbf{Khai thác GitHub cho cộng tác:} dùng thành thạo issue, fork, pull request, review code, nhánh được bảo vệ và quy tắc review, mọi thay đổi đều đi qua pull request có ít nhất một người duyệt trước khi gộp \cite{githubdocs}.
+\item \textbf{Khai thác GitLab cho cộng tác:} dùng thành thạo group, project, merge request, quy tắc phê duyệt và môi trường triển khai, đồng thời so sánh được điểm giống và khác với GitHub trên cùng một repo demo \cite{gitlabdocs}.
+\item \textbf{Xây dựng CI/CD thật cho ASPX 4.8.1:} dựng pipeline biên dịch tự động bằng \verb|msbuild| trên cả GitHub Actions và GitLab CI với Windows runner, pipeline phải chạy xanh và báo lỗi vỡ build cho nhóm sau mỗi lần đẩy code \cite{ghactions, gitlabci}.
+\item \textbf{Thiết lập quy trình nhóm ba người:} ban hành quy trình nhánh \verb|main|, \verb|develop| và \verb|feature|, checklist review cho Web Forms, cách xử lý xung đột \texttt{Web.config} và cách quản lý chuỗi kết nối an toàn bằng secret của pipeline.
+\end{itemize}
+Hoàn thành sáu mục tiêu trên, nhóm có trong tay cả kiến thức, repo demo có lịch sử mẫu và hai pipeline chạy xanh để minh chứng trong buổi thuyết trình.
+
+\subsection{Phạm vi và đối tượng}
+
+\subsubsection{Đối tượng áp dụng}
+
+Đối tượng chính của báo cáo là sinh viên đang học học phần ASPX và phải làm đồ án Web Forms theo nhóm từ hai đến bốn người.
+Người đọc được giả định đã biết lập trình \texttt{C\#} ở mức cơ bản và đã tạo được một project Web Forms đơn giản trong Visual Studio.
+Người đọc chưa cần biết Git từ trước vì báo cáo đi từ con số không: cài đặt, cấu hình danh tính rồi mới đến từng lệnh đầu tiên.
+Giảng viên và các nhóm khóa sau cũng có thể dùng báo cáo như một giáo trình thực hành vì mọi ví dụ đều chạy được và gắn với project ASPX 4.8.1 cụ thể.
+
+\subsubsection{Phạm vi nội dung}
+
+Về nội dung, báo cáo bao phủ toàn bộ vòng đời cộng tác trên một repo demo ASPX duy nhất là \texttt{AspxDemo-NET481}.
+Các mảng nằm trong phạm vi gồm có:
+\begin{itemize}
+\item Git cục bộ từ căn bản đến nâng cao, thao tác trực tiếp trên các file \texttt{.aspx}, \texttt{.aspx.cs} và \texttt{Web.config} của project demo.
+\item GitHub và GitLab ở mức cộng tác nhóm nhỏ: issue, pull request và merge request, review, nhánh được bảo vệ và quản lý secret.
+\item Pipeline CI/CD biên dịch project .NET Framework 4.8.1 bằng \verb|msbuild| trên Windows runner của cả hai nền tảng.
+\item Quy trình làm việc nhóm ba người, checklist review, xử lý xung đột và bài tập thực hành có rubric chấm điểm.
+\end{itemize}
+Ngược lại, các nội dung sau nằm ngoài phạm vi để báo cáo giữ được độ sâu cần thiết:
+\begin{itemize}
+\item Các framework mới như ASP.NET Core, MVC hay Blazor vì học phần chỉ yêu cầu Web Forms trên .NET Framework 4.8.1.
+\item Quản trị hạ tầng như dựng server GitLab self-hosted, cấu hình Kubernetes hay triển khai production thực tế cho doanh nghiệp.
+\item Các chủ đề Git rất chuyên sâu về vận hành như viết Git server riêng hay tối ưu kho chứa hàng chục GB mã nguồn.
+\end{itemize}
+
+\subsection{Liên hệ với học phần ASPX}
+
+\subsubsection{Mô hình Web Forms và code-behind}
+
+Học phần ASPX giảng dạy ASP.NET Web Forms, mô hình lập trình web theo hướng sự kiện trong đó mỗi trang gồm hai file đi thành cặp \cite{msnetfx}.
+File \texttt{.aspx} chứa đánh dấu giao diện gồm các control như \texttt{TextBox}, \texttt{Button} và \texttt{GridView} cùng bố cục HTML của trang.
+File \texttt{.aspx.cs} là code-behind viết bằng \texttt{C\#}, chứa các hàm xử lý sự kiện như nhấn nút hay tải trang, gắn với giao diện qua cơ chế partial class.
+Chính vì giao diện và logic tách thành hai file nhưng luôn phải sửa đồng bộ nên khi hai người cùng sửa một trang mà không có Git, nhóm rất dễ gộp sót một trong hai file.
+Git giúp mỗi cặp file giao diện và code-behind luôn được commit cùng nhau thành một đơn vị thay đổi hoàn chỉnh, xem lại lịch sử là thấy rõ mỗi tính năng đã đổi những trang nào.
+
+\subsubsection{File Web.config và quy trình biên dịch}
+
+File \texttt{Web.config} là file cấu hình dạng XML của ứng dụng, chứa chuỗi kết nối trong thẻ \texttt{connectionStrings}, tham số ứng dụng trong thẻ \texttt{appSettings} và các thiết lập biên dịch \cite{msnetfx}.
+Đây là file nhạy cảm nhất trong project vì vừa dùng chung cho cả nhóm, vừa chứa mật khẩu cơ sở dữ liệu, vừa khác nhau giữa máy lập trình và máy chấm bài.
+Project ASPX 4.8.1 được biên dịch bằng \verb|msbuild| trên Windows thay vì lệnh \verb|dotnet build| đa nền tảng, vì .NET Framework gắn chặt với hệ điều hành Windows \cite{msmsbuild}.
+Hiểu rõ đặc điểm này giúp nhóm cấu hình pipeline đúng ngay từ đầu: dùng Windows runner, khôi phục gói NuGet rồi mới gọi \verb|msbuild| với đúng configuration và platform.
+Tóm lại, kiến thức Git trong báo cáo không đứng riêng lẻ mà luôn được đặt cạnh ba khái niệm cốt lõi của học phần là trang \texttt{.aspx}, code-behind \texttt{.aspx.cs} và file \texttt{Web.config}.
+
+\subsection{Phương pháp thực hiện}
+
+Nhóm thực hiện đề tài theo phương pháp học đi đôi với làm thật trên repo demo, mỗi lý thuyết học được đều phải kiểm chứng bằng lệnh chạy được.
+Quy trình gồm năm bước lặp lại cho từng chương, do cả ba thành viên cùng tham gia và review chéo cho nhau.
+\begin{enumerate}
+\item \textbf{Học tài liệu gốc:} đọc sách Pro Git cho nền tảng Git \cite{progit}, đọc tài liệu chính thức của GitHub và GitLab cho phần cộng tác \cite{githubdocs, gitlabdocs}, đọc tài liệu Microsoft cho phần Web Forms và MSBuild \cite{msnetfx, msmsbuild}.
+\item \textbf{Dựng repo demo dùng chung:} tạo project \texttt{AspxDemo-NET481} đúng chuẩn Web Forms 4.8.1, viết file \texttt{.gitignore} chuẩn cho ASP.NET rồi tạo lịch sử commit mẫu để mọi ví dụ trong báo cáo đều có chỗ kiểm chứng.
+\item \textbf{Mỗi người một nhánh feature:} ba thành viên thực hành song song trên ba nhánh riêng, mọi thay đổi đều đi qua pull request hoặc merge request có review, tuyệt đối không đẩy thẳng lên nhánh \verb|main|.
+\item \textbf{Dựng pipeline chạy thật:} viết file \texttt{ci-aspx-481.yml} cho GitHub Actions và file \texttt{.gitlab-ci.yml} cho GitLab CI, cả hai đều biên dịch bằng \verb|msbuild| trên Windows runner và phải đạt trạng thái xanh trước khi viết báo cáo.
+\item \textbf{Tổng hợp và review chéo:} mỗi chương do một thành viên viết nháp, hai thành viên còn lại review qua pull request, mọi lệnh trong báo cáo đều được chạy lại từ đầu để bảo đảm độc giả làm theo là thành công.
+\end{enumerate}
+Ví dụ dưới đây mô tả vòng đời chuẩn của một tính năng nhỏ trong repo demo, từ lúc tạo nhánh đến lúc đẩy lên để xin review.
+\begin{lstlisting}[language=bash]
+# Tai repo demo ve may va tao nhanh chuc nang rieng
+git clone https://github.com/nhom3/AspxDemo-NET481.git
+cd AspxDemo-NET481
+git checkout -b feature/sua-trang-login
+# Sua file Default.aspx roi ghi nhan thay doi
+git status
+git add Default.aspx Default.aspx.cs
+git commit -m "feat: them o nhap email o trang dang nhap"
+git push -u origin feature/sua-trang-login
+git log --oneline -5
+\end{lstlisting}
+Nhờ tuân thủ vòng đời này cho cả báo cáo lẫn code, nhóm vừa có sản phẩm demo thuyết phục, vừa tự mình trải nghiệm đúng quy trình mà báo cáo khuyến nghị.
+Kinh nghiệm va vấp thực tế như xung đột \texttt{Web.config} hay pipeline báo đỏ đều được ghi lại thành bài học trong Chương 7.
+
+Ngoài năm bước trên, nhóm còn áp dụng ba kỷ luật bắt buộc cho mọi thành viên trong suốt quá trình thực hiện đề tài.
+Thứ nhất, mọi commit đều tuân theo quy ước Conventional Commits với tiền tố nói rõ loại thay đổi ngay từ đầu dòng \cite{convcommits}.
+Tiền tố \verb|feat:| dùng cho tính năng mới như thêm trang đăng nhập, \verb|fix:| dùng cho sửa lỗi như sửa xung đột \texttt{Web.config}, còn \verb|docs:| dùng cho báo cáo và slide.
+Ví dụ \verb|docs: bo sung muc tieu de tai chuong 1| cho người đọc biết ngay đây là commit tài liệu mà không cần mở nội dung ra xem.
+Thứ hai, không ai được đẩy thẳng lên nhánh \verb|main|, mọi thay đổi đều phải đi qua pull request hoặc merge request có ít nhất một người review.
+Thứ ba, pull request chỉ được gộp khi pipeline báo xanh, tức là project ASPX 4.8.1 đã biên dịch thành công bằng \verb|msbuild| trên Windows runner.
+Ba kỷ luật này tuy đơn giản nhưng tạo ra khác biệt lớn: lịch sử commit sạch đẹp và mọi ví dụ trong báo cáo đều đã có ít nhất hai người kiểm chứng độc lập.
+Đi kèm ba kỷ luật là checklist review mà mọi pull request chạm vào Web Forms đều phải vượt qua trước khi gộp.
+\begin{itemize}
+\item Cặp file \texttt{.aspx} và \texttt{.aspx.cs} luôn được sửa đồng bộ, đổi tên control ở giao diện thì phải sửa hàm bắt sự kiện tương ứng.
+\item File \texttt{Web.config} không chứa mật khẩu thật, chuỗi kết nối của máy lập trình được thay bằng giá trị mẫu trước khi commit.
+\item Mọi tính năng mới đều có ảnh chụp trang chạy được đính kèm trong phần mô tả của pull request để người review đối chiếu.
+\item Pipeline biên dịch báo xanh và không có cảnh báo mới so với nhánh \verb|main|, nếu pipeline báo đỏ thì review dừng lại ngay.
+\end{itemize}
+Nhóm cũng ghi nhật ký thực nghiệm sau mỗi buổi làm việc, ghi lại lệnh đã chạy, lỗi đã gặp và cách khắc phục để đưa vào Chương 7 và phụ lục.
+Cách làm này bảo đảm báo cáo cuối cùng phản ánh đúng thực tế đã kiểm chứng chứ không phải lý thuyết chép lại từ tài liệu.
+
+\subsection{Cấu trúc báo cáo}
+
+Ngoài chương mở đầu này, báo cáo gồm bảy chương chính và một cụm phụ lục, đi từ Git cục bộ đến cộng tác trực tuyến rồi kết thúc bằng quy trình nhóm.
+Bạn đọc nên đọc tuần tự từ Chương 2 đến Chương 5 để nắm công cụ, sau đó đọc Chương 6 và Chương 7 để biết cách chọn công cụ và phối hợp nhóm.
+Nội dung tóm tắt từng chương như sau.
+\begin{itemize}
+\item \textbf{Chương 1. Giới thiệu:} lý do chọn đề tài, sáu mục tiêu, phạm vi và đối tượng, liên hệ với học phần ASPX, phương pháp thực hiện và cấu trúc toàn báo cáo.
+\item \textbf{Chương 2. Git căn bản:} lịch sử Git, kiến trúc ba vùng và thư mục \texttt{.git}, cài đặt và cấu hình, các lệnh hằng ngày, nhánh và gộp nhánh, hoàn tác, stash, tag và file \texttt{.gitignore} cho ASP.NET.
+\item \textbf{Chương 3. Git nâng cao:} cấu trúc trong gồm blob, tree và commit, rebase tương tác, cherry-pick, reflog, hook, Git LFS, submodule, worktree, ký commit và các mô hình nhánh như GitFlow.
+\item \textbf{Chương 4. GitHub:} tổng quan nền tảng, issue và project, fork và pull request, nhánh được bảo vệ, GitHub Actions biên dịch ASPX 4.8.1, packages, bảo mật nâng cao và Copilot.
+\item \textbf{Chương 5. GitLab:} group và project, issue và board, merge request và quy tắc phê duyệt, CI/CD với Windows runner, môi trường triển khai, registry và so sánh bản self-hosted với bản SaaS.
+\item \textbf{Chương 6. So sánh:} bảng so sánh hơn hai mươi tiêu chí giữa Git với GitHub và GitLab, cùng bảng đối đầu trực tiếp GitHub với GitLab về giá, CI/CD, review, bảo mật và độ phù hợp với đồ án ASPX.
+\item \textbf{Chương 7. Áp dụng nhóm:} quy trình ba người với \verb|main|, \verb|develop| và \verb|feature|, checklist review Web Forms, xử lý xung đột \texttt{Web.config}, quản lý secret, lịch sử commit mẫu và bài tập có rubric.
+\item \textbf{Chương 8. Kết luận:} tổng kết kết quả đạt được so với sáu mục tiêu, nêu hạn chế của đề tài và đề xuất hướng phát triển cho các nhóm khóa sau.
+\item \textbf{Phụ lục:} bảng tra cứu lệnh Git, file \texttt{.gitignore} mẫu, file YAML mẫu cho hai pipeline, kịch bản demo buổi thuyết trình và bảng phân công chi tiết.
+\end{itemize}
+Bảng phân công chi tiết từng chương cho ba thành viên được trình bày trong Bảng~\ref{tab:c1-phan-cong}.
+\begin{table}[H]
+\centering
+\caption{Bảng phân công các chương báo cáo cho ba thành viên}
+\label{tab:c1-phan-cong}
+\begin{tabular}{l p{8cm} l}
+\toprule
+Chương & Nội dung chính & Phụ trách \\
+\midrule
+Chương 1 & Giới thiệu: lý do, mục tiêu, phạm vi, phương pháp & TV1 \\
+Chương 2 & Git căn bản và demo trên project ASPX & TV1 \\
+Chương 3 & Git nâng cao và mô hình nhánh & TV1 \\
+Chương 4 & GitHub và pipeline GitHub Actions & TV2 \\
+Chương 5 & GitLab và pipeline GitLab CI & TV3 \\
+Chương 6 & So sánh Git với GitHub và GitLab & TV3 \\
+Chương 7 & Quy trình nhóm ba người và bài tập & TV3 \\
+Chương 8 & Kết luận và hướng phát triển & TV3 \\
+Phụ lục & Bảng lệnh, file mẫu, kịch bản demo & Cả nhóm \\
+\bottomrule
+\end{tabular}
+\end{table}
+Lộ trình đọc khuyến nghị được minh họa trong Hình~\ref{fig:c1-lo-trinh}, đi từ Git căn bản đến cộng tác và tự động hóa.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (c1a) {Git căn bản};
+\node[box, right=1.0cm of c1a] (c1b) {Git nâng cao};
+\node[box, right=1.0cm of c1b] (c1c) {GitHub, GitLab};
+\node[box, right=1.0cm of c1c] (c1d) {CI/CD nhóm};
+\draw[->] (c1a) -- node[midway, above, font=\footnotesize] {học tiếp} (c1b);
+\draw[->] (c1b) -- node[midway, above, font=\footnotesize] {cộng tác} (c1c);
+\draw[->] (c1c) -- node[midway, above, font=\footnotesize] {tự động} (c1d);
+\end{tikzpicture}
+\caption{Lộ trình đọc báo cáo từ Git căn bản đến quy trình nhóm}
+\label{fig:c1-lo-trinh}
+\end{figure}
+Bạn đọc đã quen Git có thể đọc lướt Chương 2 và đi thẳng vào Chương 3, nhưng tuyệt đối không nên bỏ qua Chương 7 vì đó là nơi mọi kiến thức được ráp lại thành quy trình nhóm hoàn chỉnh.
+Chương tiếp theo sẽ bắt đầu với Git căn bản, đúng điểm khởi đầu của lộ trình trên.

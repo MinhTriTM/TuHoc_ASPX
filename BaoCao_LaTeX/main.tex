@@ -1,0 +1,148 @@
+% BAI TRINH BAY MON ASPX (.NET Framework 4.8.1) -- DE TAI: GIT -- GitHub -- GitLab
+% File goc cua bao cao (lop article, bien dich bang pdfLaTeX).
+% Trinh tu bien dich: pdflatex main / bibtex main / pdflatex main / pdflatex main
+% Cac chuong la file fragment (khong co documentclass) va duoc nap bang \input.
+% Nhan cong viec: TV1 chuong 1-3, TV2 chuong 4, TV3 chuong 5-8 + phu luc + bib.
+\documentclass[12pt,a4paper]{article}
+%--------------------------------------------------------------------
+% Tieng Viet co dau (pdfLaTeX + T5) va font Latin Modern
+%--------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{lmodern}
+%--------------------------------------------------------------------
+% Can le trang A4, le 2.5cm moi ben
+%--------------------------------------------------------------------
+\usepackage[a4paper,margin=2.5cm]{geometry}
+%--------------------------------------------------------------------
+% Gian dong 1.5 cho toan bao cao
+%--------------------------------------------------------------------
+\usepackage{setspace}
+\onehalfspacing
+%--------------------------------------------------------------------
+% Lien ket sieu van ban, hinh anh, mau sac
+%--------------------------------------------------------------------
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{xcolor}
+%--------------------------------------------------------------------
+% Liet ke ma nguon (Git Bash, C#, XML, YAML)
+%--------------------------------------------------------------------
+\usepackage{listings}
+%--------------------------------------------------------------------
+% Ve hinh minh hoa truc tiep trong bao cao
+%--------------------------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc}
+%--------------------------------------------------------------------
+% Bang dep (booktabs), chu thich hinh/bang, co dinh vi tri hinh
+%--------------------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+%--------------------------------------------------------------------
+% Danh sach tuy bien va cong thuc toan
+%--------------------------------------------------------------------
+\usepackage{enumitem}
+\usepackage{amsmath}
+%--------------------------------------------------------------------
+% Dau trang/chan trang va dua tai lieu tham khao vao muc luc
+%--------------------------------------------------------------------
+\usepackage{fancyhdr}
+\usepackage{tocbibind}
+%--------------------------------------------------------------------
+% Mau lien ket trong tai lieu PDF
+%--------------------------------------------------------------------
+\hypersetup{colorlinks=true,linkcolor=blue!70!black,urlcolor=blue!70!black,citecolor=teal!60!black}
+%--------------------------------------------------------------------
+% Dinh nghia ngon ngu YAML dung cho pipeline GitHub Actions va GitLab CI
+%--------------------------------------------------------------------
+\lstdefinelanguage{yaml}{keywords={true,false,stages,stage,script,image,tags,rules,needs,artifacts,cache,variables,environment},keywordstyle=\color{blue!70!black}\bfseries,sensitive=true,comment=[l]{\#},commentstyle=\color{green!50!black},stringstyle=\color{red!60!black},morestring=[b]',morestring=[b]"}
+%--------------------------------------------------------------------
+% Thiet lap chung cho moi khoi ma nguon trong bao cao
+%--------------------------------------------------------------------
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,numbers=left,numberstyle=\tiny,showstringspaces=false,tabsize=2,captionpos=b}
+%--------------------------------------------------------------------
+% Dau trang: ten de tai ben trai, ten hoc phan ben phai, so trang o giua
+%--------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{GIT -- GitHub -- GitLab}
+\rhead{Hoc phan ASPX -- .NET 4.8.1}
+\cfoot{\thepage}
+%--------------------------------------------------------------------
+% BAT DAU NOI DUNG BAO CAO
+%--------------------------------------------------------------------
+\begin{document}
+%--------------------------------------------------------------------
+% TRANG BIA
+%--------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Large TRƯỜNG ĐẠI HỌC}\\[0.3cm]
+{\Large KHOA CÔNG NGHỆ THÔNG TIN}\\[0.8cm]
+\rule{\textwidth}{1pt}\\[0.8cm]
+{\Large BÁO CÁO BÀI TRÌNH BÀY}\\[0.5cm]
+{\Large Đề tài: GIT -- GitHub -- GitLab}\\[0.5cm]
+{\Large Học phần ASPX (.NET Framework 4.8.1)}\\[0.8cm]
+\rule{\textwidth}{1pt}\\[1.0cm]
+{\Large Nhóm 3 thành viên}\\[0.6cm]
+{\large TV1 -- MSSV1}\\[0.2cm]
+{\large TV2 -- MSSV2}\\[0.2cm]
+{\large TV3 -- MSSV3}\\[0.6cm]
+% Ghi chu: thay TV1/TV2/TV3 va MSSV bang ten that truoc khi nop.
+\vfill
+{\large Ngày \today}\\[1.0cm]
+\end{titlepage}
+%--------------------------------------------------------------------
+% MUC LUC TONG HOP TOAN BO CHUONG VA PHU LUC
+%--------------------------------------------------------------------
+\tableofcontents
+\newpage
+%--------------------------------------------------------------------
+% PHAN 1: GIOI THIEU VA GIT CAN BAN (TV1)
+%--------------------------------------------------------------------
+\input{chuong1-gioithieu}
+\input{chuong2-1-kientruc-caidat}
+\input{chuong2-2-lenh-coban}
+\input{chuong2-3-nhanh-merge}
+%--------------------------------------------------------------------
+% PHAN 2: GIT NANG CAO VA SIEU NANG CAO (TV1)
+%--------------------------------------------------------------------
+\input{chuong3-1-internals}
+\input{chuong3-2-nangcao}
+\input{chuong3-3-sieunangcao-workflows}
+%--------------------------------------------------------------------
+% PHAN 3: GITHUB VA CI/CD CHO PROJECT ASPX (TV2)
+%--------------------------------------------------------------------
+\input{chuong4-1-github-coban}
+\input{chuong4-2-github-actions}
+\input{chuong4-3-github-nangcao}
+%--------------------------------------------------------------------
+% PHAN 4: GITLAB VA CI/CD CHO PROJECT ASPX (TV3)
+%--------------------------------------------------------------------
+\input{chuong5-1-gitlab-coban}
+\input{chuong5-2-gitlab-cicd}
+\input{chuong5-3-gitlab-nangcao}
+%--------------------------------------------------------------------
+% PHAN 5: SO SANH, AP DUNG NHOM VA KET LUAN (TV3)
+%--------------------------------------------------------------------
+\input{chuong6-sosanh}
+\input{chuong7-apdung}
+\input{chuong8-ketluan}
+%--------------------------------------------------------------------
+% PHU LUC A-D: BANG LENH, GITIGNORE, YAML MAU, KICH BAN DEMO
+%--------------------------------------------------------------------
+\appendix
+\input{phulucA-banglenh}
+\input{phulucB-gitignore}
+\input{phulucC-yaml}
+\input{phulucD-kichbandemo}
+%--------------------------------------------------------------------
+% TAI LIEU THAM KHAO
+%--------------------------------------------------------------------
+\bibliographystyle{plain}
+\bibliography{tailieu_thamkhao}
+\end{document}

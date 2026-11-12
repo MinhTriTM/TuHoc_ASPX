@@ -1,0 +1,218 @@
+\section{Áp dụng vào học phần ASPX}
+\label{sec:c7-apdung}
+
+Chương này trình bày cách vận dụng Git, GitHub và GitLab vào đồ án môn học ASP.NET Web Forms trên .NET Framework 4.8.1 cho nhóm 3 sinh viên \cite{progit,githubdocs,gitlabdocs,msnetfx}.
+Khác với các chương trước tập trung vào từng công cụ, chương này gom mọi kiến thức thành một quy trình làm việc chung: tổ chức vai trò, mô hình nhánh, quy trình pull request và merge request, checklist review, xử lý xung đột, quản lý secret và mẫu lịch sử commit.
+Mọi ví dụ đều gắn với project Web Forms thật: file \texttt{Web.config}, trang \texttt{Default.aspx}, code behind \texttt{Default.aspx.cs} viết bằng C\# và build bằng \verb|msbuild| \cite{msmsbuild}.
+Nhóm đọc xong chương này có thể bắt tay làm đồ án ngay mà không cần thống nhất lại quy ước làm việc.
+
+\subsection{Tổ chức nhóm 3 người và mô hình nhánh}
+\label{subsec:c7-tochuc}
+
+Nhóm 3 thành viên phân vai theo mảng trong file phân công: TV1 phụ trách Git local và repo demo, TV2 phụ trách GitHub và GitHub Actions, TV3 phụ trách GitLab, so sánh và tổng hợp báo cáo.
+Mỗi người vẫn phải biết đầy đủ quy trình chung, vai trò chỉ xác định người chịu trách nhiệm chính khi có sự cố.
+Quy tắc quan trọng nhất: không ai được push trực tiếp lên nhánh \texttt{main}, mọi thay đổi đều đi qua nhánh tính năng và pull request hoặc merge request có ít nhất một người review \cite{atlassiangit,githubdocs,gitlabdocs}.
+
+\begin{itemize}
+\item \textbf{TV1 -- Git và repo demo:} tạo repo \texttt{AspxDemo-NET481}, viết file \verb|.gitignore| chuẩn ASP.NET, dựng lịch sử commit mẫu, chịu trách nhiệm giải quyết xung đột local và kiểm tra mọi lệnh trong báo cáo chạy được.
+\item \textbf{TV2 -- GitHub và CI:} quản trị repo GitHub, cấu hình protected branch và secret, viết workflow \texttt{ci-aspx-481.yml}, đảm bảo mỗi pull request đều có pipeline build xanh trước khi merge \cite{ghactions}.
+\item \textbf{TV3 -- GitLab và tổng hợp:} mirror repo sang GitLab, viết file \verb|.gitlab-ci.yml| cho Windows runner, cấu hình approval rule, vẽ bảng so sánh và tổng hợp báo cáo \cite{gitlabci}.
+\end{itemize}
+
+Mô hình nhánh áp dụng GitFlow rút gọn với 3 tầng \cite{gitflow}:
+
+\begin{itemize}
+\item \textbf{Nhánh main:} luôn build được và deploy được, chỉ merge từ \texttt{develop} khi release, mỗi commit trên \texttt{main} gắn thẻ \verb|git tag| như \verb|v1.0|.
+\item \textbf{Nhánh develop:} nhánh tích hợp hàng ngày, mọi nhánh tính năng đều tách từ đây và merge ngược về đây qua pull request.
+\item \textbf{Nhánh feature:} tên theo mẫu \verb|feature/ten-tinh-nang|, ví dụ \verb|feature/login-aspx| do TV1 làm, \verb|feature/github-actions| do TV2 làm, \verb|feature/gitlab-ci| do TV3 làm, xóa ngay sau khi merge.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.6cm, minimum height=1.0cm, align=center, font=\small}]
+\node[box] (feat) {feature/*};
+\node[box, right=1.4cm of feat] (dev) {develop};
+\node[box, right=1.4cm of dev] (main) {main};
+\draw[->] (feat) -- node[midway, above, font=\footnotesize] {PR/MR + review} (dev);
+\draw[->] (dev) -- node[midway, above, font=\footnotesize] {release} (main);
+\end{tikzpicture}
+\caption{Mô hình nhánh cho nhóm 3 người từ feature về develop rồi release lên main}
+\label{fig:c7-branch}
+\end{figure}
+
+Hình \ref{fig:c7-branch} tóm tắt luồng đi chuẩn: code trên nhánh \texttt{feature}, hợp nhất về \texttt{develop} qua review, rồi mới release lên \texttt{main}.
+Nhánh \texttt{main} và \texttt{develop} đều được bảo vệ: chặn push trực tiếp, yêu cầu ít nhất một approve và yêu cầu pipeline build xanh \cite{githubdocs,gitlabdocs}.
+Khi có lỗi khẩn cấp trên bản release, tách nhánh \verb|hotfix/ten-loi| từ \texttt{main}, sửa xong merge vào cả \texttt{main} và \texttt{develop} để hai nhánh không lệch nhau.
+Cuối mỗi buổi làm việc, mọi người push nhánh của mình lên remote để đồng đội thấy tiến độ, kể cả khi chưa mở pull request.
+
+\subsection{Quy trình pull request và merge request sáu bước}
+\label{subsec:c7-prmr}
+
+Mọi thay đổi code đều phải đi qua đúng 6 bước sau, áp dụng giống nhau cho pull request trên GitHub và merge request trên GitLab.
+Quy trình này ngăn code lỗi lọt vào nhánh chung và buộc mọi dòng code đều có ít nhất 2 cặp mắt kiểm tra.
+
+\begin{enumerate}
+\item \textbf{Push nhánh tính năng lên remote:} commit gọn theo Conventional Commits rồi push bằng \verb|git push -u origin| kèm tên nhánh, ví dụ \verb|feature/login-aspx|.
+\item \textbf{Mở pull request về develop:} mô tả rõ thay đổi gì, vì sao thay đổi, cách kiểm thử, đính kèm ảnh chụp trang ASPX nếu có thay đổi giao diện.
+\item \textbf{Gán reviewer:} mỗi pull request gán ít nhất một đồng đội làm reviewer, người còn lại có thể subscribe để theo dõi, tuyệt đối không tự approve code của mình.
+\item \textbf{Chờ CI chạy xanh:} pipeline tự động restore NuGet, build bằng \verb|msbuild| và chạy test, reviewer chỉ bắt đầu review khi pipeline đã xanh \cite{ghactions,gitlabci,msmsbuild}.
+\item \textbf{Review và approve:} reviewer đi theo checklist ở mục sau, comment cụ thể từng dòng, tác giả sửa rồi push thêm commit, reviewer approve khi hết ý kiến.
+\item \textbf{Merge và xóa nhánh:} dùng merge commit để giữ lịch sử rõ ràng, merge xong xóa nhánh \texttt{feature} trên remote để danh sách nhánh luôn gọn, pull \texttt{develop} mới về máy local.
+\end{enumerate}
+
+\begin{lstlisting}[language=bash, caption={Day nhanh tinh nang va mo pull request ve develop}, label={lst:c7-pr}]
+# TV1: tao nhanh tinh nang tu develop moi nhat
+git checkout develop
+git pull origin develop
+git checkout -b feature/login-aspx
+# ... code tren Default.aspx va Default.aspx.cs ...
+git add Default.aspx Default.aspx.cs Web.config
+git commit -m "feat: them form dang nhap voi validation server-side"
+git push -u origin feature/login-aspx
+# mo pull request ve develop, gan TV2 lam reviewer
+gh pr create --base develop --head feature/login-aspx \
+  --title "feat: form dang nhap" \
+  --reviewer TV2
+\end{lstlisting}
+
+Khối lệnh trên minh họa bước 1 và bước 2 cho TV1, các bước còn lại thực hiện trên giao diện web GitHub hoặc GitLab.
+Nếu pipeline báo đỏ, tác giả phải sửa ngay, không được nhờ reviewer bỏ qua và merge cố.
+Khi reviewer yêu cầu thay đổi, tác giả push thêm commit mới thay vì sửa commit cũ, để reviewer thấy rõ phần nào đã sửa theo góp ý.
+Merge xong, tác giả kiểm tra lại nhánh \texttt{develop} trên remote đã có code của mình rồi mới xóa nhánh local bằng \verb|git branch -d|.
+
+\subsection{Danh sách kiểm tra review code Web Forms}
+\label{subsec:c7-checklist}
+
+Reviewer dùng checklist 10 mục sau cho mọi pull request chạm vào code Web Forms, thiếu một mục là chưa đủ điều kiện approve.
+Checklist này được đúc kết từ lỗi sinh viên hay mắc khi làm đồ án ASPX với C\# \cite{msnetfx,githubdocs}.
+
+\begin{enumerate}
+\item \textbf{Chống SQL injection:} mọi câu lệnh SQL đều dùng tham số \verb|SqlParameter|, cấm nối chuỗi từ ô nhập liệu vào câu lệnh, kiểm tra kỹ các trang tìm kiếm và đăng nhập.
+\item \textbf{Chống XSS:} dữ liệu người dùng hiển thị ra trang phải được encode bằng \verb|HttpUtility.HtmlEncode|, giữ nguyên cơ chế ValidateRequest, không tắt kiểm tra request khi chưa hiểu rõ.
+\item \textbf{Bảo vệ ViewState:} bật MAC kiểm toàn vẹn ViewState, mã hóa ViewState khi trang chứa dữ liệu nhạy cảm, không lưu mật khẩu hay quyền hạn vào ViewState hay hidden field.
+\item \textbf{Validation hai lớp:} mọi ràng buộc đều kiểm tra lại ở server bằng validator hoặc code C\# trong sự kiện, validation phía client chỉ để trải nghiệm mượt hơn chứ không thay thế kiểm tra server.
+\item \textbf{File Web.config an toàn:} thẻ biên dịch tắt debug ở bản release, customErrors bật chế độ hiển thị trang lỗi thân thiện, không để lộ stack trace cho người dùng cuối.
+\item \textbf{Connection string mẫu:} file \texttt{Web.config} commit lên repo chỉ chứa connection string mẫu trỏ về máy local, connection string thật của server lấy từ transform hoặc secret của CI.
+\item \textbf{Phân quyền:} trang quản trị kiểm tra đăng nhập và vai trò trong sự kiện tải trang, ẩn menu chưa đủ mà phải chặn cả khi người dùng gõ trực tiếp địa chỉ URL.
+\item \textbf{Xử lý lỗi và ghi log:} khối truy vấn dữ liệu có xử lý ngoại lệ, lỗi ghi vào log hoặc bảng log thay vì hiện chi tiết cho người dùng, đóng connection trong khối \verb|using|.
+\item \textbf{Hiệu năng:} tắt ViewState ở các control chỉ hiển thị như GridView danh sách lớn, truy vấn có phân trang ở database thay vì tải toàn bộ bảng lên bộ nhớ.
+\item \textbf{Phong cách code:} tên biến và hàm C\# theo quy ước chung của nhóm, xóa code thừa và dòng comment không còn đúng, message commit tuân thủ Conventional Commits \cite{convcommits}.
+\end{enumerate}
+
+Khi phát hiện lỗi, reviewer comment đúng dòng code, giải thích vì sao sai và gợi ý cách sửa, tránh comment chung chung kiểu code chưa ổn.
+Lỗi thuộc mục 1, 2, 5, 6 được tính là lỗi nghiêm trọng: bắt buộc sửa trước khi merge, không được hẹn sang pull request sau.
+Tác giả trả lời từng comment bằng cách sửa code hoặc giải thích lý do giữ nguyên, sau đó yêu cầu review lại.
+
+\subsection{Xử lý xung đột file Web.config}
+\label{subsec:c7-conflict}
+
+File \texttt{Web.config} là nơi xung đột nhiều nhất vì cả 3 thành viên đều chạm vào: người thêm connection string, người thêm cấu hình globalization, người bật tắt debug.
+Quy trình chuẩn gồm 5 bước: lấy \texttt{develop} mới nhất, merge vào nhánh của mình, sửa marker xung đột, build thử, rồi mới commit và push.
+
+\begin{lstlisting}[language=bash, caption={Lay develop moi nhat va giai quyet xung dot Webconfig}, label={lst:c7-conflict}]
+# dang o nhanh feature, lay develop moi nhat ve
+git fetch origin
+git merge origin/develop
+# mo Web.config, tim cac cum marker xung dot
+# giu ban mau, xoa marker, roi danh dau da xong
+git add Web.config
+git commit -m "fix: giai quyet conflict Web.config, giu connection string mau"
+# build thu truoc khi push
+msbuild AspxDemo.sln /p:Configuration=Release
+git push origin feature/login-aspx
+\end{lstlisting}
+
+Sau lệnh merge, Git chèn các cụm marker vào những đoạn hai bên cùng sửa, nhiệm vụ của người sửa là đọc kỹ cả hai phía rồi viết lại thành một bản đúng duy nhất.
+Nguyên tắc giữ code: giữ connection string mẫu trỏ về máy local, giữ mọi thẻ cấu hình mới của cả hai bên, chỉ bỏ phần marker và phần trùng lặp.
+Ví dụ khi TV1 thêm thẻ connection string còn TV2 thêm thẻ globalization, bản hợp nhất phải có cả hai thẻ, không được xóa nhầm thẻ của đồng đội.
+Trường hợp lỡ tay xóa sai, dùng \verb|git checkout --merge -- Web.config| để quay lại trạng thái đang xung đột rồi sửa lại từ đầu.
+Xung đột càng để lâu càng khó sửa, vì vậy mỗi ngày đều merge \texttt{develop} mới nhất vào nhánh của mình ít nhất một lần \cite{progit,atlassiangit}.
+
+\subsection{Quản lý connection string và secret}
+\label{subsec:c7-secret}
+
+Connection string chứa tên server, tài khoản và mật khẩu database nên tuyệt đối không commit giá trị thật lên repo, nhất là repo public.
+Giải pháp gồm 2 lớp: Web.config transform tách cấu hình theo môi trường, và secret hoặc variables của CI cung cấp giá trị thật lúc build \cite{msnetfx,ghactions,gitlabci}.
+
+\begin{lstlisting}[language=XML, caption={Vi du Web Release config thay connection string khi xuat ban}, label={lst:c7-transform}]
+<?xml version="1.0" encoding="utf-8"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <connectionStrings>
+    <add name="AspxDb" connectionString="Server=prod-db;Database=AspxDemo;"
+      xdt:Transform="SetAttributes" xdt:Locator="Match(name)" />
+  </connectionStrings>
+  <system.web>
+    <compilation xdt:Transform="RemoveAttributes(debug)" />
+    <customErrors mode="On" defaultRedirect="~/Error.aspx"
+      xdt:Transform="Replace" />
+  </system.web>
+</configuration>
+\end{lstlisting}
+
+File transform trên thay connection string và bật trang lỗi thân thiện khi xuất bản bản Release, còn file \texttt{Web.config} gốc trong repo vẫn giữ giá trị mẫu an toàn.
+Giá trị thật của server production được lưu trong GitHub Actions Secrets hoặc GitLab CI/CD Variables, pipeline đọc secret rồi ghi đè vào file cấu hình lúc build.
+Secret phải bật chế độ masked để không in ra log, và bật protected để chỉ pipeline chạy trên nhánh được bảo vệ mới đọc được.
+Bảng \ref{tab:c7-secret} so sánh 4 nơi lưu connection string để nhóm chọn đúng chỗ cho từng môi trường.
+
+\begin{table}[H]
+\centering
+\caption{So sánh 4 nơi lưu connection string và secret cho đồ án ASPX}
+\label{tab:c7-secret}
+\begin{tabular}{llll}
+\toprule
+Nơi lưu & Ưu điểm & Nhược điểm & Dùng khi nào \\
+\midrule
+Web.config giá trị thật & Chạy ngay không cấu hình thêm & Lộ mật khẩu cho cả nhóm và lịch sử & Không bao giờ dùng \\
+Web.config mẫu và transform & An toàn, tách theo môi trường & Phải viết thêm file transform & Mặc định cho mọi commit \\
+GitHub Actions Secrets & Mã hóa, ẩn khỏi log & Chỉ dùng trong pipeline GitHub & Build và deploy từ GitHub \\
+GitLab CI Variables & Phân quyền theo môi trường & Chỉ dùng trong pipeline GitLab & Build và deploy từ GitLab \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Nếu lỡ commit mật khẩu thật, phải đổi mật khẩu database ngay, sau đó dùng \verb|git revert| hoặc công cụ làm sạch lịch sử để xóa secret khỏi repo \cite{progit,githubdocs,gitlabdocs}.
+GitHub và GitLab đều có tính năng quét secret tự động, nhóm nên bật để được cảnh báo sớm khi vô tình push nhầm.
+Cuối đồ án, rà soát toàn bộ lịch sử bằng lệnh tìm kiếm chuỗi mật khẩu cũ để chắc chắn không còn secret nào sót lại.
+
+\subsection{Mẫu lịch sử commit và quy tắc đặt message}
+\label{subsec:c7-log}
+
+Lịch sử commit sạch là bằng chứng nhóm làm việc nghiêm túc và giúp thầy cô theo dõi tiến độ từng thành viên.
+Mọi message tuân thủ Conventional Commits: loại thay đổi, phạm vi tùy chọn và mô tả ngắn bằng tiếng Việt không dấu hoặc tiếng Anh \cite{convcommits}.
+
+\begin{lstlisting}[language=bash, caption={Mau lich su commit dep cho repo do an ASPX}, label={lst:c7-log}]
+* 9f3c1a2 (HEAD -> develop) docs: cap nhat checklist review Web Forms
+* 7b2e44f feat: them trang DangNhap voi validation server-side
+* 2a91bc0 Merge pull request #14 from feature/login-aspx
+|\
+| * 5d77c91 fix: sua loi null khi Session het han
+| * 3e08ab4 feat: them form dang nhap Default.aspx
+|/
+* e6c51d0 ci: them workflow build msbuild cho NET481
+* a4f90b3 docs: them huong dan xu ly conflict Web.config
+* 1c2d3e4 Merge pull request #13 from feature/github-actions
+* 77aa901 chore: cap nhat gitignore chuan ASP.NET
+* 0b1c2d3 Initial commit: tao project Web Forms 4.8.1
+\end{lstlisting}
+
+Khối trên cho thấy lịch sử mẫu đẹp: mỗi commit một việc, message bắt đầu bằng \verb|feat|, \verb|fix|, \verb|docs|, \verb|ci| hoặc \verb|chore|, xen kẽ các merge commit của pull request.
+Quy tắc đặt message gồm 5 điểm: dùng thể mệnh lệnh như thêm và sửa thay vì đã thêm, dòng đầu không quá 72 ký tự, tên file và hạng mục viết đúng chính tả, mỗi commit chỉ giải quyết một việc, commit build lỗi thì sửa ngay bằng commit \verb|fix| mới.
+Xem lịch sử bằng \verb|git log --graph --oneline -12| để được đúng 12 dòng gọn như mẫu, dùng \verb|git show| kèm mã commit để xem chi tiết từng thay đổi \cite{progit}.
+Trước buổi bảo vệ, TV3 xuất ảnh lịch sử commit và ảnh pipeline xanh đưa vào báo cáo làm minh chứng nhóm đã làm đúng quy trình.
+
+\subsection{Bài tập thực hành}
+\label{subsec:c7-baitap}
+
+Năm bài tập sau đi từ dễ đến khó, mỗi bài gắn với một kỹ năng trong chương, nhóm nên làm theo thứ tự trong 2 tuần.
+
+\begin{enumerate}
+\item \textbf{Dễ -- Clone và commit đầu tiên:} clone repo đồ án về máy, tạo nhánh \verb|feature/ho-ten|, thêm tên mình vào trang giới thiệu, commit và push lên remote. Gợi ý đáp án: đúng 3 lệnh \verb|checkout -b|, \verb|commit -m| theo chuẩn và \verb|push -u origin| là đạt.
+\item \textbf{Dễ -- Mở pull request và review chéo:} từ nhánh ở bài 1 mở pull request về \texttt{develop}, gán một bạn làm reviewer, reviewer dùng checklist 10 mục để comment ít nhất 2 góp ý rồi approve. Gợi ý đáp án: pull request có mô tả, có ít nhất một comment review và trạng thái đã merge.
+\item \textbf{Trung bình -- Giải xung đột Web.config:} hai bạn cùng sửa file \texttt{Web.config} trên hai nhánh khác nhau rồi lần lượt merge về \texttt{develop}, người merge sau phải giải xung đột và giữ được cấu hình của cả hai. Gợi ý đáp án: bản hợp nhất có đủ connection string mẫu và thẻ mới của đồng đội, build Release thành công.
+\item \textbf{Khó -- Thêm CI build msbuild và secret:} viết workflow hoặc pipeline restore NuGet, build project 4.8.1 bằng \verb|msbuild| trên Windows runner, đọc connection string từ Secrets hoặc Variables thay vì hard-code. Gợi ý đáp án: pipeline xanh, log không lộ secret, pull request bị chặn merge khi build đỏ \cite{ghactions,gitlabci,msmsbuild}.
+\item \textbf{Khó -- Mirror sang GitLab và bảo vệ nhánh:} mirror repo GitHub sang GitLab, mở merge request có approval rule yêu cầu một approve, so sánh 5 điểm khác nhau giữa pull request và merge request. Gợi ý đáp án: merge request đã approve và merge, bảng so sánh nêu được approval rule, merge train, pipeline tích hợp, quyền hạn và self-hosted \cite{githubdocs,gitlabdocs}.
+\end{enumerate}
+
+Mỗi bài nộp bằng link pull request hoặc merge request kèm ảnh chụp màn hình kết quả, không nộp file nén qua chat.
+TV1 chấm bài 1 và bài 3, TV2 chấm bài 2 và bài 4, TV3 chấm bài 5 và tổng hợp điểm quá trình.
+Nhóm nào làm xong cả 5 bài sẽ có đủ minh chứng cho báo cáo: lịch sử commit đẹp, pull request có review, pipeline xanh và bảng so sánh GitHub với GitLab.

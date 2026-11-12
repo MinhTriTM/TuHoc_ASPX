@@ -1,0 +1,265 @@
+\section{So sánh Git, GitHub và GitLab}
+
+Nhiều bạn mới học thường gọi gộp cả ba cái tên Git, GitHub và GitLab thành một chữ \texttt{git} cho gọn.
+Cách gọi này gây nhầm lẫn khi làm đồ án, vì Git là công cụ chạy trên máy cá nhân,
+còn GitHub và GitLab là dịch vụ máy chủ dùng để cộng tác nhóm \cite{progit,atlassiangit}.
+Chương này làm rõ sự khác nhau giữa ba khái niệm, so sánh chi tiết GitHub với GitLab
+trên hơn hai mươi tiêu chí, đối chiếu các tính năng tương đương,
+rồi đưa ra khuyến nghị cụ thể cho đồ án môn học ASPX trên .NET Framework 4.8.1 \cite{msnetfx}.
+
+\subsection{Git, GitHub và GitLab khác nhau thế nào}
+
+Git là hệ thống quản lý phiên bản phân tán, nghĩa là mỗi máy giữ đầy đủ lịch sử commit
+và làm việc offline hoàn toàn với các lệnh như \verb|git add|, \verb|git commit|,
+\verb|git branch| hay \verb|git log| \cite{progit}.
+GitHub và GitLab là hai nền tảng trực tuyến xây dựng quanh Git, bổ sung kho chứa tập trung,
+quản lý công việc, review code và CI/CD \cite{githubdocs,gitlabdocs}.
+Nói ngắn gọn: Git là cái búa miễn phí ai cũng cầm được,
+còn GitHub và GitLab là hai xưởng mộc cùng dùng loại búa đó nhưng cách tổ chức khác nhau.
+Bảng \ref{tab:c6-khai-niem} tóm tắt sự khác nhau cốt lõi giữa ba khái niệm này.
+
+\begin{table}[H]
+\centering
+\caption{Khác nhau cốt lõi giữa Git, GitHub và GitLab}
+\label{tab:c6-khai-niem}
+\begin{tabular}{p{2.4cm}p{3.7cm}p{3.7cm}p{3.7cm}}
+\toprule
+Tiêu chí & Git & GitHub & GitLab \\
+\midrule
+Bản chất & Hệ thống quản lý phiên bản phân tán \cite{progit} & Nền tảng hosting và cộng tác dựa trên Git \cite{githubdocs} & Nền tảng DevOps tích hợp dựa trên Git \cite{gitlabdocs} \\
+Chạy ở đâu & Máy cá nhân của từng thành viên & Đám mây GitHub, hoặc máy chủ riêng bản Enterprise & Đám mây GitLab.com, hoặc máy chủ riêng miễn phí \\
+Cần mạng không & Không cần cho commit, nhánh, xem log; chỉ cần khi push và pull & Cần mạng cho hầu hết thao tác cộng tác & Cần mạng cho hầu hết thao tác cộng tác \\
+Ví dụ thao tác & \verb|git commit|, \verb|git merge| & Tạo PR, review code, chạy Actions & Tạo MR, approve, chạy pipeline \\
+Chi phí & Miễn phí, mã nguồn mở & Gói Free, Team, Enterprise & Gói Free, Premium, Ultimate, bản tự quản miễn phí \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Đoạn lệnh \ref{lst:c6-offline-remote} cho thấy Git local chạy offline hoàn toàn,
+chỉ khi đẩy code lên GitHub hoặc GitLab mới cần kết nối mạng.
+
+\begin{lstlisting}[language=bash,caption={Git local lam viec offline, day len remote moi can mang},label={lst:c6-offline-remote}]
+# 1. Lam viec offline hoan toan tren may ca nhan
+git init AspxDemo_NET481
+cd AspxDemo_NET481
+git add .
+git commit -m "feat: khoi tao project ASPX 4.8.1"
+git log --oneline
+git branch feature/login
+git switch feature/login
+# 2. Can mang Internet khi day code len server
+git remote add origin https://github.com/nhom3/AspxDemo_NET481.git
+git push -u origin feature/login
+\end{lstlisting}
+
+Hình \ref{fig:c6-local-remote} minh họa mô hình nhóm 3 người dùng trong đồ án:
+mỗi máy chạy Git local, cùng đẩy code lên hai remote là GitHub và GitLab.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (local) {Git local\\may sinh vien};
+\node[box, above right=0.8cm and 1.6cm of local] (hub) {GitHub\\remote chinh};
+\node[box, below right=0.8cm and 1.6cm of local] (lab) {GitLab\\remote mirror};
+\draw[->] (local) -- node[midway, above, sloped, font=\footnotesize] {push/pull} (hub);
+\draw[->] (local) -- node[midway, below, sloped, font=\footnotesize] {push/mirror} (lab);
+\end{tikzpicture}
+\caption{Mỗi máy chạy Git local và đẩy code lên GitHub và GitLab}
+\label{fig:c6-local-remote}
+\end{figure}
+
+Điểm mấu chốt cần nhớ: thành thạo Git local là nền tảng bắt buộc của mọi thành viên,
+còn GitHub hay GitLab chỉ là nơi đặt kho remote và bộ công cụ cộng tác phía trên.
+Mất mạng vẫn commit, tạo nhánh và xem lịch sử bình thường, đó chính là sức mạnh của mô hình phân tán.
+
+\subsection{So sánh chi tiết GitHub và GitLab trên hơn hai mươi tiêu chí}
+
+GitHub và GitLab trùng nhau khoảng 80\% chức năng phổ biến như lưu trữ code,
+theo dõi công việc và review, nhưng khác nhau rõ ở triết lý:
+GitHub mạnh về cộng đồng mã nguồn mở và hệ sinh thái mở rộng,
+GitLab mạnh về quy trình DevOps khép kín và khả năng tự quản máy chủ.
+Hai bảng dưới đây so sánh 22 tiêu chí, nhóm theo nền tảng, CI/CD,
+cộng tác, bảo mật và chi phí để tiện đối chiếu khi chọn công cụ cho đồ án.
+
+\begin{table}[H]
+\centering
+\caption{So sánh GitHub và GitLab, phần 1: nền tảng, CI/CD và cộng tác}
+\label{tab:c6-gh-gl-1}
+\begin{tabular}{p{3.2cm}p{5.4cm}p{5.4cm}}
+\toprule
+Tiêu chí & GitHub & GitLab \\
+\midrule
+Bản chất nền tảng & Hosting và cộng tác, mạnh cộng đồng mở \cite{githubdocs} & DevOps tích hợp một cửa, mạnh tự quản \cite{gitlabdocs} \\
+Cài đặt self-host & Khó: chỉ bản Enterprise Server, tốn phí và cấu hình nặng & Dễ: bản Community miễn phí, cài một gói Omnibus \\
+CI/CD tích hợp & GitHub Actions, workflow chạy theo sự kiện \cite{ghactions} & GitLab CI/CD, pipeline theo stages minh bạch \cite{gitlabci} \\
+Runner Windows & Có sẵn image windows-latest, dùng ngay & Tự đăng ký Windows runner, gắn nhãn windows \\
+Build ASPX 4.8.1 & Gọi msbuild trên windows-latest, cache NuGet \cite{msmsbuild} & Gọi msbuild trên Windows runner, cache tương tự \\
+Review code & Pull request, suggestion, review theo từng file & Merge request, suggestion, review đa cấp \\
+Approval bắt buộc & Rulesets và required reviewers, bản trả phí đầy đủ hơn & Approval rules miễn phí đã khá mạnh \\
+Bảo vệ nhánh main & Protected branch, status check, CODEOWNERS & Protected branch, protected tag, push rules \\
+Quản lý công việc & Issues và Projects dạng kanban & Issues, Boards, Epics và Milestones \\
+Wiki và tài liệu & Wiki, Pages và Discussions & Wiki, Pages và Snippets \\
+Package NuGet & GitHub Packages hỗ trợ NuGet, npm, Maven & Package Registry hỗ trợ NuGet và Generic \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{So sánh GitHub và GitLab, phần 2: bảo mật, chi phí và phù hợp ASPX}
+\label{tab:c6-gh-gl-2}
+\begin{tabular}{p{3.2cm}p{5.4cm}p{5.4cm}}
+\toprule
+Tiêu chí & GitHub & GitLab \\
+\midrule
+Container registry & Registry ghcr.io gắn với tài khoản và tổ chức & Registry tích hợp sẵn trong từng project \\
+Trang tĩnh demo & GitHub Pages, deploy từ nhánh hoặc Actions & GitLab Pages, deploy qua job trong pipeline \\
+Quét secret lộ lọt & Secret scanning và push protection & Secret detection chạy trong pipeline \\
+Quét bảo mật code & Dependabot và CodeQL \cite{githubdocs} & SAST, DAST và Dependency scanning \cite{gitlabdocs} \\
+Trợ lý AI & Copilot gợi ý code trực tiếp trong IDE & Duo gợi ý code và tóm tắt MR \\
+Kho mở rộng & Marketplace rất lớn, hàng nghìn Actions sẵn & Tích hợp sẵn nhiều, chợ mở rộng nhỏ hơn \\
+Giới hạn gói free & Khoảng 2000 phút Actions mỗi tháng, 500 MB packages & Khoảng 400 phút CI mỗi tháng, 5 GB registry \\
+Giá gói trả phí & Team khoảng 4 USD mỗi người mỗi tháng & Premium khoảng 29 USD mỗi người mỗi tháng \\
+Mirror và import & Nhập từ GitLab và Bitbucket, mirror hạn chế & Mirror push và pull mạnh, nhập từ GitHub dễ \\
+Cộng đồng, việc làm & Rất phổ biến, nhà tuyển dụng hay xem profile & Phổ biến trong doanh nghiệp tự quản máy chủ \\
+Phù hợp đồ án ASPX & Rất tốt: Actions Windows sẵn, dễ demo pipeline xanh & Rất tốt: pipeline minh bạch, hợp học DevOps \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Con số giới hạn và giá ở hai bảng trên thay đổi theo chính sách hãng\footnote{Cần kiểm tra bảng giá chính thức trước ngày bảo vệ: \url{https://github.com/pricing} và \url{https://about.gitlab.com/pricing}.},
+nhưng thứ tự lớn nhỏ tương đối giữ nguyên trong nhiều năm:
+GitHub hào phóng phút CI miễn phí hơn, GitLab hào phóng tính năng DevOps miễn phí hơn.
+Với project ASPX 4.8.1 viết bằng C\# và Web Forms, cả hai nền tảng đều build được
+vì đều hỗ trợ runner Windows gọi msbuild \cite{msmsbuild}.
+Khác biệt thực tế nằm ở trải nghiệm: Actions cấu hình nhanh trong vài phút,
+còn pipeline GitLab mô tả stages rõ ràng nên dễ trình bày trước lớp hơn.
+
+\subsection{Các tính năng tương đương giữa hai nền tảng}
+
+Sinh viên đã quen một nền tảng có thể chuyển sang nền tảng còn lại rất nhanh
+vì hầu hết tính năng đều có cặp tương đương, chỉ khác tên gọi và chút ít thao tác.
+Bảng \ref{tab:c6-tuong-duong} liệt kê 8 cặp tương đương hay dùng nhất trong đồ án,
+kèm ghi chú để khi thầy cô hỏi phản biện có thể trả lời ngay.
+
+\begin{table}[H]
+\centering
+\caption{Tám cặp tính năng tương đương giữa GitHub và GitLab}
+\label{tab:c6-tuong-duong}
+\begin{tabular}{p{3.2cm}p{5.4cm}p{5.4cm}}
+\toprule
+Nhu cầu & GitHub & GitLab \\
+\midrule
+Đề xuất hợp nhất code & Pull request, gọi tắt PR & Merge request, gọi tắt MR \\
+Tích hợp CI/CD & Actions với file YAML trong workflows & Pipelines với file \texttt{.gitlab-ci.yml} \\
+Soạn code trên web & Codespaces chạy VS Code trên đám mây & Web IDE gọn nhẹ kèm terminal \\
+Quản lý công việc & Issues và Projects & Issues và Boards \\
+Chứa gói NuGet & GitHub Packages & Package Registry \\
+Trang web tĩnh demo & GitHub Pages & GitLab Pages \\
+Quét bảo mật tự động & Dependabot và CodeQL & SAST và Dependency scanning \\
+Trợ lý AI gợi ý code & Copilot & Duo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Điểm khác tên dễ gây lú nhất là PR và MR: Pull request của GitHub
+và Merge request của GitLab thực chất cùng một việc là xin hợp nhất nhánh có review,
+chỉ khác tên vì lịch sử hai hãng \cite{githubdocs,gitlabdocs}.
+Tương tự, Actions và Pipelines cùng mô tả các bước build, test, deploy bằng YAML,
+nên đã viết được file YAML cho bên này thì đọc hiểu file YAML bên kia trong vài phút.
+Đoạn lệnh \ref{lst:c6-hai-remote} cho thấy cách gắn cả hai remote vào một repo local
+để đẩy code song song, đây là bước chuẩn bị cho mô hình mirror ở mục sau.
+
+\begin{lstlisting}[language=bash,caption={Gan ca hai remote GitHub va GitLab vao mot repo},label={lst:c6-hai-remote}]
+# Gan 2 remote: GitHub lam chinh, GitLab lam mirror
+git remote add github https://github.com/nhom3/AspxDemo_NET481.git
+git remote add gitlab https://gitlab.com/nhom3/AspxDemo_NET481.git
+git remote -v
+# Day mot nhanh len ca hai noi
+git push github main
+git push gitlab main
+# Mirror tu dong: tren GitLab vao Settings -> Repository -> Mirroring,
+# dan URL repo GitHub, che do Push, pipeline chay khi co commit moi
+\end{lstlisting}
+
+\subsection{Khuyến nghị cho đồ án môn học ASPX}
+
+Không có đáp án đúng duy nhất cho mọi nhóm, vì lựa chọn phụ thuộc vào mục tiêu demo,
+thời gian và máy móc sẵn có.
+Phần này đưa ra ba khuyến nghị cụ thể: khi nào nên chọn GitHub,
+khi nào nên chọn GitLab, và vì sao nhóm 3 người quyết định dùng cả hai qua cơ chế mirror.
+
+\subsubsection{Khi nào nên chọn GitHub}
+
+\begin{itemize}
+\item Muốn demo nhanh trong 5 đến 7 phút: tạo repo, bật Actions với image Windows sẵn,
+  pipeline build msbuild xanh ngay mà không cần cài runner riêng \cite{ghactions,msmsbuild}.
+\item Nhóm có thành viên mới học Git: tài liệu, video hướng dẫn và câu trả lời trên mạng
+  cho GitHub nhiều nhất, tra cứu lỗi nhanh hơn hẳn.
+\item Muốn khoe profile khi xin thực tập: nhà tuyển dụng quen xem hồ sơ GitHub,
+  số PR và mảng contribution xanh là điểm cộng trực quan.
+\item Cần trang demo tĩnh gấp: GitHub Pages xuất bản slide hoặc tài liệu nhóm
+  chỉ bằng vài cú nhấp chuột từ nhánh chính.
+\end{itemize}
+
+\subsubsection{Khi nào nên chọn GitLab}
+
+\begin{itemize}
+\item Muốn học DevOps bài bản: pipeline stages, environments và review apps
+  thể hiện trực quan tư duy tích hợp và triển khai liên tục \cite{gitlabci}.
+\item Cần approval chặt mà không tốn phí: approval rules và protected branch của GitLab
+  ở gói miễn phí đã đủ để demo quy trình review nghiêm túc trước lớp.
+\item Phòng lab cho phép tự quản máy chủ: bản Community cài trên một máy tính
+  của khoa là cả lớp có forge riêng để thực hành mà không phụ thuộc mạng quốc tế.
+\item Muốn một nơi làm tất cả: issues, MR, CI/CD, registry và Pages nằm chung một project,
+  đỡ phải mở nhiều dịch vụ rời rạc.
+\end{itemize}
+
+\subsubsection{Vì sao nhóm dùng cả hai qua cơ chế mirror}
+
+Nhóm 3 người quyết định lấy GitHub làm kho chính vì Actions Windows cấu hình nhanh,
+đồng thời mirror sang GitLab để tận dụng pipeline stages minh bạch khi thuyết trình.
+Mỗi thành viên làm trên nhánh feature riêng, mở PR bên GitHub để review,
+code sau khi merge tự động mirror sang GitLab và kích hoạt pipeline đối chứng.
+Cách làm này cho ba lợi ích rõ rệt: thứ nhất, cả nhóm thực hành được cả PR lẫn MR
+nên trả lời tốt mọi câu hỏi phản biện; thứ hai, bảng so sánh trong báo cáo có số liệu thật
+đo từ hai pipeline chạy cùng một commit; thứ ba, luôn có một bản sao dự phòng
+khi một trong hai dịch vụ nghẽn mạng đúng hôm demo.
+Đoạn lệnh \ref{lst:c6-gitlab-yml} là khung pipeline GitLab tối thiểu mà nhóm dùng cho project ASPX,
+chạy trên Windows runner và gọi msbuild giống hệt job bên GitHub Actions.
+
+\begin{lstlisting}[language=yaml,caption={Khung pipeline GitLab toi thieu build ASPX 4.8.1},label={lst:c6-gitlab-yml}]
+# .gitlab-ci.yml skeleton for ASPX 4.8.1 on Windows runner
+stages:
+  - build
+  - test
+variables:
+  BUILD_CONFIG: 'Release'
+build-aspx:
+  stage: build
+  tags:
+    - windows
+  script:
+    - nuget restore AspxDemo.sln
+    - msbuild AspxDemo.sln /p:Configuration=Release
+  artifacts:
+    paths:
+      - AspxDemo/bin/Release/
+test-aspx:
+  stage: test
+  tags:
+    - windows
+  script:
+    - vstest.console.exe AspxDemo.Tests/bin/Release/AspxDemo.Tests.dll
+  dependencies:
+    - build-aspx
+\end{lstlisting}
+
+Quy trình nhánh của nhóm tuân theo GitFlow thu gọn \cite{gitflow}:
+nhánh main luôn build xanh, nhánh develop gom tính năng,
+mỗi tính năng một nhánh feature ngắn ngày rồi merge qua PR hoặc MR.
+Mọi commit tuân thủ Conventional Commits \cite{convcommits} với tiền tố như feat, fix, docs,
+nhờ đó lịch sử đọc như nhật ký dự án thay vì mớ ghi chú lộn xộn.
+Tóm lại, GitHub phù hợp khi cần nhanh và khoe được thành quả,
+GitLab phù hợp khi cần sâu và trình bày được quy trình,
+còn dùng cả hai qua mirror là lựa chọn tối ưu cho bài trình bày so sánh này.

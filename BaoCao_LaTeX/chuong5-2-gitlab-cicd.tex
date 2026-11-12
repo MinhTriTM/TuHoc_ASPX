@@ -1,0 +1,285 @@
+\subsection{Khái niệm pipeline: stages, jobs, artifacts, cache, needs và rules}
+
+Trong GitLab, mỗi lần lập trình viên đẩy mã nguồn lên một nhánh, hoặc khi một merge
+request được tạo ra hay cập nhật, GitLab CI/CD sẽ tự động kích hoạt một \textit{pipeline}:
+một luồng công việc gồm nhiều bước kiểm tra, biên dịch và triển khai chạy nối tiếp nhau.
+Pipeline giúp nhóm phát hiện lỗi sớm, chuẩn hóa quy trình build và loại bỏ thao tác thủ công
+dễ sai sót khi phát hành phiên bản mới cho dự án ASPX \cite{gitlabci}.
+
+Một pipeline gồm sáu khái niệm cốt lõi mà sinh viên cần nắm vững trước khi viết tệp cấu hình:
+
+\begin{description}
+\item[Stages] là các giai đoạn lớn chạy tuần tự, ví dụ \verb|build| rồi đến \verb|test| rồi
+đến \verb|deploy|. Một stage chỉ bắt đầu khi mọi job của stage trước đã thành công.
+\item[Jobs] là đơn vị công việc nhỏ nhất trong pipeline, ví dụ job biên dịch solution hay
+job chạy kiểm thử. Các job cùng một stage sẽ chạy song song nếu có đủ runner rảnh.
+\item[Artifacts] là các tệp kết quả mà job giữ lại sau khi chạy xong, ví dụ thư mục
+\verb|publish/| chứa website đã biên dịch, hoặc báo cáo kiểm thử định dạng JUnit. Các job ở
+stage sau có thể tải artifacts của stage trước về để sử dụng tiếp.
+\item[Cache] là cơ chế lưu trữ tạm giúp tăng tốc các lần chạy sau, ví dụ cache thư mục gói
+NuGet đã tải. Khác với artifacts, cache không đảm bảo toàn vẹn và có thể bị xóa bất cứ lúc nào.
+\item[Needs] cho phép một job chạy ngay khi các job mà nó phụ thuộc hoàn thành, thay vì chờ
+cả stage trước kết thúc. Nhờ \verb|needs|, pipeline thực thi theo đồ thị có hướng nên nhanh hơn.
+\item[Rules] quyết định job có được tạo ra hay không dựa trên tên nhánh, tag hay loại sự kiện
+kích hoạt. Ví dụ job triển khai production chỉ chạy khi nhánh là \verb|main|.
+\end{description}
+
+Hình \ref{fig:c52-pipeline} minh họa pipeline ba giai đoạn điển hình cho dự án ASPX: mã nguồn
+sau khi commit được build bằng MSBuild, kiểm thử bằng VSTest, rồi triển khai lên staging.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.1cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (commit) {Commit};
+\node[box, right=0.8cm of commit] (build) {Build};
+\node[box, right=0.8cm of build] (test) {Test};
+\node[box, right=0.8cm of test] (deploy) {Deploy};
+\draw[->] (commit) -- node[midway, above, font=\footnotesize] {push} (build);
+\draw[->] (build) -- node[midway, above, font=\footnotesize] {msbuild} (test);
+\draw[->] (test) -- node[midway, above, font=\footnotesize] {vstest} (deploy);
+\end{tikzpicture}
+\caption{Luồng pipeline ba giai đoạn cho dự án ASPX}
+\label{fig:c52-pipeline}
+\end{figure}
+
+\subsection{Tệp cấu hình hoàn chỉnh cho dự án ASPX 4.8.1}
+
+Mọi pipeline của GitLab đều được khai báo trong tệp \verb|.gitlab-ci.yml| đặt ở thư mục gốc
+của repository. Liệt kê \ref{lst:c52-full-yml} là một tệp hoàn chỉnh, áp dụng trực tiếp cho
+solution \verb|AspxDemo.sln| gồm một project Web Forms và một project kiểm thử đơn vị. Ví dụ giả
+định runner Windows dùng shell PowerShell là mặc định của executor \verb|shell| trên Windows.
+\begin{lstlisting}[language=yaml,caption={Tệp cấu hình GitLab CI đầy đủ cho ASPX 4.8.1},label={lst:c52-full-yml}]
+# Full GitLab CI pipeline for ASPX (.NET Framework 4.8.1)
+# Requires a Windows runner with MSBuild, NuGet and VSTest
+stages:
+  - build
+  - test
+  - deploy
+variables:
+  BUILD_CONFIG: "Release"
+  SOLUTION: "AspxDemo.sln"
+  PUBLISH_DIR: "publish"
+# Cache NuGet packages between pipelines on the same runner
+cache:
+  key: "nuget-$CI_COMMIT_REF_SLUG"
+  paths:
+    - packages/
+# Stage 1: restore packages and build the solution
+build:
+  stage: build
+  tags:
+    - windows
+    - msbuild
+  script:
+    - nuget restore $env:SOLUTION
+    - msbuild $env:SOLUTION /p:Configuration=$env:BUILD_CONFIG /p:DeployOnBuild=true /p:PublishDir=$env:PUBLISH_DIR\
+  artifacts:
+    paths:
+      - publish/
+    expire_in: 1 week
+# Stage 2: run unit tests with VSTest, reuse build artifacts
+test:
+  stage: test
+  tags:
+    - windows
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - vstest.console.exe AspxDemo.Tests\bin\$env:BUILD_CONFIG\AspxDemo.Tests.dll /Logger:"trx;LogFileName=results.trx"
+  artifacts:
+    when: always
+    reports:
+      junit: TestResults\results.trx
+    paths:
+      - TestResults/
+# Stage 3: deploy to staging, only on the main branch
+deploy:
+  stage: deploy
+  tags:
+    - windows
+  needs:
+    - build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - when: never
+  script:
+    - xcopy publish \\staging-server\wwwroot\AspxDemo /E /Y
+  environment:
+    name: staging
+    url: http://staging.example.com
+\end{lstlisting}
+
+Ý nghĩa từng khối trong tệp cấu hình trên như sau:
+
+\begin{enumerate}
+\item Khối \verb|stages| khai báo ba giai đoạn chạy tuần tự: biên dịch, kiểm thử rồi triển khai.
+Thứ tự khai báo chính là thứ tự thực thi của pipeline.
+\item Khối \verb|variables| định nghĩa các biến dùng chung như cấu hình build và tên solution,
+giúp đổi cấu hình một chỗ mà không phải sửa từng job. Khối \verb|cache| giữ lại thư mục gói NuGet
+để lần chạy sau không phải tải lại từ Internet.
+\item Job \verb|build| gắn hai tag \verb|windows| và \verb|msbuild| để GitLab chọn đúng runner có
+cài MSBuild. Job chạy \verb|nuget restore| rồi \verb|msbuild| với tham số xuất bản ra thư mục
+\verb|publish/|, sau đó lưu thư mục này thành artifacts trong một tuần.
+\item Job \verb|test| dùng \verb|needs| để chạy ngay khi job \verb|build| xong và nhận đúng bộ
+artifacts của nó. Kết quả VSTest khai báo ở mục \verb|reports:junit| để GitLab hiển thị trên giao
+diện merge request, kèm \verb|when: always| để luôn lưu báo cáo kể cả khi có test thất bại.
+\item Job \verb|deploy| dùng \verb|rules| để chỉ chạy khi nhánh là \verb|main|; mọi nhánh khác đều
+bị bỏ qua nhờ dòng \verb|when: never|. Lệnh \verb|xcopy| chép website lên máy chủ staging, đồng thời
+khối \verb|environment| đăng ký môi trường để theo dõi lịch sử triển khai.
+\end{enumerate}
+
+\subsection{Runner: shared, specific, group và vai trò của tag}
+
+Runner là chương trình trung gian chạy trên một máy tính riêng, chịu trách nhiệm nhận job từ
+GitLab, thực thi từng dòng trong mục \verb|script|, rồi gửi kết quả và artifacts trả về máy chủ.
+Bản thân GitLab chỉ điều phối pipeline, còn mọi lệnh build đều chạy trên runner. GitLab phân
+runner thành ba loại theo phạm vi phục vụ, so sánh trong Bảng \ref{tab:c52-runner}:
+\begin{table}[H]
+\centering
+\caption{So sánh ba loại runner trong GitLab}
+\label{tab:c52-runner}
+\begin{tabular}{p{1.6cm}p{2.6cm}p{2.4cm}p{3.8cm}}
+\toprule
+Loại & Phạm vi phục vụ & Người quản lý & Khi nào nên dùng \\
+\midrule
+Shared & Mọi project trên máy chủ & Quản trị viên hệ thống & Đồ án môn học và bài tập nhỏ, không cần môi trường đặc biệt \\
+Group & Mọi project trong một group & Trưởng nhóm hoặc quản trị viên & Nhóm sinh viên dùng chung một runner riêng của nhóm \\
+Specific & Một project duy nhất & Chủ project & Project ASPX cần runner Windows gắn với đúng một repository \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mỗi runner được gắn một danh sách tag mô tả năng lực, ví dụ \verb|windows|, \verb|msbuild| hay
+\verb|aspx|. Khi job khai báo mục \verb|tags|, GitLab chỉ giao job cho runner có đầy đủ các tag
+tương ứng; job không khai báo tag sẽ chạy trên bất kỳ runner rảnh nào. Liệt kê
+\ref{lst:c52-register} đăng ký một runner Windows mới trên máy build.
+\begin{lstlisting}[language=bash,caption={Đăng ký Windows runner cho dự án ASPX},label={lst:c52-register}]
+# Run on the Windows build machine as Administrator
+gitlab-runner register --url https://gitlab.com --token glpat-9f8e7d6c5b4a3210 --executor shell --shell powershell --tag-list "windows,msbuild,aspx" --description "aspx-win-builder-01"
+gitlab-runner install
+gitlab-runner start
+gitlab-runner verify
+# After verify, the runner appears under Settings > CI/CD > Runners
+\end{lstlisting}
+
+Với dự án ASPX trên .NET Framework 4.8.1, nhóm bắt buộc phải dùng runner Windows có cài MSBuild
+đầy đủ, vì .NET Framework chỉ chạy trên Windows còn Web Forms không thể biên dịch bằng bộ công cụ
+đa nền tảng trên Linux \cite{msmsbuild}. Cụ thể, MSBuild cần các assembly tham chiếu của .NET
+Framework, trình biên dịch trang \verb|.aspx| và VSTest để chạy kiểm thử; các thành phần này không
+có trên runner Linux dùng image \verb|ubuntu-latest|. Vì vậy mọi job trong Liệt kê
+\ref{lst:c52-full-yml} đều gắn tag \verb|windows| để tránh bị điều nhầm sang runner Linux.
+
+\subsection{Biến CI/CD: masked, protected và cách đọc qua biến môi trường}
+
+Pipeline thường cần những thông tin nhạy cảm như chuỗi kết nối cơ sở dữ liệu, mật khẩu triển khai
+hay khóa ký bản phát hành. GitLab cho phép khai báo các giá trị này ở mục Settings, CI/CD,
+Variables thay vì ghi trực tiếp vào tệp cấu hình, nhờ đó mã nguồn công khai không bao giờ chứa
+bí mật thật.
+
+Hai thuộc tính quan trọng nhất của biến CI/CD là:
+
+\begin{description}
+\item[Masked] yêu cầu GitLab che giá trị biến trong nhật ký job, thay bằng chuỗi \verb|[MASKED]|.
+Thuộc tính này phù hợp với mật khẩu và khóa bí mật, nhưng giá trị phải đủ dài và không chứa ký tự
+xuống dòng thì GitLab mới che được.
+\item[Protected] yêu cầu biến chỉ được truyền cho pipeline chạy trên nhánh hoặc tag được bảo vệ,
+ví dụ nhánh \verb|main|. Nhờ đó, merge request từ nhánh lạ không thể đánh cắp bí mật triển khai
+bằng cách in biến ra nhật ký.
+\end{description}
+
+Trong tệp \verb|.gitlab-ci.yml|, biến được đọc theo cú pháp của shell trên runner: PowerShell dùng
+\verb|$env:TEN_BIEN|, cmd dùng \verb|%TEN_BIEN%|, còn Bash dùng \verb|$TEN_BIEN|. Với mã nguồn C\# của
+trang ASPX, cách đơn giản nhất là đọc biến môi trường của tiến trình đang chạy, đồng thời giữ phương
+án dự phòng đọc từ \verb|Web.config| khi chạy trên máy lập trình viên như trong Liệt kê \ref{lst:c52-env}.
+\begin{lstlisting}[language={[Sharp]C},caption={Đọc biến môi trường từ mã nguồn trang ASPX},label={lst:c52-env}]
+// Read connection string from a CI/CD variable,
+// fallback to Web.config on developer machines
+string conn = System.Environment.GetEnvironmentVariable("DB_CONN");
+if (string.IsNullOrEmpty(conn))
+{
+    conn = System.Configuration.ConfigurationManager
+        .ConnectionStrings["Default"].ConnectionString;
+}
+using (var db = new System.Data.SqlClient.SqlConnection(conn))
+{
+    db.Open();
+    // Run queries here with the opened connection
+}
+\end{lstlisting}
+
+Quy tắc an toàn mà nhóm cần tuân thủ: mọi bí mật đều nằm trong Variables với cả hai cờ masked và
+protected, tệp \verb|Web.config| trong repository chỉ chứa chuỗi kết nối giả cho môi trường phát triển,
+và không ai được in toàn bộ biến môi trường ra nhật ký job.
+
+\subsection{Môi trường triển khai và Review Apps}
+
+Khối \verb|environment| trong mỗi job triển khai đăng ký một môi trường có tên và địa chỉ truy cập,
+ví dụ \verb|staging| cho kiểm thử nội bộ và \verb|production| cho người dùng thật. GitLab gom lịch sử
+triển khai của từng môi trường vào trang Environments, nơi nhóm xem được commit nào đang chạy ở đâu.
+
+Liệt kê \ref{lst:c52-env-deploy} minh họa ba kiểu triển khai phổ biến: staging tự động mỗi khi nhánh
+\verb|main| có commit mới, production triển khai thủ công bằng nút bấm để có người kiểm soát cuối cùng,
+và Review App tự động dựng một môi trường tạm cho từng merge request để người review trải nghiệm trực
+tiếp thay đổi trên trình duyệt.
+\begin{lstlisting}[language=yaml,caption={Môi trường staging, production và Review App},label={lst:c52-env-deploy}]
+# Staging deploys automatically on every main commit
+deploy_staging:
+  stage: deploy
+  tags:
+    - windows
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - xcopy publish \\staging-server\wwwroot\AspxDemo /E /Y
+  environment:
+    name: staging
+    url: http://staging.example.com
+# Production needs one manual approval before deploy
+deploy_production:
+  stage: deploy
+  tags:
+    - windows
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  script:
+    - xcopy publish \\prod-server\wwwroot\AspxDemo /E /Y
+  environment:
+    name: production
+    url: http://shop.example.com
+# Temporary Review App per merge request, removed after one day
+review_app:
+  stage: deploy
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  script:
+    - echo Deploy review app for $CI_MERGE_REQUEST_ID
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: http://$CI_ENVIRONMENT_SLUG.example.com
+    on_stop: stop_review_app
+    auto_stop_in: 1 day
+# Manual job that stops the Review App above
+stop_review_app:
+  stage: deploy
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+  script:
+    - echo Stop review app
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+\end{lstlisting}
+
+Khi phiên bản mới gặp sự cố trên production, GitLab hỗ trợ rollback theo hai cách: mở trang
+Environments và bấm triển khai lại trên bản ổn định gần nhất để chạy lại pipeline cũ, hoặc revert
+commit gây lỗi trên nhánh \verb|main| để pipeline tự động triển khai bản đã sửa. Cả hai cách đều giữ
+lại đầy đủ lịch sử ai đã rollback và rollback về commit nào, giúp nhóm truy vết sự cố thay vì triển
+khai thủ công không để lại dấu vết.
+
+Tóm lại, pipeline GitLab mang lại cho đồ án ASPX một quy trình khép kín: mỗi commit trên nhánh
+\verb|main| đều được build, kiểm thử và triển khai tự động lên đúng môi trường, mọi bí mật nằm trong
+biến CI/CD được che và bảo vệ, còn mỗi merge request đều có Review App riêng để giảng viên và thành
+viên trong nhóm dùng thử trước khi approve và merge.

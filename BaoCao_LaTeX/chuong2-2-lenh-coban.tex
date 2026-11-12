@@ -1,0 +1,274 @@
+\subsection{Vòng đời file và commit đầu tiên}
+\label{subsec:c22-lifecycle}
+
+Git theo dõi mỗi file trong kho chứa thông qua bốn trạng thái của vòng đời file, như minh họa ở Hình~\ref{fig:c22-lifecycle}.
+Hiểu đúng vòng đời này giúp sinh viên không bao giờ mất bài do nhầm lẫn giữa file chưa lưu vào vùng stage và file đã commit \cite{progit}.
+Ba vùng dữ liệu tương ứng là thư mục làm việc, vùng stage (còn gọi là index) và kho chứa gồm các commit \cite{atlassiangit}.
+
+\begin{description}
+\item[Untracked] File mới mà Git chưa quản lý, ví dụ trang \verb|About.aspx| vừa tạo trong project.
+File untracked không xuất hiện trong lịch sử commit cho đến khi được đưa vào stage lần đầu.
+\item[Modified] File đã tracked nhưng bị sửa đổi trong thư mục làm việc mà chưa đưa vào stage.
+\item[Staged] File đã được \verb|git add| và nằm trong index, sẵn sàng cho commit kế tiếp.
+\item[Committed] Dữ liệu đã nằm an toàn trong kho chứa dưới dạng một commit có mã băm SHA-1 duy nhất.
+\end{description}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Untracked};
+\node[box, right=0.8cm of a] (b) {Modified};
+\node[box, right=0.8cm of b] (c) {Staged};
+\node[box, right=0.8cm of c] (d) {Committed};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {add} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {add} (c);
+\draw[->] (c) -- node[midway, above, font=\footnotesize] {commit} (d);
+\draw[->, bend right=30] (d) to node[midway, below, font=\footnotesize] {edit} (b);
+\end{tikzpicture}
+\caption{Vòng đời của file trong Git từ chưa theo dõi đến đã commit}
+\label{fig:c22-lifecycle}
+\end{figure}
+
+Lệnh \verb|git status| cho biết trạng thái hiện tại của từng file, còn \verb|git add| chuyển file sang vùng stage.
+Dạng rút gọn \verb|git status --short| rất tiện khi làm bài: hai cột ký tự đầu dòng thể hiện trạng thái của index và của thư mục làm việc.
+Ví dụ \verb|??| nghĩa là untracked, \verb|A| nghĩa là đã add, \verb|M| nghĩa là đã sửa đổi.
+Quy trình chuẩn cho commit đầu tiên của project ASPX gồm bốn bước trong Khối lệnh dưới đây.
+
+\begin{lstlisting}[language=bash]
+# 1. Init a Git repo inside the ASPX project folder
+git init AspxDemo_NET481
+cd AspxDemo_NET481
+
+# 2. Local identity for this repo only
+git config user.name "Nguyen Van A"
+git config user.email "nva@student.edu.vn"
+
+# 3. Create a simple ASPX page, then check status
+echo '<%@ Page Language="C#" %>' > Default.aspx
+echo '<html><body>Hello ASPX</body></html>' >> Default.aspx
+git status --short
+# Output: ?? Default.aspx   (untracked)
+
+# 4. Stage the file, then commit
+git add Default.aspx
+git status --short
+# Output: A  Default.aspx   (staged)
+
+git commit -m "feat: add Default.aspx homepage skeleton"
+git log --oneline -1
+
+# 5. Edit the file -> modified (unstaged)
+echo '<!-- header -->' >> Default.aspx
+git status --short
+# Output:  M Default.aspx   (modified)
+
+# 6. Forgot a file? Stage it and fold into the last commit
+echo '<%@ Master Language="C#" %>' > Site.Master
+git add Default.aspx Site.Master
+git commit --amend --no-edit
+git log --oneline -1
+git status --short
+\end{lstlisting}
+
+Tùy chọn \verb|--amend| viết lại commit mới nhất bằng cách thay cây file và thông điệp của nó, thay vì tạo commit mới.
+Lệnh này chỉ an toàn khi commit chưa được push lên kho chứa chung, vì nó thay đổi mã băm của commit \cite{progit}.
+Với project bài tập, nhóm nên viết thông điệp commit theo chuẩn Conventional Commits, ví dụ \verb|feat: ...|, \verb|fix: ...|, \verb|docs: ...| \cite{convcommits}.
+Thông điệp tốt giúp giảng viên đọc lịch sử là hiểu ngay tiến độ: trang nào đã xong, lỗi nào đã sửa, tài liệu nào đã cập nhật.
+Một quy ước gợi ý cho đồ án Web Forms là mỗi commit chỉ đụng một trang hoặc một UserControl, kèm thông điệp nêu rõ tên file đã đổi.
+
+\subsection{Xem lịch sử và so sánh}
+\label{subsec:c22-history}
+
+Ba nhu cầu phổ biến nhất khi đọc lịch sử là xem danh sách commit, xem chi tiết một commit và so sánh các phiên bản với nhau.
+Lệnh \verb|git log| hiển thị lịch sử, lệnh \verb|git show| hiển thị chi tiết, còn lệnh \verb|git diff| hiển thị sự khác biệt giữa hai trạng thái \cite{progit}.
+Bảng~\ref{tab:c22-log} tóm tắt các tùy chọn mà sinh viên dùng hằng ngày khi làm bài tập nhóm.
+
+\begin{table}[H]
+\centering
+\caption{Các lệnh xem lịch sử và so sánh dùng hằng ngày}
+\label{tab:c22-log}
+\begin{tabular}{lll}
+\toprule
+Mục đích & Lệnh & Ghi chú \\
+\midrule
+Lịch sử rút gọn & \texttt{git log --oneline} & Mỗi commit một dòng \\
+Sơ đồ nhánh & \texttt{git log --graph --all} & Nên kèm \texttt{--oneline --decorate} \\
+Chi tiết một commit & \texttt{git show} + mã băm & Gồm metadata và patch \\
+So sánh chưa stage & \texttt{git diff} & Thư mục làm việc so với index \\
+So sánh đã stage & \texttt{git diff --staged} & Index so với HEAD \\
+Thống kê file đổi & \texttt{git diff --stat} & Gọn, dùng khi review \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tùy chọn \verb|--oneline| nén mỗi commit thành một dòng gồm bảy ký tự đầu của mã băm và dòng tiêu đề của thông điệp.
+Kết hợp ba tùy chọn \verb|log --oneline --graph --all| cho ra sơ đồ ASCII thể hiện đầy đủ các nhánh và điểm rẽ, điểm hợp nhất.
+Lệnh \verb|git show| không tham số sẽ hiển thị commit mới nhất, còn khi kèm mã băm thì hiển thị đúng commit đó.
+Thêm tên file ở cuối, ví dụ \verb|git show a1b2c3d -- Default.aspx|, để chỉ xem thay đổi trên file quan tâm.
+
+\begin{lstlisting}[language=bash]
+# Compact history, newest first
+git log --oneline -5
+# a1b2c3d feat: add login form validation
+# 9f8e7d6 fix: correct Web.config debug flag
+# 4c3b2a1 docs: update README build steps
+# 77aa11b feat: add cart UserControl
+# 2e1f0c9 init: scaffold ASPX Web Forms project
+
+# Graph of all branches with decorations
+git log --oneline --graph --all --decorate -8
+# * a1b2c3d (HEAD -> main) feat: add login form validation
+# | * 88bb22c (feature/cart) feat: add cart UserControl
+# |/
+# * 9f8e7d6 fix: correct Web.config debug flag
+# * 4c3b2a1 docs: update README build steps
+
+# Show one commit in detail (metadata + patch)
+git show --stat HEAD
+git show a1b2c3d -- Default.aspx
+\end{lstlisting}
+
+Lệnh \verb|git diff| không tham số so sánh thư mục làm việc với vùng stage, tức chỉ hiện thay đổi chưa được add.
+Muốn xem thay đổi đã add nhưng chưa commit, bắt buộc phải thêm \verb|--staged| (hoặc \verb|--cached|, hai tên tương đương).
+Ký hiệu hai chấm \verb|main..feature/cart| so sánh đầu nhánh này với đầu nhánh kia, rất tiện trước khi hợp nhất hoặc nộp pull request.
+Đoạn patch trong output dùng dấu cộng cho dòng thêm và dấu trừ cho dòng xóa, kèm tiêu đề hunk dạng \verb|@@ -1,2 +1,3 @@|.
+
+\begin{lstlisting}[language=bash]
+# Unstaged changes: working tree vs index
+git diff
+# diff --git a/Default.aspx b/Default.aspx
+# --- a/Default.aspx
+# +++ b/Default.aspx
+# @@ -1,2 +1,3 @@
+#  <%@ Page Language="C#" %>
+# +<!-- header -->
+#  <html><body>Hello ASPX</body></html>
+
+# Staged changes: index vs HEAD
+git add Default.aspx
+git diff --staged
+git diff --cached --stat
+
+# Compare branches or commits before merge or review
+git diff main..feature/cart --stat
+git diff HEAD~1 HEAD -- Web.config
+git diff --word-diff Default.aspx
+\end{lstlisting}
+
+Một thói quen tốt là luôn chạy \verb|git diff --staged| để rà soát lần cuối trước khi commit, giống như đọc lại bài trước khi nộp.
+Với file \verb|Web.config| chứa chuỗi kết nối, bước rà soát này giúp phát hiện sớm mật khẩu thật bị lọt vào commit.
+Sinh viên nên tập đọc patch thành thạo vì giao diện review trên GitHub và GitLab cũng hiển thị đúng định dạng này \cite{githubdocs}.
+\subsection{Hoàn tác thay đổi}
+\label{subsec:c22-undo}
+
+Git phân biệt ba tầng có thể hoàn tác: commit đã tạo, vùng stage và thư mục làm việc.
+Năm lệnh hoàn tác phổ biến gồm ba chế độ của \verb|git reset|, cộng thêm \verb|git revert| và \verb|git restore|.
+Bảng~\ref{tab:c22-undo} so sánh tác động của từng lệnh để sinh viên chọn đúng công cụ cho từng tình huống \cite{progit}.
+
+\begin{table}[H]
+\centering
+\caption{So sánh các lệnh hoàn tác thay đổi trong Git}
+\label{tab:c22-undo}
+\begin{tabular}{llll}
+\toprule
+Lệnh & Tác động & An toàn trên nhánh chung & Khi dùng \\
+\midrule
+\texttt{reset --soft} & Dời HEAD, giữ index và file & Không & Gộp commit cục bộ chưa push \\
+\texttt{reset --mixed} & Dời HEAD và index, giữ file & Không & Bỏ stage hàng loạt \\
+\texttt{reset --hard} & Dời cả ba, mất sửa đổi & Không, xem cảnh báo & Xóa sạch nháp cục bộ \\
+\texttt{revert} & Tạo commit mới đảo ngược & Có & Hoàn tác commit đã push \\
+\texttt{restore} & Chỉ sửa file, không đụng lịch sử & Có & Hủy sửa chưa commit \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Cảnh báo:} tuyệt đối không dùng \verb|git reset --hard| hay \verb|git push --force| trên nhánh chung như \verb|main| hoặc \verb|develop|.
+Hai lệnh này viết lại lịch sử công khai, khiến đồng đội bị mất commit hoặc phải xử lý xung đột không đáng có \cite{atlassiangit}.
+Quy tắc ngón tay cái là lịch sử đã push thì chỉ được sửa bằng commit mới, tức dùng \verb|git revert| thay vì \verb|reset|.
+Ngoại lệ duy nhất cho \verb|--hard| là dọn dẹp nháp hoàn toàn cục bộ, khi chắc chắn không ai khác có các commit đó.
+Trước mọi lệnh nguy hiểm, hãy tạo nhánh dự phòng bằng \verb|git branch backup-ten-ngay| để luôn có đường quay lại.
+
+\begin{lstlisting}[language=bash]
+# --- git restore: undo files, history untouched ---
+git restore Default.aspx            # discard unstaged edits
+git restore --staged Default.aspx   # unstage, keep edits in files
+git restore --source=HEAD~1 Web.config  # take file from old commit
+
+# --- git reset: move HEAD (local drafts only) ---
+git reset --soft HEAD~1    # keep index + working tree
+git commit -m "feat: squash login + validation into one commit"
+git reset --mixed HEAD~1   # keep working tree, reset index
+git reset HEAD Default.aspx  # unstage one file (mixed is default)
+
+# --- git revert: safe undo on shared branches ---
+git log --oneline -3
+git revert HEAD --no-edit        # new commit that undoes HEAD
+git revert --no-commit 9f8e7d6  # stage a revert, commit later
+git status --short
+
+# --- last resort: discard everything local (see warning) ---
+git branch backup-2026-05-30     # safety branch first
+git reset --hard HEAD            # drop all uncommitted changes
+\end{lstlisting}
+
+Lệnh \verb|git restore| ra đời để tách bạch hai việc mà trước đây đều dồn vào \verb|git checkout|: lấy lại file và chuyển nhánh.
+Cú pháp \verb|git restore --source| cho phép lấy nội dung file từ bất kỳ commit nào mà không di chuyển HEAD.
+Lệnh \verb|git revert| không xóa commit cũ mà tạo commit mới có nội dung đảo ngược, nên lịch sử vẫn trung thực và đầy đủ.
+Khi revert một commit hợp nhất, cần thêm \verb|-m 1| để chỉ rõ giữ lại phía nhánh chính \cite{progit}.
+Với sinh viên mới học, thứ tự ưu tiên khi lỡ tay là \verb|restore| trước, \verb|revert| sau, và chỉ dùng \verb|reset| khi hiểu rõ tác động.
+\subsection{Stash và tag}
+\label{subsec:c22-stash-tag}
+
+Khi đang sửa dở một trang mà phải chuyển nhánh gấp để sửa lỗi nóng, lệnh \verb|git stash| cất tạm mọi thay đổi chưa commit vào ngăn xếp.
+Vùng làm việc trở lại sạch sẽ ngay lập tức, và sinh viên có thể lấy lại công việc dở dang bất cứ lúc nào bằng \verb|git stash pop| \cite{progit}.
+Ba thao tác dùng nhiều nhất là \verb|stash push| để cất, \verb|stash list| để liệt kê và \verb|stash pop| để lấy lại đồng thời xóa khỏi ngăn xếp.
+Nên kèm thông điệp bằng tùy chọn \verb|-m|, nếu không Git sẽ đặt tên mặc định khó phân biệt khi có nhiều mục stash.
+
+\begin{lstlisting}[language=bash]
+# Stash unfinished work before switching branch
+git status --short
+#  M Default.aspx
+#  M Login.aspx
+git stash push -m "wip: half-done login check"
+git status --short   # clean again
+git stash list
+# stash@{0}: wip: half-done login check
+
+# Fix the hot bug on another branch, then come back
+git switch hotfix-config
+# ... edit Web.config, commit ...
+git switch main
+git stash pop        # restore + drop stash@{0}
+git status --short
+git stash list
+\end{lstlisting}
+
+Cần phân biệt \verb|stash pop| với \verb|stash apply|: lệnh \verb|pop| xóa mục stash sau khi lấy lại, còn \verb|apply| giữ lại bản copy.
+Nếu ngăn xếp có nhiều mục, chỉ rõ mục cần lấy bằng tên dạng \verb|stash@{0}| hoặc \verb|stash@{1}| ở cuối lệnh.
+Trường hợp stash chứa file mới hoàn toàn (untracked), phải thêm tùy chọn \verb|-u| thì Git mới cất cả các file đó.
+
+Trong khi stash quản lý công việc tạm thời, tag dùng để đánh dấu các mốc quan trọng như bản nộp bài hoặc bản phát hành.
+Git có hai loại tag: tag nhẹ (lightweight) chỉ là một tên trỏ tới commit, còn tag annotated là một đối tượng đầy đủ có tác giả, ngày tháng và thông điệp \cite{progit}.
+Với bài nộp môn học, nhóm nên dùng tag annotated để giảng viên kiểm tra được ai đánh tag và nộp những gì.
+Quy ước tên gợi ý là \verb|v1.0|, \verb|v1.1| cho các lần nộp, kèm tiền tố lớp nếu giảng viên yêu cầu.
+
+\begin{lstlisting}[language=bash]
+# Lightweight tag: just a name on a commit
+git tag v1.0-btvn
+
+# Annotated tag: recommended for course submissions
+git tag -a v1.0 -m "Nop bai lan 1: Web Forms chay duoc"
+git show v1.0 --no-patch   # author, date, message
+git tag -l "v1.*"          # list matching tags
+git tag -n99               # list tags with messages
+
+# Share tags with the remote (tags are NOT pushed by default)
+git push origin v1.0       # push one tag
+git push origin --tags     # push all tags
+git ls-remote --tags origin
+\end{lstlisting}
+
+Lưu ý quan trọng là lệnh \verb|git push| mặc định không đẩy tag lên kho chứa chung, nên phải push tag một cách tường minh.
+Muốn xóa tag nhầm tên, dùng \verb|git tag -d v1.0| cho tag cục bộ rồi \verb|git push origin :v1.0| để xóa tag trên remote.
+Trước giờ nộp bài, cả nhóm nên thống nhất một commit chốt trên nhánh \verb|main|, đánh tag annotated và kiểm tra lại bằng \verb|git show|.
+Việc kết hợp stash cho công việc dở dang và tag cho các mốc nộp bài giúp quy trình nhóm ba người luôn gọn gàng và dễ truy vết.

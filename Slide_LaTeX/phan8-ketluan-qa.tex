@@ -1,0 +1,66 @@
+\begin{frame}{Kết luận: 5 takeaway chính}
+\begin{itemize}
+\item Git lưu vết mọi thay đổi: \texttt{commit} nhỏ, message rõ, lịch sử sạch.
+\item Nhánh và \texttt{merge} giữ \texttt{main} ổn định, conflict xử lý sớm.
+\item GitHub và GitLab biến Git thành cộng tác: PR, MR, review, Issues.
+\item CI với \texttt{msbuild} và test tự động: pipeline xanh mới được merge.
+\item Quy trình 3 người áp dụng được ngay cho đồ án ASPX 4.8.1.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Mỗi thành viên một câu takeaway}
+\begin{itemize}
+\item Mỗi thành viên đúc kết một câu sau khi làm đồ án này.
+\item TV1 -- Git local: hiểu 3 vùng và \texttt{commit} thì không còn sợ mất code.
+\item TV2 -- GitHub: PR và Actions giúp review kỹ và build ASPX tự động.
+\item TV3 -- GitLab: MR và pipeline giúp nhóm nhỏ làm việc như nhóm chuyên nghiệp.
+\item Điểm chung: kỷ luật \texttt{commit} và review quan trọng hơn công cụ.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Đóng góp từng thành viên}
+\begin{itemize}
+\item Phân công theo mảng: Git, GitHub, GitLab và tổng hợp.
+\item Mỗi người viết báo cáo, slide và demo live của mảng mình.
+\item Review chéo qua PR và MR, không đẩy thẳng lên \texttt{main}.
+\item Bảng dưới đây tóm tắt mảng và demo của từng thành viên.
+\end{itemize}
+{\footnotesize
+\begin{tabular}{lll}
+\toprule
+Thành viên & Mảng phụ trách & Demo live \\
+\midrule
+TV1 & Git cơ bản và nâng cao & init, branch, merge, conflict Web.config \\
+TV2 & GitHub và Actions & PR, review, Actions build msbuild \\
+TV3 & GitLab và so sánh & MR, approval, pipeline, bảng so sánh \\
+\bottomrule
+\end{tabular}
+}
+\end{frame}
+
+\begin{frame}[fragile]{Repo demo và pipeline xanh}
+\begin{itemize}
+\item Repo GitHub: \url{https://github.com/nhom-aspx/AspxDemo-NET481}
+\item Repo GitLab: \url{https://gitlab.com/nhom-aspx/AspxDemo-NET481}
+\item Pipeline GitHub Actions và GitLab CI đều xanh trước khi merge.
+\item Clone repo về máy và xem lịch sử như sau:
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git clone https://github.com/nhom-aspx/AspxDemo-NET481.git
+cd AspxDemo-NET481
+git log --oneline -5
+git branch -a
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Cảm ơn thầy cô và các bạn!}
+\begin{center}
+{\Large Cảm ơn thầy cô và các bạn đã lắng nghe!}\\
+\vspace{0.4cm}
+{\large Nhóm 3 -- GIT, GitHub, GitLab cho ASPX 4.8.1}\\
+\vspace{0.4cm}
+{\large Mời thầy cô và các bạn đặt câu hỏi}\\
+\vspace{0.4cm}
+Git $\rightarrow$ TV1 \quad GitHub $\rightarrow$ TV2 \quad GitLab $\rightarrow$ TV3
+\end{center}
+\end{frame}

@@ -1,0 +1,200 @@
+\subsection{Container Registry và Package Registry lưu trữ nội bộ}
+
+GitLab tích hợp sẵn Container Registry cho Docker image và Package Registry cho nhiều định dạng gói như NuGet, npm và Maven, giúp nhóm không cần dựng thêm máy chủ lưu trữ riêng \cite{gitlabdocs}. Với đồ án ASPX trên .NET Framework 4.8.1, nhóm thường dùng hai kho này theo hai mục đích khác nhau: một kho chứa image builder có công cụ biên dịch, một kho chứa thư viện dùng chung của nhóm.
+
+Khác với kho công cộng, mọi image và gói trong GitLab đều kế thừa quyền truy cập của project và group. Thành viên có quyền Developer mới được đẩy gói mới, còn khách ngoài nhóm không thể đọc image nội bộ. Cách phân quyền này phù hợp khi mã nguồn đồ án để ở chế độ riêng tư nhưng pipeline vẫn phải tải phụ thuộc nhanh và ổn định.
+
+Trong pipeline, GitLab cung cấp sẵn biến môi trường trỏ tới kho chứa như địa chỉ registry, tên image và token truy cập tạm thời. Job biên dịch chỉ cần đăng nhập một lần bằng token của pipeline là có thể đẩy image mới mà không cần tạo tài khoản phụ. Cách làm này tránh lộ mật khẩu trong mã nguồn và chạy được trên cả máy chủ dùng chung lẫn máy chủ tự quản.
+
+\begin{itemize}
+    \item Container Registry: lưu image Windows có \verb|msbuild|, công cụ NuGet và thư viện nền cho Web Forms.
+    \item Package Registry cho NuGet: xuất bản thư viện dùng chung như \verb|AspxDemo.Core| để các project tái sử dụng.
+    \item Quyền đọc ghi kế thừa từ project, hỗ trợ token hết hạn nhanh cho từng pipeline.
+    \item Chính sách dọn dẹp tự động giúp xóa image cũ, tránh đầy ổ đĩa trên máy chủ.
+\end{itemize}
+
+Ví dụ sau đăng nhập registry của chính project, đóng gói image builder rồi đẩy thư viện NuGet nội bộ lên GitLab. Mọi chú thích trong khối lệnh đều viết không dấu theo quy tắc của báo cáo.
+
+\begin{lstlisting}[language=bash, caption={Day image builder va goi NuGet noi bo}, label={lst:c53-registry}]
+# Login to the project registry with the CI token
+docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+# Build the Windows builder image for ASPX 4.8.1
+docker build -t $CI_REGISTRY_IMAGE/builder:4.8.1 -f Dockerfile.windows .
+docker push $CI_REGISTRY_IMAGE/builder:4.8.1
+# Pack and push the shared NuGet library
+nuget pack AspxDemo.Core.nuspec -Version 1.2.0 -OutputDirectory out
+nuget push out/AspxDemo.Core.1.2.0.nupkg -Source $NUGET_FEED_URL -ApiKey $CI_JOB_TOKEN
+\end{lstlisting}
+
+Với project ASPX 4.8.1, nhóm nên chốt một image builder duy nhất cho cả học kỳ, ví dụ image chứa Visual Studio Build Tools và .NET Framework 4.8.1. Mọi job biên dịch đều dùng lại image này nên kết quả build ổn định, tránh lỗi máy này chạy được còn máy khác thì không. Thư viện dùng chung cũng nên đánh phiên bản tăng dần để khi có lỗi chỉ cần quay về phiên bản cũ là chạy lại được \cite{convcommits}.
+
+\subsection{Merge trains gộp nhiều Merge Request song song an toàn}
+
+Khi ba thành viên cùng mở Merge Request vào giờ chót, việc gộp tuần tự từng cái rất chậm mà gộp ồ ạt thì dễ hỏng nhánh chính. Merge train giải quyết đúng bài toán này bằng cách xếp các Merge Request đã được duyệt thành một đoàn tàu theo thứ tự, rồi cho pipeline chạy trên kết quả gộp của cả đoàn thay vì chạy riêng từng cái \cite{gitlabdocs}.
+
+Nguyên tắc hoạt động gồm ba bước lặp lại: thêm Merge Request vào cuối tàu, chạy pipeline trên mã nguồn đã gộp tất cả các toa, rồi tự động gộp theo thứ tự khi pipeline xanh. Nếu toa đầu bị đỏ thì cả tàu dừng lại, toa lỗi bị tách ra để tác giả sửa, các toa còn lại tiếp tục chạy mà không cần xếp hàng lại từ đầu. Nhờ đó nhánh chính luôn xanh dù nhiều người gộp song song.
+
+\begin{enumerate}
+    \item Tác giả hoàn thiện Merge Request, xin đủ lượt duyệt theo Approval rules rồi bấm thêm vào tàu.
+    \item GitLab tạo pipeline cho toàn bộ nội dung đã gộp, bao gồm biên dịch \verb|msbuild| và chạy kiểm thử.
+    \item Khi pipeline xanh, GitLab gộp từng toa theo đúng thứ tự đã xếp, nhanh hơn nhiều so với gộp tay từng cái.
+    \item Khi pipeline đỏ, toa lỗi bị loại khỏi tàu, các toa sau tự động chạy lại trên kết quả mới.
+\end{enumerate}
+
+Hình sau minh họa một đoàn tàu gồm ba Merge Request xếp hàng vào nhánh chính. Thứ tự trong tàu chính là thứ tự gộp, vì vậy thành viên nên trao đổi trước để xếp phần ít rủi ro lên đầu.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (mr1) {MR 1};
+\node[box, right=1.2cm of mr1] (mr2) {MR 2};
+\node[box, right=1.2cm of mr2] (mr3) {MR 3};
+\node[box, right=1.2cm of mr3] (main) {main};
+\draw[->] (mr1) -- node[midway, above, font=\footnotesize] {toa 1} (mr2);
+\draw[->] (mr2) -- node[midway, above, font=\footnotesize] {toa 2} (mr3);
+\draw[->] (mr3) -- node[midway, above, font=\footnotesize] {gop} (main);
+\end{tikzpicture}
+\caption{Doan tau gop gom ba MR xep hang vao nhanh main}
+\label{fig:c53-train}
+\end{figure}
+
+Với đồ án môn học, Merge trains phát huy tác dụng nhất vào tuần nộp bài khi cả ba nhánh tính năng cùng xin gộp. Nhóm nên bật thêm tùy chọn fast-forward only để lịch sử nhánh chính luôn thẳng, kết hợp chính sách xóa nhánh nguồn sau khi gộp để danh sách nhánh luôn gọn gàng \cite{gitflow}.
+
+\subsection{Quét bảo mật tích hợp trong pipeline}
+
+GitLab tích hợp sẵn nhiều bộ quét bảo mật chạy ngay trong pipeline, giúp nhóm sinh viên phát hiện lỗi sớm mà không cần cài thêm công cụ ngoài \cite{gitlabci}. Chỉ cần khai báo đúng tập tin mẫu là mỗi Merge Request đều được quét tự động, kết quả hiển thị ngay trong trang Merge Request để người duyệt quyết định có cho gộp hay không.
+
+\begin{table}[H]
+\centering
+\caption{Bon loai quet bao mat pho bien nhat tren GitLab}
+\label{tab:c53-scan}
+\begin{tabular}{llll}
+\toprule
+Loại quét & Phát hiện chính & Thời điểm chạy & Ghi chú cho ASPX \\
+\midrule
+SAST & Lỗi trong mã nguồn & Mọi Merge Request & Bật thêm quy tắc cho C\# \\
+Secret Detection & Mật khẩu lộ trong mã & Mọi commit mới & Chặn connection string thật \\
+Dependency Scanning & Thư viện có lỗ hổng & Pipeline hằng đêm & Quét gói NuGet đã cài \\
+Container Scanning & Image có lỗ hổng & Sau khi đóng gói & Quét image builder \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trong bốn loại trên, Secret Detection là loại nhóm ASPX cần bật đầu tiên vì lỗi phổ biến nhất là đẩy tập tin \verb|Web.config| chứa connection string thật lên kho chung. Dependency Scanning đứng thứ hai vì project Web Forms thường kéo theo nhiều gói NuGet cũ. Hai loại còn lại giúp bảo vệ image builder và mã nguồn \verb|C#| phía sau trang ASPX.
+
+Ví dụ sau bật ba bộ quét bằng cách kế thừa tập tin mẫu chính thức của GitLab. Cách viết này ngắn gọn vì toàn bộ cấu hình chi tiết đã nằm sẵn trong mẫu, nhóm chỉ cần khai báo thêm giai đoạn kiểm thử cho phù hợp với project của mình.
+
+\begin{lstlisting}[language=yaml, caption={Bat cac bo quet bao mat co ban}, label={lst:c53-security}]
+# Basic stages for an ASPX project with security scans
+stages:
+  - test
+  - build
+# Include the official GitLab security templates
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+# Force SAST to run on every merge request pipeline
+sast:
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+\end{lstlisting}
+
+Khi bộ quét báo đỏ, nhóm không nên tắt quét để gộp cho nhanh mà nên đọc báo cáo, sửa đúng chỗ rồi chạy lại pipeline. Với cảnh báo sai, GitLab cho phép đánh dấu bỏ qua có ghi lý do, giúp buổi bảo vệ vẫn giải thích được vì sao nhóm quyết định như vậy thay vì im lặng bỏ qua cảnh báo.
+
+\subsection{Kiểm toán và tuân thủ với Audit Events}
+
+Mọi thao tác quan trọng trên GitLab như đổi quyền thành viên, sửa luật duyệt, gộp Merge Request hay đổi biến môi trường của pipeline đều được ghi lại thành Audit Events \cite{gitlabdocs}. Mỗi sự kiện ghi rõ ai làm, làm gì, trên project nào và vào lúc nào, tạo thành nhật ký không thể sửa giúp giảng viên và nhóm trưởng truy vết sau này.
+
+Với quy trình ba người, nhật ký kiểm toán trả lời nhanh các câu hỏi thường gặp khi có sự cố: ai đã gộp nhánh khi pipeline còn đỏ, ai đã xóa biến môi trường chứa connection string, ai đã thêm người ngoài vào project. Nhờ có nhật ký, nhóm không cần đoán mà chỉ cần lọc sự kiện theo tên người hoặc theo khoảng thời gian.
+
+\begin{description}
+    \item[Ai] tên tài khoản thực hiện thao tác, kèm địa chỉ IP khi đăng nhập qua giao diện web.
+    \item[Việc gì] hành động cụ thể như gộp Merge Request, đổi quyền hay sửa luật bảo vệ nhánh.
+    \item[Ở đâu] project hoặc group xảy ra sự kiện, kèm liên kết tới Merge Request liên quan.
+    \item[Khi nào] mốc thời gian đầy đủ giúp đối chiếu với lịch sử pipeline và lịch sử commit.
+\end{description}
+
+Ngoài nhật ký mặc định, GitLab còn hỗ trợ Compliance Frameworks cho các tổ chức cần quy trình chặt chẽ, ví dụ bắt buộc mọi Merge Request vào nhánh phát hành phải có đủ hai lượt duyệt và pipeline xanh. Với đồ án môn học, nhóm không cần bật toàn bộ khung tuân thủ mà chỉ cần giữ ba thói quen: cấm đẩy thẳng nhánh chính, yêu cầu ít nhất một lượt duyệt và xuất nhật ký kiểm toán khi nộp báo cáo.
+
+Một mẹo nhỏ là gắn nhãn cho từng Merge Request theo loại công việc như tính năng, sửa lỗi hay tài liệu. Khi lọc nhật ký theo nhãn, nhóm sẽ thống kê được mỗi thành viên đã gộp bao nhiêu Merge Request thuộc loại nào, rất tiện cho phần tự đánh giá đóng góp trong báo cáo và slide bảo vệ \cite{atlassiangit}.
+
+\subsection{Tự host GitLab và sao lưu phục hồi}
+
+Bên cạnh bản dịch vụ đám mây, GitLab cho phép tự host toàn bộ hệ thống trên máy chủ của khoa hoặc của nhóm, giúp chủ động về dữ liệu và đường truyền nội bộ \cite{gitlabdocs}. Lựa chọn này phù hợp khi đồ án chứa mã nguồn không được phép đưa lên dịch vụ công cộng, hoặc khi phòng lab muốn sinh viên làm quen với quản trị hệ thống thật.
+
+Yêu cầu phần cứng tối thiểu cho nhóm nhỏ khá vừa phải: máy chủ hai nhân, bộ nhớ 8 GB và ổ cứng trống khoảng 20 GB là đủ chạy ổn định cho dưới một trăm người dùng. Với quy mô ba sinh viên, nhóm có thể cài bản Omnibus trên một máy ảo duy nhất, còn bản mở rộng nhiều máy chỉ cần khi phục vụ toàn khoa với hàng nghìn pipeline mỗi ngày.
+
+\begin{itemize}
+    \item Hệ điều hành Ubuntu 64 bit bản hỗ trợ dài hạn, đã mở cổng cho giao diện web và kho Git.
+    \item Tối thiểu 2 CPU, RAM 8 GB, ổ cứng SSD trống 20 GB cho nhóm dưới 100 người dùng.
+    \item Tên miền nội bộ và chứng chỉ số để bật HTTPS, tránh trình duyệt báo kết nối không an toàn.
+    \item Máy chạy pipeline riêng cho Windows để biên dịch project ASPX 4.8.1 bằng \verb|msbuild|.
+\end{itemize}
+
+Cài đặt xong chưa đủ, nhóm quản trị phải lên lịch sao lưu tự động vì mọi mã nguồn và lịch sử Merge Request đều nằm trên máy chủ tự host. GitLab cung cấp sẵn lệnh sao lưu tạo một gói duy nhất chứa cơ sở dữ liệu, kho Git và tập tin đính kèm, kèm lệnh khôi phục để dựng lại hệ thống khi máy chủ gặp sự cố.
+
+\begin{lstlisting}[language=bash, caption={Sao luu va khoi phuc GitLab tu host}, label={lst:c53-backup}]
+# Create a full backup package on the GitLab server
+sudo gitlab-backup create
+# List backup files and copy one copy to safe storage
+ls /var/opt/gitlab/backups/
+scp /var/opt/gitlab/backups/APP_BACKUP.tar user@backup-host:/safe/
+# Stop services, restore, then restart and check health
+sudo gitlab-ctl stop puma
+sudo gitlab-ctl stop sidekiq
+sudo gitlab-backup restore BACKUP=APP_BACKUP
+sudo gitlab-ctl reconfigure
+sudo gitlab-ctl restart
+sudo gitlab-rake gitlab:check SANITIZE=true
+\end{lstlisting}
+
+Với đồ án môn học, nhóm nên sao lưu mỗi tuần một lần và giữ ít nhất hai bản gần nhất ở máy khác. Trước buổi bảo vệ, hãy diễn tập khôi phục một lần trên máy ảo phụ để chắc chắn bản sao lưu dùng được, tránh tình huống đến ngày nộp bài mới phát hiện tập tin sao lưu bị lỗi \cite{progit}.
+
+\subsection{Auto DevOps pipeline tự sinh cho dự án mới}
+
+Auto DevOps là bộ mẫu pipeline do GitLab xây dựng sẵn, có khả năng tự phát hiện loại project rồi sinh ra đầy đủ các giai đoạn từ biên dịch, kiểm thử đến quét bảo mật và triển khai \cite{gitlabci}. Với nhóm mới học CI/CD, đây là cách nhanh nhất để có pipeline chạy xanh ngay trong buổi đầu mà chưa cần viết nhiều cấu hình.
+
+Luồng mặc định gồm các giai đoạn nối tiếp nhau: phát hiện ngôn ngữ, biên dịch và kiểm thử, quét chất lượng và bảo mật, đóng gói image, rồi triển khai tới môi trường đánh giá. Mỗi giai đoạn đều có thể tắt hoặc ghi đè khi nhóm đã đủ kiến thức tự viết job riêng, vì vậy Auto DevOps vừa là điểm khởi đầu vừa là tài liệu mẫu để học.
+
+\begin{enumerate}
+    \item Bật Auto DevOps trong phần cài đặt CI/CD của project rồi đẩy một commit mới.
+    \item GitLab tự phát hiện project, sinh pipeline và chạy thử toàn bộ các giai đoạn mặc định.
+    \item Nhóm đọc kết quả từng job, giữ lại giai đoạn phù hợp và tắt giai đoạn chưa cần.
+    \item Khi đã tự tin, nhóm chép các job mẫu ra tập tin riêng rồi tùy biến cho ASPX 4.8.1.
+\end{enumerate}
+
+Cần lưu ý rằng mẫu mặc định tối ưu cho project hiện đại dùng container trên Linux, trong khi project ASPX 4.8.1 cần máy chạy Windows và lệnh \verb|msbuild| \cite{msmsbuild}. Vì vậy nhóm Web Forms nên coi Auto DevOps là bản nháp tham khảo: học cách chia giai đoạn và cách bật quét bảo mật từ mẫu, sau đó viết pipeline riêng với nhãn máy chạy Windows cho các job biên dịch thật \cite{msnetfx}.
+
+Một cách tiếp cận khôn ngoan là bật Auto DevOps trên một project thử nghiệm song song với project đồ án chính. Mọi thử nghiệm cấu hình đều thực hiện bên project thử, khi nào chạy ổn mới chép sang project chính. Cách làm này giữ cho pipeline của đồ án luôn xanh trong suốt học kỳ.
+
+\subsection{Các gói Free, Premium, Ultimate và gợi ý cho đồ án môn học}
+
+GitLab cung cấp ba gói chính với cùng một nền tảng nhưng khác nhau về tính năng quản lý và bảo mật \cite{gitlabdocs}. Gói Free đủ cho hầu hết đồ án môn học, trong khi hai gói trả phí phù hợp với đồ án tốt nghiệp có yêu cầu cao hơn hoặc với doanh nghiệp triển khai thật.
+
+\begin{table}[H]
+\centering
+\caption{So sanh nhanh ba goi GitLab cho nhom sinh vien}
+\label{tab:c53-plans}
+\begin{tabular}{llll}
+\toprule
+Tính năng & Free & Premium & Ultimate \\
+\midrule
+Kho riêng tư và Merge Request & Có & Có & Có \\
+Pipeline CI/CD cơ bản & Có & Có & Có \\
+Approval rules nâng cao & Giới hạn & Có & Có \\
+Merge trains & Không & Có & Có \\
+Quản lý môi trường triển khai & Có & Có & Có \\
+SAST và Secret Detection & Có & Có & Có \\
+Dependency và Container Scanning & Cơ bản & Đầy đủ & Đầy đủ \\
+Audit Events chi tiết & Cơ bản & Đầy đủ & Đầy đủ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Với nhóm ba sinh viên làm project ASPX 4.8.1, gói Free đã đáp ứng toàn bộ yêu cầu bắt buộc: kho riêng tư, Merge Request có duyệt, pipeline biên dịch trên máy chạy Windows và hai bộ quét bảo mật cơ bản. Nhóm chỉ cần tự bù lại hai thiếu sót là Merge trains và luật duyệt nâng cao bằng cách phân công một người chịu trách nhiệm gộp cuối cùng vào ngày nộp bài.
+
+Khi cần trình bày phần mở rộng trong buổi bảo vệ, nhóm có thể nêu rõ nếu nâng lên Premium thì quy trình gộp sẽ an toàn hơn nhờ Merge trains, còn Ultimate bổ sung thêm bảng điều khiển bảo mật tổng hợp cho toàn bộ group. Cách trình bày này cho thấy nhóm hiểu rõ giới hạn của gói miễn phí và biết khi nào nên nâng cấp thay vì đòi hỏi bản quyền tốn kém ngay từ đầu \cite{ghactions}.
+
+Tóm lại, chương này đã đi qua bảy mảnh ghép nâng cao của GitLab từ kho chứa, đoàn tàu gộp, quét bảo mật, kiểm toán, tự host, pipeline tự sinh đến các gói dịch vụ. Nắm vững bảy nội dung này, nhóm có thể vận hành trọn vẹn một quy trình phát triển ASPX 4.8.1 theo đúng chuẩn công nghiệp: mọi thay đổi đều qua Merge Request, mọi bản gộp đều có pipeline xanh và nhật ký rõ ràng.

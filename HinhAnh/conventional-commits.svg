@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="680" viewBox="0 0 910 680" font-family="Segoe UI, Arial, sans-serif">
+<rect x="0" y="0" width="910" height="680" rx="12" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="2"/>
+<text x="455" y="44" text-anchor="middle" font-size="26" font-weight="bold" fill="#1f2328">Cú pháp Conventional Commits</text>
+<text x="455" y="72" text-anchor="middle" font-size="15" fill="#1f2328">Quy ước message: type(scope): subject — rõ ràng, dễ đọc lịch sử commit</text>
+<text x="455" y="108" text-anchor="middle" font-size="22" font-weight="bold" fill="#1f2328">type(scope): subject</text>
+<line x1="160" y1="116" x2="160" y2="128" stroke="#d1d9e0" stroke-width="2"/>
+<line x1="460" y1="116" x2="460" y2="128" stroke="#d1d9e0" stroke-width="2"/>
+<line x1="760" y1="116" x2="760" y2="128" stroke="#d1d9e0" stroke-width="2"/>
+<rect x="25" y="130" width="270" height="110" rx="10" fill="#1f6feb"/>
+<text x="160" y="164" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff">type</text>
+<text x="160" y="190" text-anchor="middle" font-size="14" fill="#ffffff">Loại thay đổi (bắt buộc)</text>
+<text x="160" y="216" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">ví dụ: feat</text>
+<text x="307" y="196" text-anchor="middle" font-size="26" font-weight="bold" fill="#1f2328">+</text>
+<rect x="325" y="130" width="270" height="110" rx="10" fill="#8250df"/>
+<text x="460" y="164" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff">scope</text>
+<text x="460" y="190" text-anchor="middle" font-size="14" fill="#ffffff">Phạm vi (tùy chọn)</text>
+<text x="460" y="216" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">ví dụ: auth</text>
+<text x="607" y="196" text-anchor="middle" font-size="26" font-weight="bold" fill="#1f2328">+</text>
+<rect x="625" y="130" width="260" height="110" rx="10" fill="#1a7f37"/>
+<text x="755" y="164" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff">subject</text>
+<text x="755" y="190" text-anchor="middle" font-size="14" fill="#ffffff">Mô tả ngắn, thể mệnh lệnh</text>
+<text x="755" y="216" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">ví dụ: thêm form đăng nhập</text>
+<rect x="25" y="258" width="860" height="70" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<text x="45" y="301" font-size="16" fill="#1f2328">Ví dụ đầy đủ:</text>
+<text x="290" y="302" font-size="21" font-weight="bold" fill="#1f6feb">feat</text>
+<text x="345" y="302" font-size="21" font-weight="bold" fill="#8250df">(auth):</text>
+<text x="425" y="302" font-size="21" fill="#1a7f37">thêm form đăng nhập</text>
+<text x="25" y="362" font-size="19" font-weight="bold" fill="#1f2328">6 type phổ biến + ví dụ message</text>
+<rect x="25" y="378" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="52" cy="408" r="9" fill="#1f6feb"/>
+<text x="70" y="414" font-size="17" font-weight="bold" fill="#1f6feb">feat — tính năng mới</text>
+<text x="45" y="445" font-size="14" fill="#1f2328">feat(cart): thêm nút</text>
+<text x="45" y="468" font-size="14" fill="#1f2328">thanh toán VNPay</text>
+<rect x="320" y="378" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="347" cy="408" r="9" fill="#cf222e"/>
+<text x="365" y="414" font-size="17" font-weight="bold" fill="#cf222e">fix — sửa lỗi</text>
+<text x="340" y="445" font-size="14" fill="#1f2328">fix(login): sửa lỗi</text>
+<text x="340" y="468" font-size="14" fill="#1f2328">không đăng nhập được</text>
+<rect x="615" y="378" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="642" cy="408" r="9" fill="#8250df"/>
+<text x="660" y="414" font-size="17" font-weight="bold" fill="#8250df">docs — tài liệu</text>
+<text x="635" y="445" font-size="14" fill="#1f2328">docs(readme): cập nhật</text>
+<text x="635" y="468" font-size="14" fill="#1f2328">hướng dẫn cài đặt</text>
+<rect x="25" y="518" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="52" cy="548" r="9" fill="#9a6700"/>
+<text x="70" y="554" font-size="17" font-weight="bold" fill="#9a6700">style — định dạng</text>
+<text x="45" y="585" font-size="14" fill="#1f2328">style(css): căn chỉnh</text>
+<text x="45" y="608" font-size="14" fill="#1f2328">form đăng nhập</text>
+<rect x="320" y="518" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="347" cy="548" r="9" fill="#1a7f37"/>
+<text x="365" y="554" font-size="17" font-weight="bold" fill="#1a7f37">refactor — tái cấu trúc</text>
+<text x="340" y="585" font-size="14" fill="#1f2328">refactor(dal): tách lớp</text>
+<text x="340" y="608" font-size="14" fill="#1f2328">truy vấn SQL</text>
+<rect x="615" y="518" width="270" height="125" rx="10" fill="#ffffff" stroke="#d1d9e0" stroke-width="2"/>
+<circle cx="642" cy="548" r="9" fill="#1f6feb"/>
+<text x="660" y="554" font-size="17" font-weight="bold" fill="#1f6feb">test — kiểm thử</text>
+<text x="635" y="585" font-size="14" fill="#1f2328">test(auth): thêm test</text>
+<text x="635" y="608" font-size="14" fill="#1f2328">đăng nhập hợp lệ</text>
+<text x="455" y="666" text-anchor="middle" font-size="13" fill="#1f2328">Lưu ý: subject viết thường, không dấu chấm cuối câu, dùng thể mệnh lệnh (thêm, sửa, xóa).</text>
+</svg>

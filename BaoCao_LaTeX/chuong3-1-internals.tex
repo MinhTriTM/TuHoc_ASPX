@@ -1,0 +1,232 @@
+\section{Git nâng cao và chuyên sâu}
+\label{sec:c31-internals}
+
+Khi đã thành thạo các lệnh Git cơ bản như khởi tạo kho, ghi nhận thay đổi và làm việc với nhánh, bước tiếp theo là hiểu những gì diễn ra bên trong thư mục \verb|.git|.
+Hiểu mô hình đối tượng, đồ thị lịch sử, cơ chế tham chiếu và cách Git lưu trữ dữ liệu giúp người học lý giải được mọi hành vi của Git thay vì học thuộc lòng từng lệnh.
+Với đồ án ASP.NET Web Forms trên .NET Framework 4.8.1, kiến thức này đặc biệt hữu ích khi kho chứa nhiều file như \verb|Default.aspx|, \verb|Web.config| hay các gói trong thư mục \verb|packages| \cite{msnetfx}.
+Nội dung dưới đây trình bày bốn chủ đề cốt lõi: mô hình đối tượng, đồ thị DAG cùng refs và HEAD, reflog với kỹ thuật khôi phục, cuối cùng là packfile và bảo trì kho \cite{progit}.
+
+\subsection{Mô hình đối tượng: blob, tree, commit và tag}
+\label{subsec:c31-object}
+
+Git về bản chất là một hệ thống file có địa chỉ hóa theo nội dung, trên đó người ta xây thêm lớp quản lý phiên bản.
+Mọi dữ liệu trong kho đều được lưu thành các \textbf{đối tượng} nằm trong thư mục \verb|.git/objects|, mỗi đối tượng được định danh bằng giá trị băm SHA-1 của chính nội dung của nó.
+Nhờ cách định danh này, hai file có nội dung giống hệt nhau dù nằm ở hai dự án khác nhau vẫn chỉ cần một đối tượng duy nhất, còn chỉ cần đổi một byte thì giá trị băm đã hoàn toàn khác.
+
+Git định nghĩa bốn loại đối tượng cơ bản như sau:
+
+\begin{itemize}
+\item \textbf{blob} lưu nội dung thô của một file, không kèm tên file hay quyền hạn. Mỗi phiên bản khác nhau của \verb|Web.config| là một blob khác nhau.
+\item \textbf{tree} mô tả một thư mục: danh sách các mục con, mỗi mục gồm chế độ truy cập, tên file hoặc tên thư mục con, và giá trị băm của blob hay tree tương ứng.
+\item \textbf{commit} ghi nhận một trạng thái của toàn bộ dự án: băm của tree gốc, băm của commit cha, thông tin tác giả, thời gian và thông điệp commit.
+\item \textbf{tag} dạng annotated là một đối tượng độc lập trỏ tới một commit, kèm theo tên tag, người tạo, ngày tháng và thông điệp, thường dùng để đánh dấu các bản phát hành như bản nộp đồ án.
+\end{itemize}
+
+Bảng \ref{tab:c31-object} tóm tắt vai trò của từng loại đối tượng cùng lệnh truy vấn tương ứng.
+
+\begin{table}[H]
+\centering
+\caption{Cac loai doi tuong co ban trong Git}
+\label{tab:c31-object}
+\begin{tabular}{lll}
+\toprule
+Loại đối tượng & Nội dung lưu trữ & Câu lệnh truy vấn thường gặp \\
+\midrule
+blob & Nội dung một phiên bản của file & Xem nội dung blob theo băm \\
+tree & Danh sách các mục con của thư mục & Liệt kê cây thư mục gốc \\
+commit & Trạng thái dự án và liên kết tới commit cha & Xem chi tiết một commit \\
+tag & Nhãn định danh gắn với một commit & Liệt kê và xem nội dung tag \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Vì sao chỉ đổi một byte cũng đổi toàn bộ giá trị băm? Nguyên nhân nằm ở cách Git tính băm: với mỗi đối tượng, Git ghép chuỗi đầu gồm loại đối tượng và kích thước, thêm một byte rỗng, rồi nối tiếp nội dung thô, sau đó băm SHA-1 toàn bộ khối dữ liệu đó.
+Thuật toán băm có hiệu ứng lan truyền, nghĩa là thay đổi nhỏ ở đầu vào tạo ra đầu ra khác hẳn ở mọi vị trí, vì vậy không thể âm thầm sửa một file mà giữ nguyên giá trị băm cũ.
+Mỗi lần đọc đối tượng, Git tính lại giá trị băm và so với tên file đang lưu, nên mọi hư hỏng ổ đĩa hay can thiệp thủ công đều bị phát hiện ngay \cite{progit}.
+
+Hai lệnh quan trọng nhất để khám phá mô hình này là \verb|git cat-file -t| để xem loại đối tượng và \verb|git cat-file -p| để in nội dung ở dạng dễ đọc.
+Khối lệnh dưới đây tạo một kho thử nghiệm gắn với project Web Forms, ghi nhận hai file, rồi dùng hai lệnh trên để mổ xẻ từng đối tượng.
+
+\begin{lstlisting}[language=bash]
+# Create a demo repo that imitates a small ASPX project
+mkdir DemoInternals && cd DemoInternals
+git init -b main
+git config user.name "Sinh Vien"
+git config user.email "sinhvien@example.com"
+printf '<%%@ Page Language="C#" %%>\n' > Default.aspx
+echo "sample connection string" > Web.config
+git add Default.aspx Web.config
+git commit -m "feat: khoi tao project Web Forms demo"
+# Show the type and the content of HEAD commit
+git cat-file -t HEAD
+git cat-file -p HEAD
+# List the root tree and inspect one blob
+TREE=$(git rev-parse HEAD^{tree})
+git cat-file -p $TREE
+BLOB=$(git rev-parse HEAD:Default.aspx)
+git cat-file -t $BLOB
+git cat-file -p $BLOB
+# Prove that one changed byte gives a new hash
+echo "X" >> Default.aspx
+git hash-object Default.aspx
+echo "Compare with the old hash stored in BLOB above"
+\end{lstlisting}
+
+Kết quả của \verb|git cat-file -p HEAD| cho thấy commit chỉ là một bản ghi văn bản gồm tree, parent, author, committer và message, hoàn toàn có thể đọc được bằng mắt thường.
+Từ tree gốc, người đọc lần ra băm của từng blob, rồi dùng tiếp \verb|git cat-file -p| với băm đó để xem nội dung file tại đúng thời điểm commit, đó chính là cách Git tái hiện toàn bộ dự án ở bất kỳ phiên bản nào.
+Thí nghiệm ở hai dòng cuối chứng minh tính nhạy của hàm băm: file \verb|Default.aspx| chỉ thêm một ký tự mà \verb|git hash-object| đã cho ra giá trị khác hẳn băm cũ lưu trong biến \verb|BLOB|.
+
+Một lưu ý thực tế cho đồ án ASPX: các file như \verb|Web.config| thường xuyên thay đổi connection string giữa các máy, mỗi lần đổi là một blob mới.
+Vì vậy nhóm nên tách cấu hình thật ra khỏi kho bằng biến môi trường hoặc file mẫu, tránh để lịch sử phình to vì những blob chứa chuỗi kết nối khác nhau mà giá trị thực tế không cần lưu \cite{atlassiangit}.
+
+\subsection{Đồ thị DAG, refs và HEAD}
+\label{subsec:c31-dag}
+
+Các commit trong Git liên kết với nhau thành một đồ thị có hướng không chu trình, gọi tắt là DAG.
+Mỗi commit lưu băm của commit cha, commit merge lưu hai cha, nhờ đó toàn bộ lịch sử là một mạng lưới mà từ bất kỳ commit nào cũng có thể lần ngược về commit đầu tiên.
+Tính bất biến là điểm mấu chốt: một khi commit đã tạo thì không thể sửa, mọi thao tác như hiệu chỉnh thông điệp hay gộp nhánh thực chất đều tạo commit mới và dời con trỏ nhánh tới đó.
+
+Nhánh trong Git chỉ là một con trỏ nhẹ, tức một file văn bản nằm trong \verb|.git/refs/heads| có tên trùng tên nhánh và nội dung là đúng 40 ký tự băm của commit đỉnh nhánh.
+Tạo nhánh mới vì thế chỉ tốn một file vài chục byte, xóa nhánh cũng chỉ là xóa file đó, toàn bộ commit vẫn còn nguyên trong kho cho tới khi bị thu gom rác.
+\verb|HEAD| là con trỏ đặc biệt cho biết vị trí làm việc hiện tại: ở trạng thái bình thường nó chứa dòng \verb|ref: refs/heads/main|, nghĩa là đang đứng trên nhánh main, còn ở trạng thái detached HEAD thì nó chứa trực tiếp một giá trị băm.
+
+Trạng thái detached HEAD xảy ra khi checkout trực tiếp một commit, một tag hay một biểu thức như \verb|HEAD~2| thay vì checkout tên nhánh.
+Ở trạng thái này, commit mới tạo ra không thuộc nhánh nào, nếu chuyển sang nhánh khác mà không lưu lại băm thì rất khó tìm lại, cách xử lý đúng là tạo nhánh ngay bằng \verb|git switch -c cuu-ho| hoặc \verb|git branch cuu-ho|.
+Hình \ref{fig:c31-dag} minh họa một DAG đơn giản: chuỗi commit A tới B tới C trên nhánh main, cùng nhánh feature tách ra từ B và có thêm commit D.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (c31a) {A};
+\node[box, right=1.2cm of c31a] (c31b) {B};
+\node[box, right=1.2cm of c31b] (c31c) {C};
+\node[box, fill=green!10, above=0.9cm of c31b] (c31d) {D};
+\draw[->] (c31b) -- node[midway, above, font=\footnotesize] {parent} (c31a);
+\draw[->] (c31c) -- node[midway, above, font=\footnotesize] {parent} (c31b);
+\draw[->] (c31d) -- node[midway, right, font=\footnotesize] {parent} (c31b);
+\node[font=\footnotesize, below=0.25cm of c31c] {nhanh main tro toi C};
+\node[font=\footnotesize, above=0.25cm of c31d] {nhanh feature tro toi D};
+\end{tikzpicture}
+\caption{Do thi DAG voi chuoi commit A B C va hai nhanh}
+\label{fig:c31-dag}
+\end{figure}
+
+Khối lệnh sau giúp kiểm chứng trực tiếp rằng nhánh chỉ là file và HEAD chỉ là con trỏ, hãy chạy trong kho \verb|DemoInternals| vừa tạo ở trên.
+
+\begin{lstlisting}[language=bash]
+# A branch is just a file holding a 40-char hash
+cat .git/refs/heads/main
+git rev-parse main
+# HEAD points at the current branch in normal state
+cat .git/HEAD
+git symbolic-ref HEAD
+git rev-parse --abbrev-ref HEAD
+# Create two commits, then look at them as a graph
+echo "v2" >> Default.aspx && git commit -am "feat: ban thu hai"
+git switch -c feature
+echo "v3" >> Default.aspx && git commit -am "feat: thu nghiem tren nhanh feature"
+git log --graph --oneline --all -n 6
+git branch -v
+# Enter detached HEAD on purpose, then go back safely
+git switch --detach HEAD~1
+git status -sb | head -n 3
+git switch main
+\end{lstlisting}
+
+Ba lệnh đầu chứng minh file \verb|main| trong \verb|refs/heads| và lệnh \verb|git rev-parse main| in ra cùng một giá trị băm.
+\verb|git symbolic-ref HEAD| in ra nhánh đang trỏ tới, còn ở trạng thái detached thì lệnh này báo lỗi, đó là dấu hiệu phân biệt nhanh nhất giữa hai trạng thái.
+Lệnh \verb|git log --graph --oneline --all| vẽ lại đúng DAG như Hình \ref{fig:c31-dag} nhưng với dữ liệu thật, mỗi dòng sao và đường gạch thể hiện một nút commit và cạnh nối tới commit cha.
+
+\subsection{Reflog và khôi phục commit tưởng chừng đã mất}
+\label{subsec:c31-reflog}
+
+Reflog là nhật ký ghi lại mọi lần giá trị của HEAD hay của các nhánh thay đổi: mỗi lần commit, checkout, reset, merge hay rebase đều để lại một dòng trong reflog.
+Dữ liệu này nằm trong thư mục \verb|.git/logs| và chỉ tồn tại ở máy cục bộ, không bao giờ được push lên GitHub hay GitLab, vì vậy nó là lưới an toàn cho thao tác cá nhân chứ không phải cơ chế sao lưu của nhóm.
+Theo mặc định, các mục reflog còn trỏ tới được giữ khoảng 90 ngày, các mục không còn trỏ tới được giữ khoảng 30 ngày, đủ dài để cứu hầu hết các tai nạn thường gặp \cite{atlassiangit}.
+
+Tình huống kinh điển là chạy \verb|git reset --hard| nhầm và tưởng rằng commit đã mất vĩnh viễn.
+Thực ra lệnh đó chỉ dời con trỏ nhánh về commit cũ hơn, còn đối tượng commit vẫn nằm nguyên trong kho, \verb|git log| không hiện ra chỉ vì không còn đường nào từ nhánh hiện tại tới được nó.
+Chỉ cần tìm lại giá trị băm trong \verb|git reflog| rồi tạo nhánh hoặc reset tới băm đó là khôi phục nguyên vẹn.
+
+Các bước thực hiện cụ thể như sau:
+
+\begin{enumerate}
+\item Tạo một commit mới rồi cố ý reset cứng về commit trước đó để mô phỏng tai nạn.
+\item Chạy \verb|git reflog| và xác định dòng ghi lại commit vừa mất, thường nằm ngay đầu danh sách.
+\item Tạo nhánh cứu hộ trỏ đúng vào băm của commit mất, sau đó kiểm tra file đã quay lại đầy đủ.
+\item Gộp hoặc cherry-pick commit cứu được về nhánh chính, cuối cùng xóa nhánh cứu hộ tạm thời.
+\end{enumerate}
+
+Khối lệnh dưới đây thực hiện đúng bốn bước trên trong kho \verb|DemoInternals|.
+
+\begin{lstlisting}[language=bash]
+# Step 1: make a commit, then lose it with a hard reset
+echo "bao cao quan trong" > KetQua.txt
+git add KetQua.txt && git commit -m "feat: them file ket qua"
+LOST=$(git rev-parse HEAD)
+echo "Lost commit hash: $LOST"
+git reset --hard HEAD~1
+git log --oneline -n 3
+# Step 2: the commit is gone from log, but reflog remembers it
+git reflog -n 5
+# Step 3: rescue it with a branch pointing at the saved hash
+git branch cuu-ho $LOST
+git switch cuu-ho
+cat KetQua.txt
+git log --oneline -n 2
+# Step 4: bring it back to main, then drop the rescue branch
+git switch main
+git merge --no-ff cuu-ho -m "merge: lay lai commit bi mat"
+git branch -d cuu-ho
+git log --graph --oneline -n 4
+\end{lstlisting}
+
+Nếu không nhớ băm và reflog đã quá dài, lệnh \verb|git fsck --lost-found| sẽ quét toàn bộ kho để liệt kê các commit không còn được tham chiếu tới, đây là phao cứu sinh cuối cùng trước khi đối tượng bị xóa hẳn.
+Cần nhớ rằng reflog chỉ cứu được những commit đã từng tồn tại trong kho cục bộ, các thay đổi chưa bao giờ được commit thì \verb|git reset --hard| sẽ xóa vĩnh viễn khỏi thư mục làm việc.
+Với đồ án ASPX, quy tắc an toàn rút ra là: commit thường xuyên trước mỗi lần thử nghiệm cấu hình \verb|Web.config|, và không bao giờ reset cứng khi thư mục làm việc còn file chưa commit \cite{progit}.
+
+\subsection{Packfile và bảo trì kho}
+\label{subsec:c31-pack}
+
+Khi mới commit, mỗi đối tượng nằm rời rạc thành một file riêng trong \verb|.git/objects|, cách lưu này nhanh khi ghi nhưng tốn chỗ và chậm khi kho có hàng nghìn đối tượng.
+Git giải quyết bằng \textbf{packfile}: nhiều đối tượng được nén chung vào một file \verb|.pack| kèm file chỉ mục \verb|.idx| trong thư mục \verb|.git/objects/pack|.
+Điểm đặc biệt là Git không nén từng file độc lập mà lưu các phiên bản gần giống nhau dưới dạng delta, tức chỉ lưu phần khác biệt so với một phiên bản gốc, nhờ đó kho source code thường tiết kiệm tới 80\% dung lượng so với lưu rời rạc.
+
+Ba lệnh bảo trì cần nắm vững là \verb|git count-objects -v| để chẩn đoán, \verb|git gc| để thu gom và đóng gói, \verb|git prune| để xóa đối tượng không còn được tham chiếu.
+Lệnh \verb|git gc| gọi tắt của garbage collector, thực hiện một loạt việc: nén các đối tượng rời rạc thành packfile, gom các packfile nhỏ thành packfile lớn, xóa nhánh đã hợp nhất theo cấu hình, và dọn các mục reflog hết hạn.
+Mặc định Git tự chạy \verb|git gc --auto| sau các lệnh như commit hay merge khi phát hiện kho có quá nhiều đối tượng rời rạc, vì vậy người dùng phổ thông hiếm khi cần chạy thủ công.
+
+Khối lệnh sau minh họa quy trình chẩn đoán và bảo trì trên kho \verb|DemoInternals|.
+
+\begin{lstlisting}[language=bash]
+# Diagnose: how many loose objects and packs exist
+git count-objects -v
+du -sh .git
+# Force a full maintenance pass and compare afterwards
+git gc
+git count-objects -v
+du -sh .git
+# Inspect packs and verify the whole object database
+ls .git/objects/pack/
+git verify-pack -v .git/objects/pack/*.idx | head -n 5
+git fsck --full
+# Aggressive repack for a release backup (slow, rare use)
+git gc --aggressive --prune=now
+git count-objects -v
+\end{lstlisting}
+
+Kết quả \verb|git count-objects -v| gồm các trường quan trọng: số đối tượng rời rạc, số packfile, số đối tượng nằm trong pack, và dung lượng ước tính của kho.
+Sau lệnh \verb|git gc|, số đối tượng rời rạc thường về 0 trong khi số đối tượng trong pack tăng lên, tổng dung lượng thư mục \verb|.git| giảm rõ rệt, đó là dấu hiệu bảo trì thành công.
+Lệnh \verb|git fsck --full| kiểm tra tính toàn vẹn của toàn bộ cơ sở dữ liệu đối tượng, nên chạy sau mỗi lần can thiệp thủ công vào \verb|.git| hoặc khi nghi ngờ kho bị hỏng.
+
+Vậy khi nào cần bảo trì thủ công? Quy tắc thực tế gồm bốn trường hợp: sau khi viết lại lịch sử bằng filter-repo hay rebase hàng loạt, trước khi sao lưu hoặc nhân bản kho lớn, khi \verb|git status| hay \verb|git fetch| chậm bất thường, và định kỳ mỗi vài tháng với kho đồ án có nhiều file nhị phân.
+Ngược lại, không nên lạm dụng \verb|git gc --aggressive| hay \verb|git prune| vì thao tác này tốn CPU, viết lại toàn bộ packfile, và có thể xóa mất commit mà reflog vẫn có thể cứu được nếu chạy với tùy chọn prune quá mạnh.
+Trên máy chạy CI như runner build project ASPX 4.8.1, thay vì gc thủ công, nên cấu hình fetch có cắt tỉa và checkout nông để kho runner luôn gọn nhẹ \cite{gitlabci}.
+
+Một lưu ý riêng cho project Web Forms: các thư mục \verb|Bin|, \verb|packages| và \verb|.vs| sinh ra hàng nghìn file nhị phân, nếu lỡ commit rồi mới thêm vào \verb|.gitignore| thì lịch sử vẫn giữ nguyên các blob nặng đó.
+Cách xử lý đúng là gỡ chúng khỏi chỉ mục bằng \verb|git rm -r --cached|, commit việc gỡ bỏ, rồi chạy \verb|git gc| để đóng gói lại, dung lượng kho sau đó thường giảm rất mạnh.
+Tóm lại, packfile giúp Git vừa toàn vẹn vừa gọn nhẹ, còn \verb|git gc| và \verb|git count-objects| là hai công cụ chẩn đoán và bảo trì mà mọi thành viên trong nhóm đồ án nên biết cách dùng \cite{progit}.
+
+Bốn chủ đề trên hợp thành bức tranh toàn cảnh về phần trong của Git: đối tượng và hàm băm bảo đảm tính toàn vẹn, DAG cùng refs và HEAD tổ chức lịch sử thành đồ thị linh hoạt, reflog là lưới an toàn cho sai lầm cá nhân, còn packfile và gc giữ cho kho luôn gọn gàng.
+Nắm vững các cơ chế này, sinh viên không chỉ dùng Git thành thạo hơn mà còn tự tin giải thích trong buổi bảo vệ vì sao Git phát hiện được mọi thay đổi dù nhỏ nhất, vì sao nhánh lại nhẹ đến vậy, và vì sao commit tưởng mất vẫn có thể cứu lại.
+Trong quy trình nhóm 3 người của đồ án ASPX, mỗi thành viên nên thực hành các khối lệnh trong mục này trên kho \verb|DemoInternals| của riêng mình trước khi áp dụng vào kho đồ án chung.

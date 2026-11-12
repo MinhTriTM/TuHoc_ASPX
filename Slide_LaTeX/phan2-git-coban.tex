@@ -1,0 +1,118 @@
+\begin{frame}{Git là gì? Vì sao dùng Git?}
+\begin{itemize}
+  \item Git là hệ quản trị phiên bản \textbf{phân tán}, do Linus Torvalds tạo năm 2005.
+  \item Mỗi bản sao là một kho đầy đủ lịch sử, làm việc offline rồi đồng bộ sau.
+  \item Mọi thay đổi được ghi theo \texttt{commit}, mỗi commit có mã SHA định danh duy nhất.
+  \item Gắn với ASPX: quản lý Web Forms, \texttt{Web.config}, biết rõ ai sửa gì, khi nào.
+\end{itemize}
+\vspace{0.3em}
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & Tập trung (SVN) & Phân tán (Git) \\
+\midrule
+Nơi lưu lịch sử & Chỉ trên server & Mọi máy đều đủ \\
+Mất mạng & Không commit được & Commit bình thường \\
+Sập server & Mất lịch sử & Khôi phục từ máy khác \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Kiến trúc 3 vùng của Git}
+\begin{itemize}
+  \item \textbf{Working Directory}: các file đang sửa trực tiếp trên đĩa.
+  \item \textbf{Staging Area} (Index): vùng đệm chứa các thay đổi chờ ghi nhận.
+  \item \textbf{Repository} (thư mục \texttt{.git}): kho lưu toàn bộ lịch sử commit.
+  \item \texttt{git add} đưa file từ Working Directory vào Staging Area.
+  \item \texttt{git commit} ghi nội dung Staging Area thành một commit trong Repository.
+  \item \texttt{git status} cho biết từng file đang nằm ở vùng nào.
+  \item Ví dụ ASPX: sửa \texttt{Default.aspx} rồi add và commit để lưu phiên bản.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Luồng lệnh Git cơ bản}
+\begin{itemize}
+  \item Cấu hình danh tính một lần duy nhất trên mỗi máy.
+  \item Khởi tạo kho mới bằng \texttt{init}, hoặc tải kho có sẵn bằng \texttt{clone}.
+  \item Vòng lặp hằng ngày: sửa file, \texttt{add}, \texttt{commit}, xem \texttt{log}.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git config --global user.name "Nguyen Van A"
+git config --global user.email "a@sv.edu.vn"
+git init AspxDemo_NET481
+cd AspxDemo_NET481
+git add Default.aspx Web.config
+git commit -m "feat: them trang Default"
+git log --oneline
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Nhánh và hợp nhất (branch và merge)}
+\begin{itemize}
+  \item \textbf{Branch} là con trỏ nhẹ tới một commit, dùng để phát triển song song.
+  \item Nhánh \texttt{main} luôn ổn định; mỗi tính năng làm trên nhánh \texttt{feature} riêng.
+  \item \texttt{merge} gộp nhánh tính năng trở lại nhánh chính sau khi xong việc.
+  \item Nhóm 3 người: mỗi TV một nhánh feature, gộp qua Pull Request.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+git switch -c feature/login
+# sua file Login.aspx roi commit
+git add Login.aspx
+git commit -m "feat: them trang dang nhap"
+git switch main
+git merge feature/login
+git branch -d feature/login
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Xung đột (conflict) và cách giải quyết}
+\begin{itemize}
+  \item Conflict xảy ra khi 2 nhánh cùng sửa một chỗ của một file rồi merge.
+  \item Git đánh dấu vùng xung đột bằng \texttt{HEAD}, \texttt{====} và tên nhánh.
+\end{itemize}
+Quy trình xử lý 4 bước:
+\begin{enumerate}
+  \item Mở file, đọc kỹ 2 phía và giữ lại nội dung đúng, xóa dấu đánh dấu.
+  \item Kiểm tra kỹ, đặc biệt với file \texttt{Web.config} và chuỗi kết nối.
+  \item Đánh dấu đã xong bằng lệnh \texttt{git add} trên file vừa sửa.
+  \item Hoàn tất bằng \texttt{git commit} (hoặc \texttt{git merge --continue}).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Tệp gitignore cho project ASP.NET}
+\begin{itemize}
+  \item \texttt{.gitignore} liệt kê file và thư mục Git phải bỏ qua.
+  \item Project ASPX 4.8.1 phải bỏ qua \texttt{bin}, \texttt{obj}, \texttt{packages} và file user.
+  \item Không commit chuỗi kết nối thật và file \texttt{.user} của Visual Studio.
+  \item File đã commit rồi thì \texttt{.gitignore} không còn tác dụng với nó.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+# Build output
+[Bb]in/
+[Oo]bj/
+# NuGet packages
+packages/
+*.nupkg
+# Visual Studio user files
+*.user
+*.suo
+.vs/
+# Publish output
+PublishProfiles/
+App_Data/*.mdf
+App_Data/*.ldf
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Demo live của TV1: checklist 6 việc}
+\begin{itemize}
+  \item Demo trên project \texttt{AspxDemo} NET Framework 4.8.1 thật, khoảng 5--7 phút.
+\end{itemize}
+\begin{enumerate}
+  \item \texttt{init} và \texttt{clone} kho demo, cấu hình danh tính và remote.
+  \item Sửa \texttt{Default.aspx}, thực hiện \texttt{add}, \texttt{commit}, xem \texttt{log}.
+  \item Tạo nhánh \texttt{feature}, commit riêng rồi \texttt{merge} về \texttt{main}.
+  \item Tạo conflict cố ý trên \texttt{Web.config} và giải quyết đủ 4 bước.
+  \item Demo \texttt{stash}, \texttt{reset} và \texttt{revert} khi sửa nhầm code.
+  \item Gắn \texttt{tag} phiên bản v1.0 và đẩy toàn bộ lên GitHub.
+\end{enumerate}
+\end{frame}

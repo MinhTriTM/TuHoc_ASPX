@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="590" viewBox="0 0 910 590" font-family="Segoe UI, Arial, sans-serif">
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#1f6feb" />
+</marker>
+<marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#8250df" />
+</marker>
+</defs>
+<rect x="0" y="0" width="910" height="590" fill="#f6f8fa" />
+<rect x="10" y="10" width="890" height="570" fill="#ffffff" stroke="#d1d9e0" stroke-width="2" rx="12" />
+<text x="455" y="46" text-anchor="middle" font-size="24" font-weight="bold" fill="#1f2328">So sánh Merge và Rebase trong Git</text>
+<text x="455" y="70" text-anchor="middle" font-size="14" fill="#1f2328">Cùng xuất phát: main có A-B, feature có C1-C2 — hai cách hợp nhất khác nhau</text>
+<rect x="30" y="86" width="850" height="208" fill="#ffffff" stroke="#1f6feb" stroke-width="2" rx="10" />
+<rect x="30" y="86" width="190" height="34" fill="#1f6feb" rx="8" />
+<text x="125" y="109" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Lane 1: Merge</text>
+<text x="232" y="109" font-size="13" fill="#1f2328">Nhánh feature cong nhập vào main, tạo nút gộp M</text>
+<line x1="142" y1="225" x2="268" y2="225" stroke="#1f6feb" stroke-width="3" />
+<line x1="312" y1="225" x2="684" y2="225" stroke="#1f6feb" stroke-width="3" />
+<path d="M135,205 C230,205 260,152 330,152 L560,152 C640,152 668,205 692,216" fill="none" stroke="#1f6feb" stroke-width="3" marker-end="url(#arrB)" />
+<circle cx="120" cy="225" r="22" fill="#1f6feb" />
+<text x="120" y="232" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">A</text>
+<circle cx="290" cy="225" r="22" fill="#1f6feb" />
+<text x="290" y="232" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">B</text>
+<circle cx="400" cy="152" r="22" fill="#ffffff" stroke="#1f6feb" stroke-width="3" />
+<text x="400" y="159" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f6feb">C1</text>
+<circle cx="540" cy="152" r="22" fill="#ffffff" stroke="#1f6feb" stroke-width="3" />
+<text x="540" y="159" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f6feb">C2</text>
+<circle cx="710" cy="225" r="26" fill="#1f6feb" />
+<text x="710" y="232" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">M</text>
+<text x="470" y="130" text-anchor="middle" font-size="12" fill="#1f6feb">feature: C1-C2 giữ nguyên</text>
+<text x="290" y="262" text-anchor="middle" font-size="12" fill="#1f6feb">main: A-B rồi tới M</text>
+<text x="50" y="283" font-size="13" fill="#1f2328">Ưu: giữ nguyên C1-C2, an toàn cho nhánh chung. Nhược: lịch sử rẽ nhánh, nhiều nút gộp M.</text>
+<rect x="30" y="304" width="850" height="190" fill="#ffffff" stroke="#8250df" stroke-width="2" rx="10" />
+<rect x="30" y="304" width="190" height="34" fill="#8250df" rx="8" />
+<text x="125" y="327" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Lane 2: Rebase</text>
+<text x="232" y="327" font-size="13" fill="#1f2328">C1-C2 viết lại thành C1′-C2′ nối thẳng trên đầu main</text>
+<line x1="142" y1="400" x2="268" y2="400" stroke="#8250df" stroke-width="3" />
+<line x1="312" y1="400" x2="458" y2="400" stroke="#8250df" stroke-width="3" />
+<line x1="502" y1="400" x2="648" y2="400" stroke="#8250df" stroke-width="3" />
+<line x1="692" y1="400" x2="742" y2="400" stroke="#8250df" stroke-width="3" marker-end="url(#arrP)" />
+<line x1="302" y1="378" x2="420" y2="348" stroke="#d1d9e0" stroke-width="2" stroke-dasharray="6,4" />
+<circle cx="120" cy="400" r="22" fill="#ffffff" stroke="#8250df" stroke-width="3" />
+<text x="120" y="407" text-anchor="middle" font-size="15" font-weight="bold" fill="#8250df">A</text>
+<circle cx="290" cy="400" r="22" fill="#ffffff" stroke="#8250df" stroke-width="3" />
+<text x="290" y="407" text-anchor="middle" font-size="15" font-weight="bold" fill="#8250df">B</text>
+<circle cx="480" cy="400" r="22" fill="#8250df" />
+<text x="480" y="407" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">C1′</text>
+<circle cx="670" cy="400" r="22" fill="#8250df" />
+<text x="670" y="407" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">C2′</text>
+<text x="430" y="344" font-size="12" fill="#9a6700">C1-C2 cũ bị loại bỏ, SHA thay đổi</text>
+<text x="395" y="438" text-anchor="middle" font-size="12" fill="#8250df">main sau rebase: thẳng hàng A-B-C1′-C2′</text>
+<text x="50" y="478" font-size="13" fill="#1f2328">Ưu: lịch sử thẳng, sạch, dễ đọc log. Nhược: đổi SHA — cấm rebase nhánh public.</text>
+<rect x="30" y="504" width="850" height="62" fill="#ffffff" stroke="#cf222e" stroke-width="2" rx="10" />
+<circle cx="70" cy="535" r="16" fill="#cf222e" />
+<text x="70" y="542" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">!</text>
+<text x="100" y="531" font-size="14" font-weight="bold" fill="#cf222e">Cấm rebase nhánh public như main và develop đang dùng chung!</text>
+<text x="100" y="551" font-size="13" fill="#1f2328">Chỉ rebase nhánh feature cá nhân, đồng bộ bằng pull --rebase và push --force-with-lease.</text>
+</svg>

@@ -1,0 +1,236 @@
+\section{Mẫu CI/CD hoàn chỉnh}
+\label{sec:pc-tongquan}
+
+Phụ lục này trình bày hai mẫu tích hợp liên tục và chuyển giao liên tục hoàn chỉnh cho dự án ASP.NET Web Forms trên .NET Framework 4.8.1.
+Hai mẫu này đã được rút gọn cho khuôn khổ bài trình bày của nhóm nhưng vẫn giữ đầy đủ các bước quan trọng nhất trong thực tế.
+Bạn đọc có thể sao chép trực tiếp hai tập tin bên dưới vào kho mã nguồn của mình và điều chỉnh tên solution cho phù hợp.
+Toàn bộ ví dụ đều giả định solution có tên \verb|AspxDemo_NET481.sln| và dự án kiểm thử có tên \verb|AspxDemo.Tests|.
+Các mẫu dưới đây tuân thủ tài liệu chính thức của GitHub Actions \cite{ghactions,githubdocs} và GitLab CI \cite{gitlabci,gitlabdocs}.
+Quy trình build dựa trên MSBuild và bộ công cụ Visual Studio \cite{msmsbuild,msnetfx}.
+
+Luồng chung của cả hai mẫu gồm ba giai đoạn nối tiếp nhau.
+Giai đoạn thứ nhất biên dịch solution ở cấu hình Release trên máy Windows.
+Giai đoạn thứ hai chạy bộ kiểm thử đơn vị bằng công cụ \verb|vstest.console.exe|.
+Giai đoạn thứ ba đóng gói thư mục publish thành artifact để tải về hoặc triển khai tiếp.
+Hình \ref{fig:pc-luong} minh họa luồng ba giai đoạn này một cách khái quát.
+Việc tách thành ba giai đoạn giúp xác định nhanh bước nào bị lỗi khi pipeline báo đỏ.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Build};
+\node[box, right=1.2cm of a] (b) {Test};
+\node[box, right=1.2cm of b] (c) {Package};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {bien dich} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {kiem thu} (c);
+\end{tikzpicture}
+\caption{Luong CI/CD ba giai doan cho du an ASPX}
+\label{fig:pc-luong}
+\end{figure}
+
+Khi áp dụng vào đồ án môn học, nhóm nên bắt đầu từ mẫu GitHub Actions vì chỉ cần dùng máy chủ có sẵn của GitHub.
+Sau khi đã quen, nhóm có thể sao chép cùng ý tưởng sang GitLab CI để so sánh sự khác nhau về cú pháp.
+Cả hai mẫu đều dùng máy Windows vì .NET Framework 4.8.1 không biên dịch được trên máy Linux thông thường.
+Lệnh \verb|dotnet build| dành cho .NET hiện đại không thay thế được MSBuild trong trường hợp này.
+
+\subsection{GitHub Actions}
+\label{subsec:pc-github}
+
+Mẫu trong mục này đặt tại đường dẫn \verb|.github/workflows/ci-aspx-481.yml| trong kho trên GitHub.
+Quy trình được kích hoạt mỗi khi có lệnh đẩy lên nhánh \verb|main| hoặc \verb|develop| và mỗi khi có pull request nhắm vào hai nhánh này.
+Máy chạy được chọn là \verb|windows-latest| để có sẵn Visual Studio, MSBuild, NuGet và công cụ kiểm thử.
+Danh sách ví dụ Lst. \ref{lst:pc-github} trình bày đầy đủ nội dung tập tin workflow.
+Các chú thích trong khối mã đều viết bằng tiếng Anh không dấu để giữ đúng quy tắc mã nguồn ASCII.
+
+\begin{lstlisting}[language=yaml, caption={Mau GitHub Actions cho ASPX 4.8.1}, label={lst:pc-github}]
+# CI for ASP.NET Web Forms 4.8.1 on GitHub Actions
+# File: .github/workflows/ci-aspx-481.yml
+name: ci-aspx-481
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+env:
+  SOLUTION: AspxDemo_NET481.sln
+  CONFIG: Release
+  PLATFORM: "Any CPU"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: "nuget-windows-${{ hashFiles('**/packages.config') }}"
+          restore-keys: nuget-windows-
+      - name: Restore packages
+        run: nuget restore $env:SOLUTION
+      - name: Build solution
+        run: msbuild $env:SOLUTION /p:Configuration=$env:CONFIG /p:Platform="Any CPU" /m /v:minimal /t:Rebuild
+      - name: Run unit tests
+        run: vstest.console.exe .\Tests\bin\Release\AspxDemo.Tests.dll /Logger:trx
+      - name: Publish web project
+        run: msbuild .\Web\AspxDemo.csproj /p:Configuration=$env:CONFIG /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\Publish\ /v:minimal
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspx-package
+          path: C:\Publish\
+\end{lstlisting}
+
+Các bước trong workflow trên có thể hiểu như sau.
+
+\begin{enumerate}
+\item Bước \verb|Checkout code| tải toàn bộ mã nguồn của lần đẩy hiện tại về máy chạy.
+\item Hai bước \verb|Setup MSBuild| và \verb|Setup NuGet| cài đặt công cụ build chuẩn của Microsoft vào đường dẫn hệ thống.
+\item Bước \verb|Cache NuGet packages| lưu thư mục gói NuGet giữa các lần chạy để giảm thời gian tải gói.
+Khóa cache được tính từ nội dung các tập tin \verb|packages.config| nên cache tự động mất hiệu lực khi đổi gói.
+\item Bước \verb|Restore packages| khôi phục các thư viện bên thứ ba trước khi biên dịch.
+Nếu thiếu bước này thì MSBuild sẽ báo lỗi không tìm thấy assembly tham chiếu.
+\item Bước \verb|Build solution| biên dịch toàn bộ solution ở cấu hình Release với nhiều tiến trình song song nhờ cờ \verb|/m|.
+Cờ \verb|/t:Rebuild| bảo đảm thư mục trung gian cũ bị xóa trước khi biên dịch lại từ đầu.
+\item Bước \verb|Run unit tests| chạy assembly kiểm thử và xuất kết quả định dạng \verb|trx| để xem trên trang Actions.
+Nếu bất kỳ kiểm thử nào thất bại thì toàn bộ workflow dừng lại và báo đỏ.
+\item Hai bước cuối cùng xuất bản dự án web ra thư mục \verb|C:\Publish\| rồi tải thư mục này lên mục artifact.
+Thành viên trong nhóm có thể tải artifact về để triển khai thủ công lên Internet Information Services.
+\end{enumerate}
+
+Khi mới bắt đầu, nhóm nên giữ nguyên tên nhánh \verb|main| và \verb|develop| như trong mẫu.
+Sau này khi đã quen, nhóm có thể bổ sung thêm quy tắc bảo vệ nhánh yêu cầu workflow phải chạy xanh mới được hợp nhất.
+Chuỗi kết nối cơ sở dữ liệu và các khóa bí mật tuyệt đối không ghi trực tiếp trong tập tin YAML.
+Thay vào đó, nhóm khai báo secret trong mục Settings của kho rồi tham chiếu bằng biểu thức \verb|secrets.TEN_BI_MAT|.
+Cách làm này giúp mã nguồn công khai nhưng thông tin nhạy cảm vẫn được bảo vệ an toàn.
+
+\subsection{GitLab CI}
+\label{subsec:pc-gitlab}
+
+Mẫu trong mục này đặt tại tập tin \verb|.gitlab-ci.yml| ở thư mục gốc của dự án trên GitLab.
+Pipeline gồm đúng ba stage là \verb|build|, \verb|test| và \verb|package| chạy nối tiếp nhau theo thứ tự khai báo.
+Mỗi công việc đều gắn nhãn \verb|windows| trong mục \verb|tags| để GitLab điều phối đúng đến máy chạy Windows.
+Yêu cầu này là bắt buộc vì máy chạy Linux không có MSBuild đầy đủ cho .NET Framework 4.8.1.
+Danh sách ví dụ Lst. \ref{lst:pc-gitlab} trình bày đầy đủ nội dung tập tin cấu hình.
+
+\begin{lstlisting}[language=yaml, caption={Mau GitLab CI cho ASPX 4.8.1}, label={lst:pc-gitlab}]
+# CI for ASP.NET Web Forms 4.8.1 on GitLab CI
+# File: .gitlab-ci.yml in repository root
+stages:
+  - build
+  - test
+  - package
+variables:
+  SOLUTION: AspxDemo_NET481.sln
+  CONFIG: Release
+  NUGET_PACKAGES: C:\NuGetCache
+cache:
+  key: nuget-$CI_COMMIT_REF_SLUG
+  paths:
+    - C:\NuGetCache\
+before_script:
+  - echo Building $env:SOLUTION
+build:
+  stage: build
+  tags:
+    - windows
+  script:
+    - nuget restore $env:SOLUTION
+    - msbuild $env:SOLUTION /p:Configuration=$env:CONFIG /p:Platform="Any CPU" /m /v:minimal /t:Rebuild
+  artifacts:
+    paths:
+      - Publish/
+    expire_in: 1 week
+test:
+  stage: test
+  tags:
+    - windows
+  script:
+    - vstest.console.exe .\Tests\bin\Release\AspxDemo.Tests.dll /Logger:trx
+  artifacts:
+    when: always
+    reports:
+      junit: TestResults/*.trx
+    paths:
+      - TestResults/
+package:
+  stage: package
+  tags:
+    - windows
+  script:
+    - msbuild .\Web\AspxDemo.csproj /p:Configuration=$env:CONFIG /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\Publish\ /v:minimal
+  artifacts:
+    paths:
+      - C:\Publish\
+    expire_in: 1 month
+\end{lstlisting}
+
+Ý nghĩa của từng khối trong tập tin trên được giải thích chi tiết như sau.
+
+\begin{itemize}
+\item Khối \verb|stages| khai báo ba giai đoạn theo đúng thứ tự thực hiện trong pipeline.
+Nếu một công việc ở stage trước thất bại thì các stage sau sẽ không được chạy.
+\item Khối \verb|variables| định nghĩa các biến dùng chung như tên solution và cấu hình build.
+Cách đặt biến tập trung giúp khi đổi tên solution chỉ cần sửa một chỗ duy nhất.
+\item Khối \verb|cache| giữ lại thư mục gói NuGet giữa các lần chạy để pipeline chạy nhanh hơn.
+Khóa cache dùng kèm tên nhánh nên mỗi nhánh có không gian cache riêng biệt.
+\item Khối \verb|before_script| in ra tên solution đang build để dễ dàng kiểm tra nhật ký khi có nhiều dự án.
+\item Công việc \verb|build| chạy trên máy Windows, khôi phục gói rồi biên dịch toàn bộ solution.
+Thư mục \verb|Publish/| được giữ lại thành artifact trong một tuần để các stage sau tái sử dụng.
+\item Công việc \verb|test| chạy assembly kiểm thử và luôn xuất báo cáo kể cả khi có kiểm thử thất bại nhờ \verb|when: always|.
+Báo cáo định dạng \verb|trx| được GitLab hiển thị trực tiếp trong trang chi tiết của pipeline.
+\item Công việc \verb|package| xuất bản dự án web ra thư mục \verb|C:\Publish\| và lưu lại trong một tháng.
+Nhóm có thể tải gói này về để triển khai lên máy chủ Internet Information Services của khoa.
+\end{itemize}
+
+Để pipeline trên chạy được, dự án GitLab cần có ít nhất một máy chạy Windows đang hoạt động.
+Máy chạy này có thể là máy tính của thành viên trong nhóm đăng ký ở chế độ shell hoặc máy chủ dùng chung của khoa.
+Khi đăng ký máy chạy, nhóm phải gắn nhãn \verb|windows| cho đúng với mục \verb|tags| trong tập tin cấu hình.
+Nếu nhãn không khớp thì pipeline sẽ mãi ở trạng thái chờ mà không có máy nào nhận việc.
+Tài liệu GitLab CI mô tả chi tiết về stage, job, artifact và cache \cite{gitlabci,gitlabdocs}.
+
+\subsection{Tham số MSBuild hay dùng}
+\label{subsec:pc-msbuild}
+
+Cả hai mẫu pipeline ở trên đều gọi MSBuild với một số tham số dòng lệnh giống nhau.
+Bảng \ref{tab:pc-msbuild} tổng hợp tám tham số hay dùng nhất khi biên dịch solution ASP.NET Web Forms.
+Nhóm nên thuộc ý nghĩa của tám tham số này trước buổi demo vì giảng viên thường hỏi về cờ build.
+Tài liệu MSBuild liệt kê đầy đủ hàng trăm tham số khác cho các tình huống nâng cao \cite{msmsbuild}.
+
+\begin{table}[H]
+\centering
+\caption{8 tham so MSBuild hay dung cho ASPX}
+\label{tab:pc-msbuild}
+\begin{tabular}{lll}
+\toprule
+Tham số & Ý nghĩa & Ví dụ \\
+\midrule
+\texttt{/p:Configuration} & Chọn cấu hình biên dịch & \texttt{/p:Configuration=Release} \\
+\texttt{/p:Platform} & Chọn nền tảng đích & \texttt{/p:Platform="Any CPU"} \\
+\texttt{/m} & Build song song nhiều tiến trình & \texttt{/m} \\
+\texttt{/v} & Mức chi tiết nhật ký & \texttt{/v:minimal} \\
+\texttt{/t:Rebuild} & Xóa rồi biên dịch lại từ đầu & \texttt{/t:Rebuild} \\
+\texttt{/t:Clean} & Chỉ xóa thư mục trung gian & \texttt{/t:Clean} \\
+\texttt{/p:DeployOnBuild} & Xuất bản ngay khi build & \texttt{/p:DeployOnBuild=true} \\
+\texttt{/restore} & Khôi phục gói NuGet trước khi build & \texttt{/restore} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trong tám tham số trên, ba tham số \verb|/p:Configuration|, \verb|/p:Platform| và \verb|/m| xuất hiện trong hầu hết mọi pipeline.
+Tham số \verb|/v:minimal| giúp nhật ký vừa đủ chi tiết mà không quá dài gây khó đọc trên trang web.
+Cặp \verb|/t:Clean| và \verb|/t:Rebuild| đặc biệt hữu ích khi thư mục \verb|bin| hoặc \verb|obj| bị kẹt tập tin cũ.
+Tham số \verb|/p:DeployOnBuild=true| thường đi kèm \verb|/p:WebPublishMethod| và \verb|/p:PublishUrl| để xuất bản web.
+Tham số \verb|/restore| thay thế cho lệnh \verb|nuget restore| riêng lẻ trong các dự án mới dùng PackageReference.
+Với dự án ASPX cũ dùng \verb|packages.config|, nhóm vẫn nên giữ bước \verb|nuget restore| riêng như trong hai mẫu trên để tránh lỗi thiếu assembly.
+
+Tóm lại, phụ lục này cung cấp hai mẫu cấu hình sẵn sàng sao chép cho cả GitHub Actions và GitLab CI.
+Nhóm chỉ cần đổi tên solution, tên dự án web và đường dẫn assembly kiểm thử là có pipeline chạy xanh.
+Khi đã có pipeline xanh, nhóm nên bổ sung thêm kiểm tra chất lượng mã và quét bảo mật ở các bước tiếp theo.
+Việc nắm vững tám tham số MSBuild trong Bảng \ref{tab:pc-msbuild} giúp nhóm tự tin giải thích trước giảng viên.
+Nhóm nên lưu hai mẫu này vào kho tài liệu chung để tái sử dụng cho các đồ án tiếp theo.

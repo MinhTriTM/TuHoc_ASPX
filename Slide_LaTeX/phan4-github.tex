@@ -1,0 +1,82 @@
+\begin{frame}{GitHub là gì?}
+\begin{itemize}
+\item Nền tảng hosting Git trực tuyến lớn nhất cho mã nguồn mở và doanh nghiệp.
+\item Quản lý repository tập trung với giao diện web và phân quyền theo vai trò.
+\item Cộng tác qua pull request, fork và review code ngay trên trình duyệt.
+\item Quản lý công việc bằng Issues, Projects và Wiki cho đồ án nhóm.
+\item Tự động build, test và triển khai với Actions pipelines tích hợp sẵn.
+\item Bảo mật và phân phối: Dependabot, secret scanning, Pages và Packages.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Issues, Projects và Wiki}
+\begin{itemize}
+\item \textbf{Issues}: thẻ việc có người phụ trách, nhãn và milestone rõ ràng.
+\item \textbf{Projects}: bảng Kanban kéo thả thẻ việc qua Todo, Doing và Done.
+\item Ví dụ đồ án: Issue \texttt{fix-login} mô tả lỗi form \texttt{Login.aspx} kèm ảnh chụp.
+\item Ví dụ đồ án: thẻ Project kiểm tra tích hợp file \texttt{Web.config} mẫu trước khi merge.
+\item Ví dụ đồ án: Wiki ghi quy trình build \texttt{msbuild} và cấu hình IIS cho 4.8.1.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Fork và branch}
+\begin{itemize}
+\item \textbf{Fork}: bản sao repository độc lập thuộc tài khoản khác.
+\item \textbf{Branch}: nhánh nhẹ trong cùng repository để làm tính năng.
+\item Đồ án nhóm 3 người ưu tiên branch vì review nhanh và chung pipeline.
+\item Fork phù hợp nhận đóng góp từ cộng đồng mã nguồn mở bên ngoài.
+\end{itemize}
+\smallskip
+{\small
+\centering
+\begin{tabular}{lll}
+\toprule
+Tiêu chí & Fork & Branch \\
+\midrule
+Đối tượng & Người ngoài dự án & Thành viên nhóm \\
+Không gian & Repository mới & Cùng repository \\
+Đồng bộ & Pull từ upstream & Merge nội bộ \\
+Quyền ghi & Không cần quyền gốc & Cần quyền ghi nhánh \\
+\bottomrule
+\end{tabular}
+}
+\end{frame}
+
+\begin{frame}{Vòng đời Pull Request}
+\begin{enumerate}
+\item Tạo nhánh tính năng và đẩy commit lên GitHub.
+\item Mở pull request về \texttt{main} kèm mô tả và ảnh giao diện.
+\item Review code, thảo luận và đẩy thêm commit sửa lỗi.
+\item Chờ pipeline Actions chạy xanh và đủ lượt approve.
+\item Merge pull request rồi xóa nhánh tính năng đã hoàn thành.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Review code và protected branch}
+\begin{itemize}
+\item Mọi đổi mới vào \texttt{main} phải qua pull request có ít nhất một lượt review.
+\item Reviewer kiểm tra logic, giao diện và file \texttt{Web.config} mẫu an toàn.
+\item Bật required status checks để chặn merge khi pipeline Actions báo đỏ.
+\item Chặn push trực tiếp và force push lên nhánh \texttt{main} của đồ án.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+# Rule: protect main branch
+# - require 1 approval before merge
+# - require check ci-aspx-481 to pass
+# - block force push to main
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{CODEOWNERS tự động gán reviewer}
+\begin{itemize}
+\item File \texttt{CODEOWNERS} đặt ở gốc hoặc thư mục \texttt{docs} của repository.
+\item Mỗi dòng gán một mẫu đường dẫn cho người hoặc nhóm review phụ trách.
+\item Pull request chạm file nào thì owner tương ứng được yêu cầu review.
+\item Kết hợp protected branch để bắt buộc approve của owner trước khi merge.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+*.aspx @nhom3/tv-frontend
+Web.config @nhom3/tv-backend
+.github/workflows/ @nhom3/tv-devops
+\end{lstlisting}
+\end{frame}

@@ -1,0 +1,129 @@
+\section{Kết luận}
+
+Báo cáo đã đi trọn hành trình từ lệnh Git cục bộ trên máy cá nhân, qua cộng tác trực tuyến trên GitHub và GitLab, đến quy trình làm việc nhóm gắn với đồ án ASP.NET Web Forms trên .NET Framework 4.8.1.
+Chương kết luận này đối chiếu lại các mục tiêu đã nêu ở chương mở đầu, thẳng thắn chỉ ra những việc nhóm chưa làm được, và đề xuất các bước tiếp theo có tính khả thi cao cho học kỳ sau.
+Giọng văn tổng kết được ưu tiên: ngắn gọn, chốt kết quả thay vì nhắc lại lý thuyết chi tiết.
+
+\subsection{Tổng kết: đối chiếu mục tiêu và kết quả}
+
+Nhóm đặt ra sáu mục tiêu ở chương một và đã hoàn thành cả sáu ở mức có minh chứng chạy được, gồm lịch sử commit, Pull Request đã hợp nhất, Merge Request đã phê duyệt và hai pipeline báo xanh \cite{progit,githubdocs,gitlabdocs}.
+Bảng \ref{tab:c8-doichieu} tóm tắt đối chiếu, phần liệt kê dưới đây giải thích ngắn gọn từng mục tiêu.
+
+\begin{enumerate}
+\item \textbf{Mục tiêu 1 -- Git căn bản:} nhóm đã làm chủ ba vùng làm việc, chu trình \verb|add| -- \verb|commit| -- \verb|push|, nhánh, hợp nhất và hoàn tác, minh chứng là repo demo có lịch sử sạch và file \texttt{Web.config} mẫu \cite{progit}.
+Mỗi thành viên đều thực hiện thành thạo khoảng hai mươi lệnh thường dùng mà không cần tra cứu.
+\item \textbf{Mục tiêu 2 -- Git nâng cao:} nhóm đã áp dụng rebase tương tác, \verb|stash|, \verb|cherry-pick|, \verb|reflog|, hook kiểm tra thông điệp commit và GitFlow cho repo đồ án \cite{progit,gitflow,convcommits}.
+Nhóm giải thích được mô hình blob, tree và commit, cùng cách băm SHA-1 phát hiện thay đổi một byte.
+\item \textbf{Mục tiêu 3 -- GitHub:} nhóm đã vận hành đầy đủ vòng đời fork, Pull Request, review và hợp nhất có bảo vệ nhánh, đồng thời cấu hình GitHub Actions dùng \verb|msbuild| để biên dịch dự án 4.8.1 tới trạng thái xanh \cite{githubdocs,ghactions,msmsbuild}.
+Pipeline lưu trữ gói build dưới dạng artifact để đối chiếu khi phản biện.
+\item \textbf{Mục tiêu 4 -- GitLab:} nhóm đã mirror kho mã sang GitLab, vận hành Merge Request kèm quy tắc phê duyệt và pipeline \texttt{.gitlab-ci.yml} trên Windows runner cho cùng mã nguồn ASPX \cite{gitlabdocs,gitlabci}.
+Môi trường staging mô phỏng quy trình phát hành nội bộ của nhóm.
+\item \textbf{Mục tiêu 5 -- So sánh GitHub và GitLab:} nhóm đã xây dựng bảng so sánh hơn hai mươi tiêu chí về giá, CI/CD, review, bảo mật và khả năng tự lưu trữ, qua đó trả lời được câu hỏi khi nào chọn nền tảng nào cho đồ án môn học \cite{githubdocs,gitlabdocs,atlassiangit}.
+Kết luận rút ra là hai nền tảng tương đương cho bài tập nhóm, khác biệt lớn nhất nằm ở runner và mô hình cấp phép.
+\item \textbf{Mục tiêu 6 -- Quy trình nhóm ba người:} nhóm đã chốt nhánh \texttt{main}, \texttt{develop} và \texttt{feature}, quy tắc Conventional Commits, checklist review Web Forms và cách xử lý conflict file \texttt{Web.config} \cite{gitflow,convcommits,msnetfx}.
+Mọi thay đổi đều đi qua Pull Request hoặc Merge Request với ít nhất một lượt phê duyệt.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{2.6cm} p{5.2cm} p{5.2cm}}
+\toprule
+Mục tiêu & Kết quả đạt được & Minh chứng \\
+\midrule
+Git căn bản & Làm chủ ba vùng, nhánh và hoàn tác & Repo demo, lịch sử log sạch \\
+Git nâng cao & Rebase, stash, hook, GitFlow & Nhánh mẫu, hook chặn commit sai \\
+GitHub và Actions & PR có review, build xanh bằng msbuild & Actions xanh, artifact build \\
+GitLab và pipeline & MR có approve, pipeline Windows runner & Pipeline xanh, môi trường staging \\
+So sánh & Bảng hơn 20 tiêu chí, khuyến nghị chọn nền tảng & Bảng chương 6 \\
+Quy trình nhóm & Ba nhánh, checklist review, xử lý conflict & PR và MR đã hợp nhất \\
+\bottomrule
+\end{tabular}
+\caption{Doi chieu 6 muc tieu va ket qua dat duoc}
+\label{tab:c8-doichieu}
+\end{table}
+
+Điểm chung của cả sáu mục tiêu là mọi ví dụ đều chạy trên cùng một dự án Web Forms 4.8.1, nên người đọc có thể kiểm chứng lại toàn bộ chỉ với ba nhóm lệnh: xem lịch sử, xem nhánh và biên dịch thử bằng \verb|msbuild| \cite{msnetfx,msmsbuild}.
+Khối lệnh dưới đây tóm tắt cách kiểm tra nhanh một máy mới sau khi nhân bản kho demo về.
+
+\begin{lstlisting}[language=bash]
+# 1. Clone the demo repo and inspect history
+git clone https://github.com/nhom3/AspxDemo_NET481.git
+cd AspxDemo_NET481
+git log --oneline --graph --decorate -n 12
+git status -sb
+git branch -a
+# 2. Verify the protected main branch history
+git show --stat HEAD
+git tag -l "v*"
+# 3. Restore packages and build with MSBuild (.NET 4.8.1)
+nuget restore AspxDemo.sln
+msbuild AspxDemo.sln /p:Configuration=Release /m
+\end{lstlisting}
+
+Nếu cả ba nhóm lệnh trên đều chạy không lỗi và cho ra artifact Release, người chấm có thể kết luận môi trường tái hiện của nhóm là đúng.
+Đây cũng là bộ kiểm tra tối thiểu mà nhóm dùng trước mỗi buổi tổng duyệt thuyết trình.
+
+\subsection{Hạn chế}
+
+Bên cạnh kết quả đạt được, nhóm xác định ba hạn chế lớn cần nêu rõ để người đọc không hiểu lầm phạm vi của báo cáo.
+
+\begin{itemize}
+\item \textbf{Chưa triển khai thật lên IIS:} pipeline hiện dừng ở mức biên dịch và đóng gói artifact, chưa có bước phát hành tự động lên máy chủ IIS, nên chưa kiểm chứng được quyền thư mục, pool ứng dụng và chuỗi kết nối môi trường thật \cite{ghactions,gitlabci}.
+Việc phát hành vẫn làm thủ công bằng cách chép gói Release lên máy demo rồi cấu hình tay trong IIS Manager.
+\item \textbf{Chưa đo bao phủ kiểm thử:} dự án demo mới có vài test đơn giản, chưa tích hợp công cụ đo coverage và chưa đặt ngưỡng chặn hợp nhất khi coverage giảm, nên chưa thể khẳng định chất lượng kiểm thử bằng số liệu \cite{githubdocs,gitlabdocs}.
+Nhóm mới dừng ở mức biên dịch thành công và chạy tay các form chính.
+\item \textbf{Chưa dựng GitLab tự lưu trữ:} nhóm dùng bản SaaS trên nền tảng đám mây thay vì tự cài máy chủ riêng, nên chưa trải nghiệm sao lưu, nâng cấp, quản lý runner riêng và phân quyền ở quy mô quản trị viên \cite{gitlabdocs}.
+Lý do chính là giới hạn thời gian và máy chủ, nhóm ưu tiên làm xanh pipeline trước.
+\end{itemize}
+
+Khối lệnh dưới đây mô tả đúng quy trình thủ công hiện tại khi phát hành bản demo, được giữ lại để thấy rõ khoảng trống mà hướng phát triển cần lấp đầy.
+
+\begin{lstlisting}[language=bash]
+# Current manual publish (gap to automate later)
+msbuild AspxDemo.sln /p:Configuration=Release /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
+# Copy output to the demo IIS folder by hand
+xcopy /E /I /Y .\AspxDemo\Publish C:\inetpub\wwwroot\AspxDemo
+# No coverage gate yet: tests run without threshold
+vstest.console.exe .\AspxDemo.Tests\bin\Release\AspxDemo.Tests.dll
+echo "Manual steps done. IIS config and coverage gate are still manual."
+\end{lstlisting}
+
+Nhóm coi việc ghi rõ hạn chế là một phần của phương pháp làm việc trung thực: báo cáo chỉ khẳng định những gì đã chạy xanh, không suy diễn sang những bước chưa thực hiện.
+
+\subsection{Hướng phát triển}
+
+Từ ba hạn chế trên, nhóm đề xuất bốn hướng phát triển theo thứ tự ưu tiên, mỗi hướng đều có đầu ra kiểm chứng được và phù hợp với năng lực sinh viên.
+Hình \ref{fig:c8-roadmap} minh họa lộ trình từ trạng thái hiện tại tới tự động hóa đầy đủ.
+
+\begin{enumerate}
+\item \textbf{Triển khai IIS tự động:} bổ sung job phát hành sau job biên dịch, dùng runner có quyền IIS để đẩy gói Release lên môi trường staging, kèm bước kiểm tra khói bằng cách gọi trang chủ và trang đăng nhập sau khi deploy \cite{ghactions,gitlabci,msmsbuild}.
+Tiêu chí đạt là mỗi lần hợp nhất vào \texttt{main} sẽ tự tạo một bản phát hành có ghi số phiên bản.
+\item \textbf{Phân tích bao phủ kiểm thử:} tích hợp bộ thu thập coverage cho test C\# và đặt ngưỡng tối thiểu, ví dụ hợp nhất bị chặn khi dòng mới không có test đi kèm, báo cáo coverage được lưu thành artifact của pipeline \cite{githubdocs,gitlabdocs}.
+Tiêu chí đạt là biểu đồ coverage tăng dần qua từng tuần thay vì chỉ báo đỗ hay trượt.
+\item \textbf{Thử mô hình monorepo cho nhiều đồ án:} gom hai đến ba đồ án ASPX vào một kho chung có cấu trúc thư mục rõ ràng, dùng đường dẫn để tách pipeline theo từng dự án và dùng file CODEOWNERS để phân quyền review \cite{githubdocs,atlassiangit}.
+Tiêu chí đạt là sửa một form ở đồ án A không làm pipeline của đồ án B chạy lại một cách lãng phí.
+\item \textbf{Tìm hiểu GitOps:} dùng kho Git làm nguồn chân lý duy nhất cho cấu hình, mọi thay đổi môi trường đều đi qua Pull Request hoặc Merge Request rồi do tác tử tự động đồng bộ ra hạ tầng, thay vì sửa tay trên máy chủ \cite{progit,gitlabdocs,ghactions}.
+Tiêu chí đạt ở mức sinh viên là demo được vòng lặp sửa file cấu hình, hợp nhất, và quan sát môi trường staging tự cập nhật.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {Hien tai:\\build xanh};
+\node[box, right=1.2cm of a] (b) {Deploy IIS\\tu dong};
+\node[box, right=1.2cm of b] (c) {Coverage\\va monorepo};
+\node[box, right=1.2cm of c] (d) {GitOps};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {publish} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {do luong} (c);
+\draw[->] (c) -- node[midway, above, font=\footnotesize] {dong bo} (d);
+\end{tikzpicture}
+\caption{Lo trinh 4 buoc tu pipeline hien tai toi GitOps}
+\label{fig:c8-roadmap}
+\end{figure}
+
+Lộ trình trên được sắp xếp từ dễ đến khó: tự động phát hành mang lại giá trị ngay cho môn học, đo coverage rèn kỷ luật kiểm thử, monorepo phù hợp khi nhóm có nhiều đồ án song song, và GitOps là tầm nhìn dài hạn để nối Git với vận hành hệ thống.
+Nhóm kiến nghị học kỳ sau chọn một đến hai hướng đầu tiên để triển khai trọn vẹn thay vì làm dàn trải cả bốn hướng.
+
+Thông điệp cuối cùng mà nhóm muốn gửi gắm là: Git giúp cá nhân làm việc chắc chắn, GitHub và GitLab giúp nhóm cộng tác minh bạch, còn pipeline xanh giúp đồ án ASPX 4.8.1 luôn ở trạng thái sẵn sàng demo.
+Khi ba lớp đó vận hành ổn định, việc học các kỹ thuật cao hơn như review chéo, phát hành tự động và GitOps trở nên tự nhiên thay vì gượng ép.
+Nhóm xin cảm ơn thầy cô và các bạn đã theo dõi, mọi góp ý về quy trình và pipeline đều được ghi nhận qua Issue để cải tiến ở phiên bản sau.

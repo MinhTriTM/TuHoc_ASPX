@@ -1,0 +1,135 @@
+# ============================================================
+# .gitlab-ci.yml - Pipeline mau cho ASP.NET Web Forms 4.8.1
+# (ASCII only - copy noi dung nay vao file .gitlab-ci.yml)
+# Repo: AspxDemo_NET481 | Runner: Windows + MSBuild + NuGet
+# Luong chay: build -> test -> deploy staging
+# ============================================================
+
+# Danh sach stage chay theo thu tu tren xuong.
+stages:
+  - build
+  - test
+  - deploy
+
+# Bien dung chung cho moi job. Chi dung ky tu ASCII.
+variables:
+  # Cau hinh build Release cho MSBuild.
+  BUILD_CONFIG: "Release"
+  # File solution can build (sua lai neu ten khac).
+  SOLUTION_FILE: "AspxDemo_NET481.sln"
+  # Thu muc publish de dong goi artifacts.
+  PUBLISH_DIR: "publish"
+  # Thu muc goi NuGet de cache giua cac pipeline.
+  NUGET_PACKAGES: "packages"
+  # Duong dan DLL test sau khi build xong.
+  TEST_DLL: "AspxDemo.Tests\\bin\\Release\\AspxDemo.Tests.dll"
+  # File ket qua JUnit de GitLab hien thi bao cao test.
+  JUNIT_FILE: "TestResults\\junit.xml"
+
+# ------------------------------------------------------------
+# JOB 1: BUILD - khoi phuc NuGet + bien dich MSBuild Release
+# ------------------------------------------------------------
+build_aspx:
+  stage: build
+  # Windows runner moi co MSBuild/VS de build .NET 4.8.1.
+  tags:
+    - windows
+  # Chao mung + in thong tin moi truong truoc khi build.
+  before_script:
+    - echo Hello from GitLab CI - build ASPX 4.8.1
+    - echo Branch is %CI_COMMIT_BRANCH%
+    - echo Runner is %CI_RUNNER_DESCRIPTION%
+    - nuget --version
+    - msbuild -version -nologo
+  # Khoi phuc goi NuGet roi build solution o che do Release.
+  script:
+    - echo Restore NuGet packages for %SOLUTION_FILE%
+    - nuget restore %SOLUTION_FILE% -PackagesDirectory %NUGET_PACKAGES%
+    - echo Build solution with MSBuild Release
+    - msbuild %SOLUTION_FILE% /p:Configuration=%BUILD_CONFIG% /p:Platform="Any CPU" /p:DeployOnBuild=true /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl=%PUBLISH_DIR% /m /nologo /v:m
+    - echo List publish output
+    - dir %PUBLISH_DIR%
+  # Cache thu muc packages de lan chay sau nhanh hon.
+  cache:
+    key: nuget-packages-v1
+    paths:
+      - packages/
+  # Luu thu muc publish lam artifacts cho job sau tai ve.
+  artifacts:
+    name: aspx-publish-$CI_COMMIT_SHORT_SHA
+    expire_in: 1 week
+    paths:
+      - publish/
+  # Chay build cho push va merge request, bo qua schedule.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+# ------------------------------------------------------------
+# JOB 2: TEST - chay VSTest + xuat bao cao JUnit
+# ------------------------------------------------------------
+test_aspx:
+  stage: test
+  # Cung chay tren Windows vi test DLL la .NET Framework.
+  tags:
+    - windows
+  # Cho job build xong moi chay, tai artifacts publish ve.
+  needs:
+    - job: build_aspx
+      artifacts: true
+  before_script:
+    - echo Hello from GitLab CI - test ASPX 4.8.1
+    - vstest.console.exe /Help | findstr /C:"Version"
+  script:
+    - echo Run unit tests with VSTest
+    - mkdir TestResults 2>NUL || echo TestResults exists
+    - vstest.console.exe %TEST_DLL% /Logger:"trx;LogFileName=test.trx" /TestCaseFilter:"TestCategory!=Live"
+    - echo Install trx2junit converter once per runner
+    - dotnet tool install -g trx2junit || echo trx2junit already installed
+    - echo Convert TRX test result to JUnit XML
+    - trx2junit TestResults\test.trx --output %JUNIT_FILE%
+    - echo Show JUnit report path
+    - dir TestResults
+  # Bao cao JUnit hien thi truc tiep tren GitLab UI.
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - TestResults/
+    reports:
+      junit: TestResults/junit.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+# ------------------------------------------------------------
+# JOB 3: DEPLOY STAGING - chi deploy khi push len main
+# ------------------------------------------------------------
+deploy_staging:
+  stage: deploy
+  # Deploy ASPX can Windows de chep file vao thu muc IIS.
+  tags:
+    - windows
+  # Chi chay sau khi test pass, lay artifacts publish.
+  needs:
+    - job: test_aspx
+      artifacts: true
+  # Quy tac: chi chay tren nhanh main, nhanh khac bo qua.
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - when: never
+  # Moi truong staging hien thi nut deploy tren GitLab.
+  environment:
+    name: staging
+    url: https://staging.example.com/AspxDemo
+  before_script:
+    - echo Hello from GitLab CI - deploy to staging
+    - echo Deploy commit %CI_COMMIT_SHORT_SHA% to staging
+  # Chep thu muc publish len thu muc web staging (vi du).
+  script:
+    - echo Copy publish output to staging folder
+    - xcopy publish C:\inetpub\staging\AspxDemo /E /I /Y
+    - echo Deploy finished

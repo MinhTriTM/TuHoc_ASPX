@@ -1,0 +1,235 @@
+\section{Kịch bản demo trên lớp}
+\label{sec:phulucD-kichban}
+
+Phụ lục này trình bày kịch bản demo trực tiếp trên lớp của nhóm 3 thành viên cho đề tài Git, GitHub và GitLab gắn với project ASP.NET Web Forms chạy trên .NET Framework 4.8.1.
+Tổng thời gian demo từ 15 đến 18 phút, mỗi thành viên đảm nhận một phần từ 5 đến 7 phút theo đúng phân công đã thống nhất từ đầu học phần.
+Mọi bước demo đều được diễn tập trước, có lệnh chạy được, có kết quả mong đợi rõ ràng và có phương án dự phòng khi gặp sự cố mạng hoặc máy chiếu.
+Nhóm sử dụng một project mẫu tên \verb|AspxDemo_NET481| gồm một trang \verb|Default.aspx|, một file cấu hình \verb|Web.config| và một thư viện lớp viết bằng ngôn ngữ \verb|C#| \cite{progit,msnetfx}.
+Trước giờ demo, nhóm kiểm tra repo GitHub và project GitLab đều ở trạng thái sạch, pipeline gần nhất báo xanh và không còn pull request hay merge request nào đang mở dở.
+Người giữ giờ là TV3, có nhiệm vụ ra hiệu khi mỗi phần còn một phút và quyết định cắt gọn bước nào nếu thời gian bị lố.
+
+Ba phần demo liên kết thành một câu chuyện duy nhất: TV1 tạo lịch sử Git local, TV2 đưa code lên GitHub và review qua pull request, TV3 mirror sang GitLab và phát hành qua pipeline.
+Hình \ref{fig:phulucD-luongdemo} tóm tắt luồng demo này để khán giả dễ theo dõi ngay từ đầu buổi trình bày.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (local) {TV1 Git local};
+\node[box, right=1.2cm of local] (hub) {TV2 GitHub};
+\node[box, right=1.2cm of hub] (lab) {TV3 GitLab};
+\draw[->] (local) -- node[midway, above, font=\footnotesize] {push} (hub);
+\draw[->] (hub) -- node[midway, above, font=\footnotesize] {mirror} (lab);
+\end{tikzpicture}
+\caption{Luồng demo tổng thể từ Git local lên GitHub và GitLab}
+\label{fig:phulucD-luongdemo}
+\end{figure}
+
+\subsection{Demo TV1: Git local}
+\label{subsec:phulucD-tv1}
+
+TV1 demo Git hoàn toàn offline trên máy tính cá nhân để chứng minh Git là hệ thống phân tán, không cần mạng vẫn commit, branch và merge được \cite{progit,atlassiangit}.
+Mục tiêu sau 6 phút: khán giả hiểu vùng làm việc, vùng staging và kho chứa, đồng thời thấy cách giải quyết conflict trên file \verb|Web.config|.
+TV1 mở sẵn hai cửa sổ: một cửa sổ dòng lệnh và một cửa sổ Visual Studio 2022 mở project \verb|AspxDemo_NET481|.
+Toàn bộ lệnh trong phần này được gom lại trong Danh mục \ref{lst:phulucD-tv1-bash} để khán giả chụp ảnh và thực hành lại sau buổi học.
+
+\begin{lstlisting}[language=bash,caption={Tập lệnh Git local của TV1},label={lst:phulucD-tv1-bash}]
+# 0. check tools (run once before class)
+git --version
+git config --global user.name "TV1 Demo"
+git config --global user.email "tv1@demo.local"
+# 1. init repo and first commit
+mkdir AspxDemo_NET481 && cd AspxDemo_NET481
+git init -b main
+# create minimal Web Forms files for demo
+printf '<%@ Page Language="C#" %>\n<html><body><h1>Demo</h1></body></html>\n' > Default.aspx
+printf '<?xml version="1.0"?>\n<configuration>\n</configuration>\n' > Web.config
+printf 'bin/\nobj/\npackages/\n.vs/\n' > .gitignore
+git add -A
+git commit -m "feat: khoi tao project ASPX 4.8.1"
+# 2. branch, conflict, stash, tag (see steps below)
+git branch feature/login-aspx
+git log --oneline --graph -n 5
+git status -sb
+\end{lstlisting}
+
+Mười lăm bước chi tiết của TV1 như sau:
+
+\begin{enumerate}
+\item Kiểm tra phiên bản Git bằng \verb|git --version| và cấu hình danh tính bằng \verb|git config --global user.name| và \verb|git config --global user.email|.
+Nói rõ mỗi commit luôn gắn tên và email người tạo để truy vết trách nhiệm trong nhóm.
+\item Khởi tạo kho chứa mới bằng \verb|git init -b main| ngay trong thư mục \verb|AspxDemo_NET481| đã chuẩn bị sẵn.
+Giải thích thư mục ẩn \verb|.git| là toàn bộ lịch sử, xóa thư mục này coi như xóa lịch sử Git.
+\item Tạo khung project ASPX tối thiểu gồm \verb|Default.aspx|, \verb|Web.config| và file \verb|.gitignore| chuẩn cho ASP.NET để loại thư mục \verb|bin|, \verb|obj|, \verb|packages| và \verb|.vs|.
+Mở file \verb|.gitignore| trên máy chiếu và giải thích vì sao không commit các thư mục build.
+\item Thêm toàn bộ file vào vùng staging bằng \verb|git add -A|, kiểm tra bằng \verb|git status -sb| rồi tạo commit đầu tiên theo Conventional Commits \cite{convcommits}.
+Commit mẫu: \verb|feat: khoi tao project ASPX 4.8.1| để khán giả thấy message viết thường, có tiền tố rõ ràng.
+\item Xem lịch sử bằng \verb|git log --oneline --graph| và \verb|git show HEAD --stat| để chứng minh commit vừa tạo đã nằm trong kho chứa.
+Nhấn mạnh Git đã lưu snapshot toàn bộ project mà chưa cần bất kỳ server nào.
+\item Tạo nhánh tính năng bằng \verb|git branch feature/login-aspx| rồi chuyển sang nhánh này bằng \verb|git switch feature/login-aspx|.
+Giải thích nhánh trong Git chỉ là con trỏ nhẹ trỏ tới commit, tạo nhánh gần như tức thì \cite{progit,gitflow}.
+\item Trên nhánh tính năng, sửa file \verb|Default.aspx| thêm dòng chào mừng, sau đó commit bằng \verb|git commit -am "feat: them dong chao tren trang chu"|.
+Chạy \verb|git log --oneline -n 3| để khán giả thấy nhánh tính năng đã đi trước nhánh chính một commit.
+\item Quay về nhánh chính bằng \verb|git switch main|, sửa cùng vùng trong file \verb|Web.config| như đã hẹn trước, ví dụ thêm một khóa cấu hình có tên \verb|AppTitle|.
+Commit thay đổi này trên nhánh chính để cố ý tạo tình huống hai nhánh sửa cùng một chỗ.
+\item Thực hiện \verb|git merge feature/login-aspx| và để Git báo conflict trên file \verb|Web.config| ngay trước mặt khán giả.
+Mở file conflict, chỉ rõ ba phần: vùng của nhánh chính, dấu phân cách và vùng của nhánh tính năng.
+\item Giải quyết conflict bằng cách giữ cả hai ý: giữ khóa \verb|AppTitle| của nhánh chính và giữ nội dung chào của nhánh tính năng ở file giao diện.
+Chạy \verb|git add Web.config| rồi \verb|git commit| để hoàn tất commit merge, sau đó chiếu đồ thị bằng \verb|git log --oneline --graph -n 6|.
+\item Demo lệnh \verb|git stash| cho tình huống đang sửa dở file mà phải chuyển nhánh gấp: sửa file, chạy \verb|git stash push -m "wip"|, chuyển nhánh, rồi quay lại chạy \verb|git stash pop|.
+Giải thích stash là ngăn xếp tạm, phù hợp cho việc cất nhanh thay đổi chưa đủ tốt để commit.
+\item Demo gắn thẻ phiên bản bằng \verb|git tag -a v1.0 -m "ban demo tren lop"| rồi liệt kê bằng \verb|git tag --list| và xem chi tiết bằng \verb|git show v1.0|.
+Nói rõ tag dùng để đánh dấu bản phát hành, khác với nhánh vì tag không di chuyển theo commit mới.
+\item Liệt kê nhánh bằng \verb|git branch -a| và xóa nhánh tính năng đã merge xong bằng \verb|git branch -d feature/login-aspx|.
+Giải thích chỉ xóa nhánh đã merge xong, giữ nhánh chính sạch và tránh nhầm lẫn khi bàn giao repo cho TV2.
+\item Minh họa hoàn tác an toàn bằng \verb|git revert HEAD --no-edit| trên một commit thử, rồi xem lịch sử để thấy lịch sử chỉ thêm chứ không mất.
+Nhấn mạnh nhóm luôn ưu tiên revert thay vì reset trên nhánh đã push để không viết lại lịch sử chung.
+\item Chốt phần demo bằng \verb|git status -sb|, \verb|git branch -vv| và \verb|git log --oneline --graph -n 8| để khán giả thấy trạng thái sạch và lịch sử đẹp trước khi bàn giao cho TV2.
+Nhắc lại ba vùng Git và khẳng định toàn bộ phần này chạy offline, không cần GitHub hay GitLab.
+\end{enumerate}
+
+Tiêu chí đạt của TV1: có ít nhất 4 commit, 1 commit merge giải quyết conflict \verb|Web.config|, 1 stash đã pop xong và 1 tag tên \verb|v1.0|.
+Nếu còn dư một phút, TV1 mở thêm lệnh \verb|git diff HEAD~1 HEAD --stat| để minh họa cách review thay đổi trước khi push.
+
+\subsection{Demo TV2: GitHub}
+\label{subsec:phulucD-tv2}
+
+TV2 tiếp nối repo local của TV1, đưa code lên GitHub rồi thực hiện quy trình pull request chuẩn có review và kiểm tra CI \cite{githubdocs,ghactions}.
+Mục tiêu sau 6 phút: khán giả hiểu vì sao nhóm cấm push thẳng nhánh chính và cách GitHub Actions build project .NET Framework 4.8.1 bằng \verb|msbuild|.
+TV2 mở sẵn trình duyệt ở trang repo GitHub, file \verb|ci-aspx-481.yml| và thẻ Actions để chuyển cảnh nhanh, tránh gõ địa chỉ trên lớp.
+Toàn bộ lệnh đẩy code và tạo pull request bằng dòng lệnh được gom trong Danh mục \ref{lst:phulucD-tv2-bash}.
+
+\begin{lstlisting}[language=bash,caption={Đẩy code và tạo pull request trên GitHub},label={lst:phulucD-tv2-bash}]
+# 0. link local repo to GitHub (done once before class)
+git remote add origin https://github.com/nhom3/aspx-demo.git
+git remote -v
+# 1. push main and feature branch
+git push -u origin main
+git push -u origin feature/login-aspx
+# 2. create pull request from CLI (optional, can use web UI)
+gh pr create --base main --head feature/login-aspx \
+  --title "feat: trang dang nhap ASPX" \
+  --body "Mo ta ngan, anh chup man hinh, cach kiem thu."
+# 3. check status and merge after green CI
+gh pr checks --watch
+gh pr merge --squash --delete-branch
+git switch main
+git pull --ff-only
+\end{lstlisting}
+
+Tám bước chi tiết của TV2 như sau:
+
+\begin{enumerate}
+\item Liên kết repo local với GitHub bằng \verb|git remote add origin| trỏ tới địa chỉ repo của nhóm, kiểm tra bằng \verb|git remote -v|.
+Đẩy nhánh chính bằng \verb|git push -u origin main| và giải thích cờ \verb|-u| giúp lần sau chỉ cần gõ \verb|git push|.
+\item Đẩy nhánh tính năng bằng \verb|git push -u origin feature/login-aspx|, sau đó mở trang repo trên trình duyệt để khán giả thấy nhánh mới vừa xuất hiện.
+Nhấn mạnh code đã rời máy cá nhân và nằm an toàn trên server GitHub.
+\item Mở pull request từ nhánh tính năng về nhánh chính bằng nút trên web hoặc bằng lệnh \verb|gh pr create| như trong Danh mục \ref{lst:phulucD-tv2-bash}.
+Tiêu đề pull request tuân thủ Conventional Commits, mô tả ghi rõ thay đổi gì, kiểm thử thế nào và đính kèm ảnh chụp màn hình trang \verb|Default.aspx|.
+\item Nhờ TV1 đóng vai reviewer ngay trên lớp: reviewer mở thẻ Files changed, bình luận vào đúng dòng thêm khóa \verb|AppTitle| trong file \verb|Web.config|.
+TV2 sửa theo góp ý, commit thêm một lần rồi đẩy tiếp lên cùng nhánh để khán giả thấy pull request tự cập nhật.
+\item Chờ GitHub Actions chạy pipeline build \verb|msbuild| cho .NET Framework 4.8.1, chiếu thẻ Checks đang chuyển từ màu vàng sang màu xanh \cite{ghactions,msmsbuild}.
+Giải thích pipeline gồm các bước: lấy code, phục hồi gói NuGet, build solution ở chế độ Release và chạy test đơn giản.
+\item Demo nhánh chính được bảo vệ: thử push thẳng vào \verb|main| và để GitHub từ chối, qua đó chứng minh quy tắc nhóm là mọi thay đổi phải qua pull request.
+Chỉ rõ ba lớp bảo vệ: yêu cầu pull request, yêu cầu ít nhất một approve và yêu cầu kiểm tra CI phải xanh.
+\item Khi CI báo xanh và đã có một approve, TV2 bấm Squash and merge, xóa nhánh tính năng từ xa, rồi về máy local chạy \verb|git switch main| và \verb|git pull --ff-only|.
+Chiếu đồ thị log sau khi merge để khán giả thấy lịch sử nhánh chính gọn gàng chỉ còn một commit tính năng.
+\item Chốt phần demo bằng cách mở thẻ Insights rồi mở tiếp trang Actions vừa chạy xanh để khẳng định code ASPX 4.8.1 đã được build tự động thành công.
+Bàn giao cho TV3 bằng câu chốt: code đã sẵn sàng để mirror sang GitLab và đi tiếp pipeline phát hành.
+\end{enumerate}
+
+Tiêu chí đạt của TV2: có một pull request đã merge sau review, một lần push thẳng bị chặn để minh họa protected branch và một pipeline Actions báo xanh.
+Nếu mạng chậm, TV2 dùng sẵn ảnh chụp pipeline xanh trong slide dự phòng và tiếp tục thuyết minh mà không dừng buổi demo.
+
+\subsection{Demo TV3: GitLab}
+\label{subsec:phulucD-tv3}
+
+TV3 mirror repo từ GitHub sang GitLab rồi thực hiện quy trình merge request có phê duyệt và pipeline nhiều giai đoạn \cite{gitlabdocs,gitlabci}.
+Mục tiêu sau 6 phút: khán giả phân biệt được pull request và merge request, hiểu approval rules và thấy environments của GitLab trỏ tới bản staging và bản production.
+TV3 mở sẵn ba thẻ trình duyệt: trang project GitLab, thẻ Merge requests và thẻ CI/CD Pipelines để chuyển cảnh mượt mà.
+Đoạn cấu hình CI mẫu dùng trong demo được rút gọn trong Danh mục \ref{lst:phulucD-tv3-yaml} với chú thích hoàn toàn bằng tiếng Anh không dấu.
+
+\begin{lstlisting}[language=yaml,caption={Pipeline GitLab CI rút gọn cho ASPX 4.8.1},label={lst:phulucD-tv3-yaml}]
+# Minimal GitLab CI for ASPX 4.8.1 on Windows runner
+stages: [build, test, deploy]
+variables:
+  NUGET_PATH: 'C:\NuGet\nuget.exe'
+  MSBUILD_PATH: 'C:\MSBuild\msbuild.exe'
+build_web:
+  stage: build
+  tags: [windows, msbuild]
+  script:
+    - '%NUGET_PATH% restore AspxDemo.sln'
+    - '%MSBUILD_PATH% AspxDemo.sln /p:Configuration=Release'
+  artifacts:
+    paths: ['Publish/']
+    expire_in: 1 week
+test_web:
+  stage: test
+  tags: [windows, msbuild]
+  script:
+    - 'VSTest.Console.exe Tests.dll'
+  needs: [build_web]
+deploy_staging:
+  stage: deploy
+  tags: [windows, msbuild]
+  script:
+    - 'echo Deploy to staging folder'
+  environment:
+    name: staging
+    url: https://staging.demo.local
+  when: manual
+\end{lstlisting}
+
+Tám bước chi tiết của TV3 như sau:
+
+\begin{enumerate}
+\item Tạo project GitLab bằng chức năng mirror từ URL repo GitHub, đặt chế độ public trong buổi học để khán giả tiện theo dõi \cite{gitlabdocs}.
+Chiếu màn hình cấu hình mirror và nhấn nút cập nhật ngay để khán giả thấy commit từ GitHub chảy sang GitLab sau vài giây.
+\item Tạo nhánh \verb|feature/gitlab-ci| trên GitLab, thêm file \verb|.gitlab-ci.yml| theo nội dung Danh mục \ref{lst:phulucD-tv3-yaml} rồi đẩy nhánh lên bằng lệnh push thông thường.
+Giải thích ba stages \verb|build|, \verb|test| và \verb|deploy| cùng ý nghĩa của \verb|artifacts| lưu gói publish sau khi build.
+\item Mở merge request từ nhánh \verb|feature/gitlab-ci| về nhánh chính, gán TV2 làm approver và gán nhãn \verb|ci| để dễ lọc.
+Chỉ rõ điểm khác tên gọi: GitHub dùng pull request còn GitLab dùng merge request nhưng bản chất đều là đề xuất hợp nhất có review.
+\item Demo approval rules: merge request yêu cầu ít nhất một approve, đang ở trạng thái chưa đủ điều kiện merge nên nút Merge bị mờ.
+Nhờ TV2 bấm Approve ngay trên lớp, nút Merge sáng lên để khán giả thấy rõ vai trò của phê duyệt bắt buộc.
+\item Chờ pipeline chạy trên Windows runner có gắn thẻ \verb|windows| và \verb|msbuild|, chiếu từng job chuyển từ chờ sang chạy rồi sang xanh \cite{gitlabci,msmsbuild}.
+Giải thích vì sao project .NET Framework 4.8.1 cần runner Windows thay vì runner Linux thông thường: chỉ Windows mới có đầy đủ \verb|msbuild| và thư viện Web Forms.
+\item Khi pipeline báo xanh, TV3 bấm Merge để hợp nhất, sau đó mở lại thẻ Pipelines để chỉ pipeline đã hoàn tất sau merge.
+Chiếu đồ thị log sau merge để khẳng định nhánh chính đã nhận code từ nhánh tính năng một cách an toàn.
+\item Mở thẻ Environments để chỉ hai môi trường \verb|staging| và \verb|production| đã khai báo sẵn trong file YAML.
+Bấm nút deploy thủ công cho môi trường \verb|staging| để minh họa bước phát hành có kiểm soát thay vì tự động đẩy thẳng production.
+\item Mở trang so sánh nhanh GitHub và GitLab trong một bảng một slide: điểm mạnh của GitHub là cộng đồng và Actions, điểm mạnh của GitLab là pipeline tích hợp và self-hosted.
+Kết luận phần demo bằng thông điệp: nhóm dùng GitHub cho bài tập mở, dùng GitLab khi cần kiểm soát pipeline và môi trường chặt chẽ hơn.
+\end{enumerate}
+
+Tiêu chí đạt của TV3: có mirror đồng bộ thành công, một merge request đã được approve và merge, một pipeline xanh và một environment \verb|staging| có bản deploy mẫu.
+Nếu pipeline xếp hàng lâu, TV3 chuyển ngay sang ảnh chụp pipeline xanh đã chuẩn bị và tiếp tục giảng phần so sánh để không làm mất nhịp buổi demo.
+
+\subsection{Dự phòng sự cố}
+\label{subsec:phulucD-suphong}
+
+Kịch bản dự phòng giúp buổi demo không bị gián đoạn dù gặp sự cố mạng, máy chiếu hay lỗi thao tác của người trình bày.
+Nguyên tắc chung: mọi nội dung quan trọng đều có ảnh chụp dự phòng, mọi lệnh dài đều có file script chạy sẵn và luôn có một thành viên sẵn sàng nói thay 30 giây.
+Bảng \ref{tab:phulucD-suphong} liệt kê 5 tình huống hay gặp nhất cùng dấu hiệu nhận biết và cách xử lý trong vòng một phút.
+
+\begin{table}[H]
+\centering
+\caption{Các sự cố thường gặp khi demo và cách xử lý nhanh}
+\label{tab:phulucD-suphong}
+\begin{tabular}{p{2.6cm}p{4.2cm}p{5.8cm}}
+\toprule
+Tình huống & Dấu hiệu & Cách xử lý trong một phút \\
+\midrule
+Mất mạng & Không push được, trang GitHub quay vòng & Chuyển sang demo offline của TV1, dùng ảnh pipeline xanh có sẵn và tiếp tục thuyết minh \\
+CI xếp hàng lâu & Job treo ở trạng thái chờ quá 2 phút & Mở ảnh pipeline xanh dự phòng, giải thích file YAML trong lúc chờ, không đứng im nhìn màn hình \\
+Merge bị conflict nặng & Thông báo conflict nhiều file, khó sửa nhanh & Hủy merge bằng lệnh hủy, quay về bản sạch đã chuẩn bị, hẹn khán giả xem lại sau giờ học \\
+Quên lời thuyết minh & Người nói ngập ngừng, bỏ sót bước & Người giữ giờ nhắc ý chính qua giấy cue-card, người còn lại nói thay 30 giây đúng phần việc của mình \\
+Máy chiếu mờ chữ & Khán giả kêu không đọc được lệnh & Tăng cỡ chữ terminal lên 18pt, chỉ chiếu từng lệnh ngắn, đọc to lệnh trước khi Enter \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ngoài bảng trên, nhóm chuẩn bị thêm một USB chứa toàn bộ repo, slide PDF và báo cáo PDF để demo offline hoàn toàn khi phòng học mất Internet.
+Mỗi thành viên thuộc lòng lệnh hủy an toàn: hủy merge chưa commit, quay về commit sạch gần nhất và kiểm tra trạng thái sạch trước khi làm tiếp.
+TV3 giữ một tờ cue-card ghi thứ tự micro, mật khẩu máy chiếu và đường dẫn tới ảnh dự phòng để không phải tìm kiếm lúng túng trên lớp.
+Buổi tổng duyệt yêu cầu mỗi người chạy toàn bộ phần demo của mình hai lần liền mạch, lần hai phải nhanh hơn lần một ít nhất một phút.
+Thông điệp chốt gửi tới lớp: Git giúp làm việc nhóm an toàn, GitHub và GitLab giúp review và kiểm tra tự động, kỷ luật nhánh và pipeline xanh là thước đo chất lượng nhóm.

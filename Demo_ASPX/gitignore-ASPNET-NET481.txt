@@ -1,0 +1,145 @@
+# Rename this file to .gitignore and place it at the solution root (next to the .sln file).
+# ASP.NET Web Forms (.NET Framework 4.8.1) gitignore - MSBuild / Visual Studio on Windows.
+
+###############################################################################
+# Build outputs - compiled binaries and intermediate files
+###############################################################################
+# MSBuild output folders for all projects in the solution.
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+# Per-project output folders (Web Forms site, class libraries).
+*/bin/
+*/obj/
+Demo_ASPX/bin/
+Demo_ASPX/obj/
+# Published output folders.
+Publish/
+PublishProfiles/
+*/Publish/
+*.Publish.xml
+# File packaging and deployment artifacts.
+*.aps
+*.bak
+*.tmp
+*.temp
+
+###############################################################################
+# NuGet - packages folder except repositories.config
+###############################################################################
+# Ignore restored packages, keep the repository registration file.
+packages/*
+!packages/repositories.config
+!packages/*.config
+# NuGet generated files.
+*.nupkg
+*.snupkg
+*.nuspec.bak
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+###############################################################################
+# Visual Studio - user, workspace and test files
+###############################################################################
+# Visual Studio 2015/2017/2019/2022 workspace folder.
+.vs/
+# User-specific options and window layouts.
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.sln.ide/
+# Project user files.
+*.csproj.user
+*.vbproj.user
+*.aspx.user
+# Test results and coverage.
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+Coverage/
+# Code analysis and IntelliSense.
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+# Backup files created by Visual Studio.
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+# Note: keep this exception if you need to debug with checked-in symbols.
+# !*.pdb
+
+###############################################################################
+# Operating system - Windows and macOS junk files
+###############################################################################
+# Windows Explorer and thumbnail caches.
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+# macOS Finder and metadata.
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+# Linux desktop trash (harmless on Windows runners).
+*~
+.directory
+
+###############################################################################
+# App_Data - local databases and uploaded attachments
+###############################################################################
+# Do not commit local SQL Server data files.
+App_Data/*.mdf
+App_Data/*.ldf
+App_Data/*.ndf
+App_Data/*.bak
+App_Data/*.trn
+# LocalDB and SQL Express working files.
+App_Data/*.log
+*.mdf
+*.ldf
+# Uploaded attachments stored under App_Data (keep folder with .gitkeep).
+App_Data/Uploads/*
+!App_Data/Uploads/.gitkeep
+App_Data/Temp/*
+!App_Data/Temp/.gitkeep
+# ASP.NET runtime folders that must stay empty in git.
+App_Data/ELMAH/*
+!App_Data/ELMAH/.gitkeep
+
+###############################################################################
+# Logs and temporary runtime files
+###############################################################################
+*.log
+*.tlog
+logs/
+temp/
+tmp/

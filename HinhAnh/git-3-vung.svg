@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" font-family="Segoe UI, Arial, sans-serif">
+<rect width="900" height="300" rx="14" fill="#f6f8fa"/>
+<text x="450" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">Kiến trúc 3 vùng của Git + Remote</text>
+<!-- boxes -->
+<rect x="30" y="70" width="190" height="150" rx="10" fill="#ddf4ff" stroke="#1f6feb" stroke-width="2"/>
+<text x="125" y="100" text-anchor="middle" font-size="15" font-weight="700" fill="#1f6feb">1. Working Directory</text>
+<text x="125" y="125" text-anchor="middle" font-size="13" fill="#1f2328">*.aspx, *.cs</text>
+<text x="125" y="145" text-anchor="middle" font-size="13" fill="#1f2328">Web.config …</text>
+<text x="125" y="170" text-anchor="middle" font-size="12" fill="#59636e">(file bạn đang sửa)</text>
+<rect x="270" y="70" width="190" height="150" rx="10" fill="#fbefff" stroke="#8250df" stroke-width="2"/>
+<text x="365" y="100" text-anchor="middle" font-size="15" font-weight="700" fill="#8250df">2. Staging Area</text>
+<text x="365" y="125" text-anchor="middle" font-size="13" fill="#1f2328">git add</text>
+<text x="365" y="145" text-anchor="middle" font-size="13" fill="#1f2328">(chuẩn bị commit)</text>
+<text x="365" y="170" text-anchor="middle" font-size="12" fill="#59636e">index</text>
+<rect x="510" y="70" width="190" height="150" rx="10" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+<text x="605" y="100" text-anchor="middle" font-size="15" font-weight="700" fill="#1a7f37">3. Repository (.git)</text>
+<text x="605" y="125" text-anchor="middle" font-size="13" fill="#1f2328">git commit</text>
+<text x="605" y="145" text-anchor="middle" font-size="13" fill="#1f2328">blob / tree / commit</text>
+<text x="605" y="170" text-anchor="middle" font-size="12" fill="#59636e">(lịch sử ảnh chụp)</text>
+<rect x="730" y="70" width="140" height="150" rx="10" fill="#fff8c5" stroke="#9a6700" stroke-width="2"/>
+<text x="800" y="100" text-anchor="middle" font-size="15" font-weight="700" fill="#9a6700">Remote</text>
+<text x="800" y="125" text-anchor="middle" font-size="13" fill="#1f2328">GitHub</text>
+<text x="800" y="145" text-anchor="middle" font-size="13" fill="#1f2328">GitLab</text>
+<text x="800" y="170" text-anchor="middle" font-size="12" fill="#59636e">push / pull</text>
+<!-- arrows -->
+<defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1f2328"/></marker></defs>
+<line x1="222" y1="120" x2="266" y2="120" stroke="#1f2328" stroke-width="2" marker-end="url(#a)"/>
+<text x="244" y="112" text-anchor="middle" font-size="12" font-weight="700">add</text>
+<line x1="462" y1="120" x2="506" y2="120" stroke="#1f2328" stroke-width="2" marker-end="url(#a)"/>
+<text x="484" y="112" text-anchor="middle" font-size="12" font-weight="700">commit</text>
+<line x1="702" y1="120" x2="726" y2="120" stroke="#1f2328" stroke-width="2" marker-end="url(#a)"/>
+<text x="714" y="112" text-anchor="middle" font-size="12" font-weight="700">push</text>
+<!-- bottom notes -->
+<text x="125" y="250" text-anchor="middle" font-size="12" fill="#59636e">git status: so 3 vùng</text>
+<text x="365" y="250" text-anchor="middle" font-size="12" fill="#59636e">git diff: WD vs Staging</text>
+<text x="605" y="250" text-anchor="middle" font-size="12" fill="#59636e">git diff --staged: Staging vs Repo</text>
+<text x="800" y="250" text-anchor="middle" font-size="12" fill="#59636e">git fetch / pull</text>
+<text x="450" y="278" text-anchor="middle" font-size="12" fill="#59636e">Nhớ: add = chọn, commit = chụp ảnh, push = gửi lên server</text>
+</svg>

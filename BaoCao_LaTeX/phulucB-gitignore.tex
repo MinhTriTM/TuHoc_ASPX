@@ -1,0 +1,232 @@
+\section{Tệp gitignore mẫu cho ASP.NET}
+\label{sec:pb-gitignore}
+
+Phụ lục này cung cấp một tệp \verb|.gitignore| hoàn chỉnh cho đồ án ASP.NET Web Forms chạy trên .NET Framework 4.8.1.
+Mục tiêu là giữ cho kho Git gọn nhẹ: chỉ theo dõi mã nguồn, tệp cấu hình mẫu và tài liệu, đồng thời loại bỏ mọi tệp do Visual Studio và trình biên dịch sinh ra.
+Sinh viên chỉ cần sao chép nguyên văn khối mẫu ở mục dưới đây vào tệp \verb|.gitignore| đặt tại thư mục gốc của kho, sau đó thực hiện \verb|git add| và \verb|git commit| như bình thường.
+Tệp này nằm ngay cạnh tệp giải pháp \verb|*.sln| nên quy tắc bên trong áp dụng cho toàn bộ project, bao gồm mọi thư mục con của đồ án.
+Nhóm nên đưa tệp vào kho với thông điệp theo quy ước Conventional Commits, ví dụ \verb|chore: add gitignore for Web Forms| \cite{convcommits}.
+Cấu trúc phụ lục gồm ba phần: khối mẫu đầy đủ để sao chép, phần giải thích ý nghĩa từng nhóm quy tắc, và phần hướng dẫn xử lý khi đã lỡ commit nhầm tệp rác.
+
+Nguyên tắc quan trọng nhất cần nhớ là: quy tắc trong \verb|.gitignore| chỉ có tác dụng với tệp chưa được Git theo dõi \cite{progit,githubdocs}.
+Vì vậy, tệp \verb|.gitignore| nên được tạo ngay từ commit đầu tiên, trước khi mở project bằng Visual Studio lần đầu.
+Nếu tạo muộn, các thư mục như \verb|bin/| hay \verb|packages/| có thể đã lọt vào kho, và khi đó phải xử lý thêm một bước gỡ bỏ như hướng dẫn ở mục cuối của phụ lục này.
+Với đồ án Web Forms, ba nhóm cần loại trừ nhất là kết quả biên dịch, hồ sơ cấu hình riêng của từng máy và dữ liệu cục bộ như tệp cơ sở dữ liệu đính kèm.
+
+\subsection{Nội dung mẫu}
+
+Đoạn mã dưới đây là nội dung đầy đủ của tệp \verb|.gitignore| dành cho project Web Forms trong học phần này.
+Mọi chú thích trong khối mã đều viết bằng tiếng Anh không dấu để bảo đảm hiển thị đúng trên mọi trình soạn thảo và mọi hệ điều hành.
+Sau khi sao chép, sinh viên chạy \verb|git status| để kiểm tra: danh sách tệp mới chỉ còn mã nguồn, tệp \verb|Web.config| mẫu và tài liệu, không còn thư mục kết quả biên dịch.
+Quy tắc phủ ba nhóm chính: thư mục \verb|bin/|, \verb|obj/| và \verb|packages/| của quá trình build, thư mục \verb|.vs/| cùng các tệp \verb|*.user| và \verb|*.suo| của Visual Studio, cuối cùng là \verb|TestResults/| và \verb|App_Data/*.mdf| chứa dữ liệu cục bộ.
+Thứ tự các khối trong tệp không ảnh hưởng đến kết quả, nhưng việc nhóm theo chủ đề giúp cả nhóm dễ đọc và dễ bổ sung về sau.
+
+\begin{lstlisting}[language=bash]
+# =============================================================
+# .gitignore for ASP.NET Web Forms (.NET Framework 4.8.1)
+# Place this file at the repository root and commit it first.
+# =============================================================
+
+# ---- 1. Build output: recreated by every build, never commit --
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+Generated_Code/
+
+# ---- 2. NuGet packages: restored with "nuget restore" --------
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ---- 3. Visual Studio working files: per-machine state --------
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# ---- 4. Test results and coverage: local run output -----------
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+CoverageReport/
+
+# ---- 5. Local data: attached DB and runtime files -------------
+App_Data/*.mdf
+App_Data/*.ldf
+*.mdf
+*.ldf
+
+# ---- 6. Publish output and deployment leftovers ----------------
+PublishProfiles/
+*.pubxml
+*.publish.xml
+publish/
+Publish/
+app.publish/
+
+# ---- 7. OS and editor trash: keep the repo clean --------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+.idea/
+*.swp
+*.swo
+
+# ---- 8. Secrets: never commit real credentials -----------------
+*.pfx
+*.key
+secrets.json
+appsettings.Development.json
+\end{lstlisting}
+
+Khối mẫu trên đã đủ cho hầu hết đồ án trong học phần, vì nó bao phủ toàn bộ vòng đời làm việc với Web Forms: biên dịch, chạy thử, kiểm thử và đóng gói triển khai.
+Nếu project có thêm thư mục do công cụ ngoài sinh ra, sinh viên chỉ cần thêm một dòng mới theo đúng nhóm tương ứng rồi chạy \verb|git status| để xác nhận quy tắc có hiệu lực.
+Một điểm hay bị hiểu nhầm là tệp \verb|packages.config| phải được giữ lại trong kho, vì đây là danh sách thư viện giúp khôi phục đúng phiên bản trên máy khác và trên máy chủ CI \cite{ghactions,gitlabci}.
+Tương tự, tệp \verb|Web.config| mẫu cũng phải ở lại trong kho, chỉ có các tệp cấu hình chứa thông tin thật của từng máy mới cần loại trừ.
+Ngoài tệp gốc, Git còn cho phép đặt thêm tệp \verb|.gitignore| trong từng thư mục con khi cần quy tắc riêng, tuy nhiên với đồ án này một tệp duy nhất tại thư mục gốc là đủ và dễ quản lý nhất.
+Khi làm việc nhóm, mọi thay đổi với \verb|.gitignore| đều nên đi qua pull request để cả nhóm cùng biết và cùng rà soát \cite{githubdocs,gitlabdocs}.
+Trường hợp muốn chắc chắn một đường dẫn đã bị bỏ qua, hãy dùng \verb|git check-ignore -v| với đường dẫn đó: Git sẽ in ra dòng quy tắc đang áp dụng, như minh họa ở mục cuối.
+
+\subsection{Giải thích từng khối}
+
+Khối kết quả biên dịch gồm \verb|bin/|, \verb|obj/|, \verb|Debug/| và \verb|Release/|.
+Đây là các thư mục do MSBuild sinh ra mỗi lần build trong Visual Studio, nên nội dung của chúng luôn có thể tái tạo từ mã nguồn \cite{msmsbuild}.
+Đưa các thư mục này vào kho vừa làm kho phình to, vừa gây xung đột không đáng có khi hai máy biên dịch ra tệp nhị phân khác nhau.
+
+Khối gói NuGet gồm thư mục \verb|packages/| và các tệp \verb|*.nupkg|.
+Với project .NET Framework, các gói thư viện có thể được tải lại bằng lệnh khôi phục gói, vì vậy không cần lưu bản sao nhị phân trong kho Git.
+Giữ lại tệp \verb|packages.config| là đủ để mọi thành viên phục hồi đúng phiên bản thư viện khi mở project lần đầu.
+
+Khối tệp làm việc của Visual Studio gồm thư mục \verb|.vs/| cùng các tệp \verb|*.user| và \verb|*.suo|.
+Đây là trạng thái riêng của từng máy như cửa sổ đang mở, điểm dừng gỡ lỗi hay đường dẫn cục bộ, nên không có ý nghĩa chia sẻ cho cả nhóm.
+Mỗi sinh viên giữ các tệp này trên máy của mình, còn kho chung chỉ lưu tệp \verb|*.sln| và \verb|*.csproj| dùng chung.
+
+Khối kết quả kiểm thử gồm thư mục \verb|TestResults/| và các tệp \verb|*.trx| cùng báo cáo độ phủ.
+Đây là sản phẩm của mỗi lần chạy kiểm thử trên máy cá nhân, thay đổi liên tục và không giúp ích cho việc đọc hiểu mã nguồn.
+Khi cần lưu bằng chứng kiểm thử cho báo cáo, nhóm nên xuất thành tệp tài liệu riêng thay vì đẩy cả thư mục kết quả thô lên kho.
+
+Khối dữ liệu cục bộ gồm \verb|App_Data/*.mdf|, \verb|*.ldf| và các tệp nhật ký cơ sở dữ liệu.
+Tệp \verb|.mdf| là dữ liệu SQL Server đính kèm theo project, thường nặng và chứa dữ liệu thử nghiệm riêng của từng sinh viên.
+Thay vì đưa tệp nhị phân này vào kho, nhóm nên thống nhất một đoạn lệnh tạo dữ liệu mẫu để mỗi người tự dựng cơ sở dữ liệu trên máy của mình.
+
+Khối đầu ra đóng gói gồm \verb|Publish| và các tệp \verb|*.pubxml|.
+Đây là kết quả của bước publish để triển khai lên máy chủ, mang tính tạm thời và phụ thuộc vào môi trường đích.
+Việc loại trừ nhóm này giúp kho chỉ giữ mã nguồn và cấu hình, còn gói triển khai được tạo mới mỗi lần phát hành.
+
+Khối tệp rác hệ điều hành và trình soạn thảo gồm \verb|Thumbs.db|, \verb|.DS_Store| và các tệp tạm.
+Các tệp này do Windows, macOS hoặc trình soạn thảo tự sinh ra, hoàn toàn không liên quan đến bài làm.
+Cuối cùng, khối bí mật gồm \verb|*.pfx|, \verb|*.key| và \verb|secrets.json| nhắc cả nhóm không bao giờ đưa chứng chỉ hay khóa riêng tư vào kho, đặc biệt là kho công khai.
+
+Bảng dưới đây tóm tắt lại bảy nhóm quy tắc chính cùng lý do loại trừ để sinh viên tra cứu nhanh khi cần giải thích trong buổi bảo vệ.
+Dòng nào trong bảng cũng tương ứng với một khối đã liệt kê trong mẫu ở trên, nên sinh viên có thể đối chiếu trực tiếp khi cần chỉnh sửa.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+Mẫu quy tắc & Nhóm tệp & Lý do loại trừ \\
+\midrule
+\texttt{bin/, obj/} & Kết quả biên dịch & Tái tạo được mỗi lần build \\
+\texttt{packages/, *.nupkg} & Gói NuGet & Khôi phục được từ mạng \\
+\texttt{.vs/, *.user, *.suo} & Trạng thái Visual Studio & Riêng từng máy \\
+\texttt{TestResults/, *.trx} & Kết quả kiểm thử & Thay đổi liên tục \\
+\texttt{App\_Data/*.mdf} & Dữ liệu cục bộ & Nặng, mang tính cá nhân \\
+\texttt{Publish, *.pubxml} & Đầu ra đóng gói & Phụ thuộc môi trường đích \\
+\texttt{*.pfx, secrets.json} & Bí mật & Rủi ro lộ thông tin \\
+\bottomrule
+\end{tabular}
+\caption{Bang tom tat cac nhom quy tac gitignore cho Web Forms}
+\label{tab:pb-gitignore-nhom}
+\end{table}
+
+\subsection{Đã commit nhầm thì sửa sao}
+
+Tình huống thường gặp nhất là sinh viên quên tạo \verb|.gitignore| từ đầu, mở Visual Studio lên là build thử, sau đó mới phát hiện \verb|git status| liệt kê hàng trăm tệp trong \verb|bin/| và \verb|packages/|.
+Trường hợp này không thể sửa chỉ bằng cách thêm \verb|.gitignore|, vì Git vẫn tiếp tục theo dõi những tệp đã lỡ đưa vào kho ở các commit trước đó \cite{progit,atlassiangit}.
+Cách xử lý đúng gồm ba bước: bổ sung quy tắc bỏ qua, gỡ các tệp lỡ commit ra khỏi kho nhưng giữ lại trên đĩa, rồi tạo một commit dọn dẹp để chốt lại.
+Toàn bộ thao tác đều thực hiện trên nhánh đang làm việc, không cần tạo nhánh mới vì đây là thay đổi dọn dẹp mang tính kỹ thuật.
+
+Khối lệnh dưới đây thực hiện đầy đủ ba bước cho project Web Forms. Tùy chọn \verb|--cached| là điểm mấu chốt: nó chỉ xóa tệp khỏi chỉ mục của Git mà không xóa tệp thật trên máy, nên thư mục \verb|bin/| vẫn còn nguyên để Visual Studio tiếp tục sử dụng.
+
+\begin{lstlisting}[language=bash]
+# Step 1: make sure the new rules exist, then untrack junk.
+# --cached keeps local files on disk, removes them from Git only.
+git rm --cached -r bin obj packages .vs TestResults Publish
+git rm --cached App_Data/site.mdf App_Data/site_log.ldf
+git rm --cached *.user *.suo
+
+# Step 2: review what changed before committing.
+git status --short
+
+# Step 3: record the cleanup with a clear message.
+git add .gitignore
+git commit -m "chore: stop tracking build output and local files"
+git push
+\end{lstlisting}
+
+Sau khi đẩy commit dọn dẹp, sinh viên nên kiểm tra lại bằng khối lệnh xác minh dưới đây.
+Lệnh đầu tiên hỏi Git xem một đường dẫn mẫu có đang bị bỏ qua hay không và quy tắc nào đang áp dụng.
+Lệnh thứ hai liệt kê các tệp chưa được theo dõi mà Git vẫn nhìn thấy: nếu danh sách trống hoặc chỉ còn tệp cố ý giữ lại thì việc dọn dẹp đã thành công.
+Nếu lệnh kiểm tra không in ra gì, nghĩa là đường dẫn đó chưa bị bỏ qua và sinh viên cần rà soát lại chính tả của quy tắc vừa thêm.
+
+\begin{lstlisting}[language=bash]
+# Verify: which rule ignores a sample build artifact?
+git check-ignore -v bin/Debug/AspxDemo.dll
+
+# Verify: list untracked files that Git still sees.
+git status --short
+git ls-files --others --exclude-standard
+\end{lstlisting}
+
+Hình dưới đây tóm tắt quy trình ba bước từ lúc phát hiện tệp rác trong kho đến lúc kho trở lại trạng thái sạch.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\small}]
+\node[box] (a) {File rác đã commit};
+\node[box, right=1.2cm of a] (b) {Gỡ khỏi kho};
+\node[box, right=1.2cm of b] (c) {Kho sạch};
+\draw[->] (a) -- node[midway, above, font=\footnotesize] {rm --cached} (b);
+\draw[->] (b) -- node[midway, above, font=\footnotesize] {commit} (c);
+\end{tikzpicture}
+\caption{Quy trinh go bo file rac da commit nham}
+\label{fig:pb-uncommit-flow}
+\end{figure}
+
+Cần phân biệt rõ hai lệnh dễ nhầm: \verb|git rm --cached| chỉ gỡ tệp khỏi kho và giữ lại tệp trên đĩa, còn \verb|git rm| không có tùy chọn này sẽ xóa luôn tệp thật.
+Với thư mục kết quả biên dịch thì xóa nhầm vẫn có thể build lại, nhưng với tệp dữ liệu như \verb|App_Data/*.mdf| thì xóa nhầm đồng nghĩa với mất dữ liệu thử nghiệm.
+Vì vậy, trước khi chạy lệnh gỡ, cả nhóm nên sao lưu thư mục \verb|App_Data/| ra một nơi an toàn, đặc biệt khi trong đó có dữ liệu mất nhiều thời gian chuẩn bị.
+Với các tệp đã từng được commit từ lâu, sau khi gỡ khỏi kho thì lịch sử cũ vẫn còn giữ bản sao, nhưng điều này hoàn toàn bình thường và không ảnh hưởng đến các commit mới.
+
+Những cảnh báo dưới đây áp dụng cho mọi lần dọn dẹp kho, sinh viên nên đọc kỹ trước khi thực hiện trên nhánh dùng chung.
+
+\begin{itemize}
+\item Không bao giờ dùng \verb|git rm| thiếu tùy chọn \verb|--cached| cho dữ liệu không thể tái tạo, vì tệp trên đĩa sẽ bị xóa ngay lập tức.
+\item Không dùng \verb|git push --force| để xóa lịch sử trên nhánh dùng chung sau khi dọn dẹp, vì hành động này gây mất commit của thành viên khác.
+\item Nếu tệp lỡ commit chứa mật khẩu hoặc chuỗi kết nối thật, việc gỡ khỏi commit mới nhất là chưa đủ: phải đổi ngay thông tin đăng nhập đó.
+\item Với kho công khai đã lộ bí mật, nhóm cần xem thêm hướng dẫn làm sạch lịch sử và coi mọi thông tin từng xuất hiện trong lịch sử là đã lộ \cite{githubdocs,gitlabdocs}.
+\item Sau khi dọn dẹp, mỗi thành viên kéo code mới về rồi biên dịch lại project để bảo đảm mọi thứ vẫn chạy bình thường.
+\end{itemize}
+
+Sau khi hoàn tất, sinh viên mở trang kho trên GitHub hoặc GitLab để xác nhận các thư mục \verb|bin/| và \verb|packages/| đã biến mất khỏi cây thư mục.
+Trang so sánh trước và sau commit dọn dẹp cũng là minh chứng tốt để đưa vào báo cáo hoặc slide bảo vệ.
+Tóm lại, tệp \verb|.gitignore| chuẩn ngay từ commit đầu tiên là cách rẻ nhất để giữ kho sạch, còn lệnh \verb|git rm --cached| là lối thoát an toàn khi đã lỡ commit nhầm.
+Khi đã nắm vững hai công cụ này, nhóm có thể yên tâm cộng tác trên cả GitHub và GitLab mà không còn lo kho bị phình to vì tệp rác biên dịch \cite{progit,githubdocs,gitlabdocs}.
+Phụ lục này khép lại với một lời khuyên duy nhất: tạo \verb|.gitignore| trước, build project sau, và mọi rắc rối về tệp rác sẽ không bao giờ xuất hiện.
+Khi kho đã sạch, nhóm quay lại quy trình làm việc thông thường với nhánh tính năng và pull request như mô tả trong các chương chính của báo cáo.
