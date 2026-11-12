@@ -1,7 +1,9 @@
 # PHÂN CÔNG NHÓM 3 THÀNH VIÊN — Đề tài: GIT – GitHub – GitLab (Học phần ASPX, .NET Framework 4.8.1)
 
 > File này là nguồn chân lý duy nhất (Single Source of Truth) cho kế hoạch nhóm.
-> Đổi tên `TV1/TV2/TV3` thành tên thật + MSSV trước khi nộp.
+>
+> **Thành viên (đã chốt):** TV1 = Lê Quang An – 0024415453 (Git) · TV2 = Lê Tuấn Kiệt – 0024417193 (GitHub) · TV3 = Đoàn Minh Trí – 0024417136, trưởng nhóm (GitLab + tổng hợp).
+> **Repo:** https://github.com/MinhTriTM/TuHoc_ASPX
 
 ## 0. Mục tiêu nộp bài (Definition of Done)
 
@@ -23,7 +25,7 @@
 
 ## 1. Phân công theo thành viên (mỗi người 1 mảng + 1 đầu việc chung)
 
-### TV1 — GIT CĂN BẢN → SIÊU NÂNG CAO (Local Git + Internals)
+### TV1 — Lê Quang An (0024415453) — GIT CĂN BẢN → SIÊU NÂNG CAO (Local Git + Internals)
 - **Báo cáo:** Chương 1 (Giới thiệu) + Chương 2 (Git căn bản) + Chương 3 (Git nâng cao).
 - **Slide:** Phần 1 + Phần 2 (khoảng slide 1–25).
 - **Demo live (5–7 phút):** `init/clone → add/commit → branch/merge → rebase → stash → reset/revert → tag`, giải quyết **conflict file `Web.config`**.
@@ -31,7 +33,7 @@
 - **Repo demo:** tạo repo mẫu `AspxDemo_NET481` (.NET Framework 4.8.1, Web Forms), viết `.gitignore` chuẩn, tạo lịch sử commit mẫu.
 - **Tiêu chí đạt:** người chưa biết Git xem xong làm được 20 lệnh cơ bản; giải thích được blob/tree/commit.
 
-### TV2 — GITHUB + CI/CD CHO ASPX (GitHub + Actions)
+### TV2 — Lê Tuấn Kiệt (0024417193) — GITHUB + CI/CD CHO ASPX (GitHub + Actions)
 - **Báo cáo:** Chương 4 (GitHub) + Phụ lục C.1 (mẫu GitHub Actions YAML).
 - **Slide:** Phần 3 (khoảng slide 26–45).
 - **Demo live (5–7 phút):** Fork → PR → Review → Resolve conflict → Merge; chạy **GitHub Actions build `msbuild` + test** cho project ASPX 4.8.1; demo Protected Branch + Secret.
@@ -39,7 +41,7 @@
 - **Repo demo:** nhánh `feature/github-actions`, file `.github/workflows/ci-aspx-481.yml` chạy thật (xanh).
 - **Tiêu chí đạt:** PR mẫu được merge qua review; Actions build pass; trình bày được 8 tính năng GitHub (Issues, PR, Actions, Packages, Pages, Security, Codespaces, Copilot).
 
-### TV3 — GITLAB + SO SÁNH + ỨNG DỤNG NHÓM (GitLab + Tổng hợp)
+### TV3 — Đoàn Minh Trí (0024417136, trưởng nhóm) — GITLAB + SO SÁNH + ỨNG DỤNG NHÓM (GitLab + Tổng hợp)
 - **Báo cáo:** Chương 5 (GitLab) + Chương 6 (So sánh) + Chương 7 (Áp dụng nhóm ASPX) + Chương 8 (Kết luận) + Phụ lục + `.bib`.
 - **Slide:** Phần 4 + Phần 5 + Kết luận (khoảng slide 46–65) + slide Phân công + Q&A.
 - **Demo live (5–7 phút):** Mirror repo sang GitLab → Merge Request → Approval → **GitLab CI (Windows runner, `msbuild`)** → Environments; demo bảng so sánh.

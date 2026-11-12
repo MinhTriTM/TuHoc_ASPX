@@ -73,10 +73,11 @@ Quyền ghi & Không cần quyền gốc & Cần quyền ghi nhánh \\
 \item Mỗi dòng gán một mẫu đường dẫn cho người hoặc nhóm review phụ trách.
 \item Pull request chạm file nào thì owner tương ứng được yêu cầu review.
 \item Kết hợp protected branch để bắt buộc approve của owner trước khi merge.
+\item Thay ký hiệu TV bằng tài khoản thật khi nộp (TV3 dùng \texttt{@MinhTriTM}).
 \end{itemize}
 \begin{lstlisting}[language=bash]
-*.aspx @nhom3/tv-frontend
-Web.config @nhom3/tv-backend
-.github/workflows/ @nhom3/tv-devops
+*.aspx @TV1
+Web.config @TV2
+.github/workflows/ @TV2
 \end{lstlisting}
 \end{frame}

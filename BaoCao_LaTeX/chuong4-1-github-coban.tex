@@ -37,7 +37,7 @@ Nhóm cũng nên thêm file \verb|.gitignore| chuẩn cho Visual Studio để kh
 \label{subsec:c4-kho-chua-va-cong-cu}
 Repository là đơn vị trung tâm trên GitHub, chứa mã nguồn, lịch sử commit, nhánh, thẻ và toàn bộ thiết lập cộng tác.
 Mỗi repository có địa chỉ web riêng, trang tổng quan hiển thị cây thư mục, file giới thiệu và trạng thái nhánh mặc định.
-Với đồ án ASPX, nhóm đặt tên kho chứa rõ ràng như \verb|AspxDemo-NET481| và viết phần mô tả nêu đúng phiên bản Framework.
+Với đồ án ASPX, nhóm đặt tên kho chứa rõ ràng như \verb|AspxDemo_NET481| và viết phần mô tả nêu đúng phiên bản Framework.
 Nhóm bật Issues và Discussions ngay khi tạo kho chứa để mọi trao đổi đều lưu lại một chỗ thay vì nhắn tin rời rạc.
 
 Issues là nơi ghi nhận công việc, lỗi và ý tưởng cải tiến dưới dạng các thẻ có thể gán người thực hiện và nhãn.
@@ -113,8 +113,8 @@ Khối lệnh giả định kho chứa đồ án đã tồn tại và máy đã 
 
 \begin{lstlisting}[language=bash]
 # Clone the sample ASPX project from GitHub
-git clone https://github.com/lop-aspx/AspxDemo-NET481.git
-cd AspxDemo-NET481
+git clone https://github.com/MinhTriTM/AspxDemo_NET481.git
+cd AspxDemo_NET481
 
 # Create a feature branch for login validation
 git checkout -b feature/login-validation
@@ -270,7 +270,7 @@ Các dòng chú thích trong file được viết không dấu để giữ đún
 /Admin/ @TV2
 
 # ASPX pages need reviews from TV2 and TV3
-*.aspx @TV2 @TV3
+*.aspx @TV2 @MinhTriTM
 
 # Code behind files need a review from TV1
 *.aspx.cs @TV1 @TV2
@@ -283,8 +283,7 @@ Các dòng chú thích trong file được viết không dấu để giữ đún
 Khi file trên có hiệu lực, một Pull Request sửa trang trong thư mục \verb|Admin| sẽ tự động yêu cầu TV2 đánh giá.
 Nếu TV2 chưa chấp thuận, nút hợp nhất vẫn bị chặn cho dù các thành viên khác đã đồng ý.
 Cách làm này bảo đảm người hiểu rõ module quản trị luôn được đọc qua thay đổi liên quan.
-Nhóm nên đặt tên tài khoản GitHub thật thay cho ký hiệu TV2 trước khi nộp bài.
-Ví dụ nếu TV2 có tài khoản là \verb|nguyen-van-b| thì dòng tương ứng ghi \verb|/Admin/| kèm tên tài khoản đó.
+Nhóm thay các ký hiệu TV bằng tài khoản GitHub thật: TV3 (Đoàn Minh Trí) dùng \verb|@MinhTriTM|; TV1 (Lê Quang An) và TV2 (Lê Tuấn Kiệt) điền tài khoản của mình vào các dòng tương ứng trước khi nộp bài.
 
 Quy trình chuẩn cho đồ án môn học có thể tóm tắt thành một câu dễ nhớ cho cả ba thành viên.
 Không ai đẩy thẳng lên nhánh chính, mọi việc đều đi qua Pull Request có đánh giá và kiểm tra tự động.

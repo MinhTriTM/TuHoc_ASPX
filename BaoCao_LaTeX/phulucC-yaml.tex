@@ -128,11 +128,11 @@ stages:
 variables:
   SOLUTION: AspxDemo_NET481.sln
   CONFIG: Release
-  NUGET_PACKAGES: C:\NuGetCache
+  NUGET_PACKAGES: packages
 cache:
   key: nuget-$CI_COMMIT_REF_SLUG
   paths:
-    - C:\NuGetCache\
+    - packages/
 before_script:
   - echo Building $env:SOLUTION
 build:
@@ -145,17 +145,20 @@ build:
   artifacts:
     paths:
       - Publish/
+      - Tests/bin/Release/
     expire_in: 1 week
 test:
   stage: test
   tags:
     - windows
   script:
-    - vstest.console.exe .\Tests\bin\Release\AspxDemo.Tests.dll /Logger:trx
+    - vstest.console.exe .\Tests\bin\Release\AspxDemo.Tests.dll /Logger:"trx;LogFileName=results.trx"
+    - dotnet tool install -g trx2junit; if ($LASTEXITCODE -ne 0) { echo "trx2junit already installed" }
+    - trx2junit TestResults\results.trx --output TestResults\junit.xml
   artifacts:
     when: always
     reports:
-      junit: TestResults/*.trx
+      junit: TestResults/junit.xml
     paths:
       - TestResults/
 package:
@@ -163,10 +166,10 @@ package:
   tags:
     - windows
   script:
-    - msbuild .\Web\AspxDemo.csproj /p:Configuration=$env:CONFIG /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\Publish\ /v:minimal
+    - msbuild .\Web\AspxDemo.csproj /p:Configuration=$env:CONFIG /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:PublishUrl=Publish\ /v:minimal
   artifacts:
     paths:
-      - C:\Publish\
+      - Publish/
     expire_in: 1 month
 \end{lstlisting}
 

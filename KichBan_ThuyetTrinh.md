@@ -1,5 +1,7 @@
 # KỊCH BẢN THUYẾT TRÌNH CHI TIẾT (20–25 phút)
 
+> Phân vai: TV1 = Lê Quang An (0024415453) · TV2 = Lê Tuấn Kiệt (0024417193) · TV3 = Đoàn Minh Trí (0024417136, trưởng nhóm + MC).
+
 > Người nói chính ghi ở đầu mỗi đoạn. Câu chữ là lời nói gợi ý — thuộc ý, không cần thuộc lòng.
 > Bấm giờ tổng duyệt 2 lần. Chuẩn bị sẵn: repo demo, tab Actions xanh, tab pipeline GitLab xanh,
 > 1 terminal Git, 1 trình duyệt mở sẵn conflict `Web.config`.

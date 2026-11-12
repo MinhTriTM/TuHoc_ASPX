@@ -48,7 +48,7 @@ git log --oneline
 git branch feature/login
 git switch feature/login
 # 2. Can mang Internet khi day code len server
-git remote add origin https://github.com/nhom3/AspxDemo_NET481.git
+git remote add origin https://github.com/MinhTriTM/AspxDemo_NET481.git
 git push -u origin feature/login
 \end{lstlisting}
 
@@ -172,8 +172,8 @@ nên đã viết được file YAML cho bên này thì đọc hiểu file YAML b
 
 \begin{lstlisting}[language=bash,caption={Gan ca hai remote GitHub va GitLab vao mot repo},label={lst:c6-hai-remote}]
 # Gan 2 remote: GitHub lam chinh, GitLab lam mirror
-git remote add github https://github.com/nhom3/AspxDemo_NET481.git
-git remote add gitlab https://gitlab.com/nhom3/AspxDemo_NET481.git
+git remote add github https://github.com/MinhTriTM/AspxDemo_NET481.git
+git remote add gitlab https://gitlab.com/<ten-nhom>/AspxDemo_NET481.git
 git remote -v
 # Day mot nhanh len ca hai noi
 git push github main
@@ -240,8 +240,8 @@ build-aspx:
   tags:
     - windows
   script:
-    - nuget restore AspxDemo.sln
-    - msbuild AspxDemo.sln /p:Configuration=Release
+    - nuget restore AspxDemo_NET481.sln
+    - msbuild AspxDemo_NET481.sln /p:Configuration=Release
   artifacts:
     paths:
       - AspxDemo/bin/Release/

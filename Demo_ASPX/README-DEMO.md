@@ -157,7 +157,7 @@ git branch
 ### Buoc 8. Day code len GitHub
 
 ```bash
-git remote add origin https://github.com/<ten-nhom>/AspxDemo_NET481.git
+git remote add origin https://github.com/MinhTriTM/AspxDemo_NET481.git
 git checkout main
 git push -u origin main
 git checkout develop
@@ -170,7 +170,7 @@ git push --all origin
 ### Buoc 9. Mirror repo sang GitLab
 
 1. Tren GitLab, chon New project > Import project > Repo by URL.
-2. Dan URL GitHub `https://github.com/<ten-nhom>/AspxDemo_NET481.git`, dat ten project trung ten.
+2. Dan URL GitHub `https://github.com/MinhTriTM/AspxDemo_NET481.git`, dat ten project trung ten.
 3. Sau khi import xong, them remote thu 2 tren may local:
 
 ```bash
