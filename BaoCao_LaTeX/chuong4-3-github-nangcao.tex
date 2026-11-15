@@ -132,7 +132,7 @@ Sinh viên dùng gói GitHub Education được cấp quota Codespaces miễn ph
 
 \subsection{Copilot: trợ lý gợi ý code bằng AI}
 
-Muse là trợ lý lập trình dùng mô hình ngôn ngữ lớn,
+GitHub Copilot là trợ lý lập trình dùng mô hình ngôn ngữ lớn,
 gợi ý ngay trong editor khi sinh viên gõ comment hoặc tên hàm \cite{githubdocs}.
 Với đồ án Web Forms, Copilot giúp sinh code lặp lại nhanh hơn khoảng 30\%,
 ví dụ tạo validator, sinh truy vấn, viết unit test cho lớp tiện ích.
@@ -143,8 +143,12 @@ Ví dụ: sinh viên gõ comment mô tả hàm kiểm tra đăng nhập, Copilot
 hàm C\# kiểm tra tên đăng nhập và mật khẩu cho trang \verb|Login.aspx|.
 Đoạn code dưới đây mô phỏng kết quả gợi ý sau khi đã chỉnh sửa để an toàn hơn:
 
-\begin{lstlisting}[language={[Sharp]C}]
-// Check login for page Login.aspx (demo only)
+\begin{lstlisting}[language={[Sharp]C}, caption={Ham kiem tra dang nhap an toan voi FixedTimeEquals chong Timing Attack}, label={lst:c43-copilot}]
+using System;
+using System.Data.SqlClient;
+using System.Security.Cryptography;
+
+// Check login for page Login.aspx (production-ready constant-time comparison)
 public bool KiemTraDangNhap(string tenDangNhap, string matKhau)
 {
     if (string.IsNullOrWhiteSpace(tenDangNhap)) return false;
@@ -161,19 +165,24 @@ public bool KiemTraDangNhap(string tenDangNhap, string matKhau)
             string hashLuu = rd.GetString(0);
             string muoi = rd.GetString(1);
             string hashNhap = HamBamMatKhau(matKhau, muoi);
-            return hashLuu == hashNhap;
+
+            // Constant-time comparison to prevent Timing Attacks (CWE-208)
+            byte[] bLuu = Convert.FromBase64String(hashLuu);
+            byte[] bNhap = Convert.FromBase64String(hashNhap);
+            return CryptographicOperations.FixedTimeEquals(bLuu, bNhap);
         }
     }
 }
 \end{lstlisting}
 
-Ba điểm cần tự kiểm tra sau khi nhận gợi ý từ Copilot:
+Bốn điểm cần tự kiểm tra sau khi nhận gợi ý từ Copilot:
 
 \begin{enumerate}
 \item Truy vấn phải tham số hóa bằng \verb|@u| như trên, tuyệt đối không nối chuỗi
 tên đăng nhập vào câu lệnh SQL vì sẽ dính lỗi SQL injection.
 \item Mật khẩu phải băm kèm muối bằng thuật toán mạnh, không lưu hay so sánh
 mật khẩu gốc, không gắn cứng mật khẩu mẫu trong code.
+\item So sánh giá trị băm mật khẩu bắt buộc dùng hàm so sánh hằng định thời gian \verb|CryptographicOperations.FixedTimeEquals| trên mảng byte. Nếu dùng toán tử so sánh chuỗi thông thường \verb|==|, chương trình sẽ ngắt sớm ngay khi gặp ký tự khác biệt đầu tiên (short-circuiting), tạo ra sai lệch thời gian xử lý ở mức nano-giây. Kẻ tấn công có thể đo thời gian phản hồi để suy đoán từng byte mã băm, dính lỗ hổng kênh kề nguy hiểm Timing Attack (MITRE CWE-208 / OWASP ASVS v4.0).
 \item Chuỗi kết nối lấy từ file cấu hình hoặc Secret, không dán trực tiếp vào
 code hay vào prompt chat với Copilot.
 \end{enumerate}
@@ -204,21 +213,30 @@ ví dụ một connection string của SQL Server, lệnh push bị từ chối 
 xóa secret khỏi commit, thay vì để lọt lên server rồi mới cảnh báo sau.
 Ví dụ dưới đây mô phỏng lần push bị chặn và cách khắc phục:
 
-\begin{lstlisting}[language=bash]
-# Vo tinh commit file cau hinh chua secret that
+\begin{lstlisting}[language=bash, caption={Quy trinh khac phuc Push Protection chuan xac bang commit amend}, label={lst:c43-push-protection}]
+# 1. Vo tinh commit file cau hinh Web.config chua chuoi bi mat that
 git add Web.config
-git commit -m "Update connection string"
+git commit -m "fix(config): update database connection string"
 git push origin feature/login
-# Ket qua: remote tu choi vi phat hien secret (push protection)
-# remote: error: GH013: Repository rule violations found for refs/heads/feature/login
-# Giai phap: dua secret ra khoi code, doc tu bien moi truong
-# 1) Xoa commit chua secret (nhanh ca nhan, chua merge)
-git reset --soft HEAD~1
-# 2) Thay connection string that bang gia tri gia an toan
-# 3) Commit lai va push, sau do xoay (rotate) secret bi lo
-git commit -m "fix: move connection string to environment variable"
+
+# Ket qua: GitHub tu choi lenh push voi ma loi GH009
+# remote: error: GH009: Secrets detected in push:
+# remote:  - Azure Storage Account Key detected in Web.config:15
+# remote: To bypass, visit: https://github.com/lop-aspx/AspxDemo-NET481/security/secret-scanning/unblock-secret/...
+
+# 2. Quy trinh khac phuc chuan theo GitHub Docs (khong dung git reset --soft):
+# Buoc 2.1: Sua tep Web.config, loai bo chuoi secret va thay bang bien moi truong
+# Buoc 2.2: Cap nhat lai commit hien tai va tu dong stage cac tep da sua
+git commit --amend --all
+
+# 3. Day lai lenh push an toan len nhanh tinh nang
 git push origin feature/login
 \end{lstlisting}
+
+Đoạn mã trên thể hiện rõ quy trình xử lý push protection chuẩn xác theo khuyến nghị của GitHub Docs:
+Mã lỗi chính thức khi push bị chặn bảo vệ là \verb|GH009: Secrets detected in push| (chứ không phải mã chung \verb|GH013| vốn áp dụng cho vi phạm Repository Ruleset thông thường).
+Đặc biệt, nhóm cần tránh sai lầm kinh điển khi dùng \verb|git reset --soft HEAD~1|: theo mô hình Three Trees của Git, cờ \verb|--soft| chỉ đưa con trỏ \verb|HEAD| lùi lại 1 commit nhưng giữ nguyên toàn bộ vùng Index (Staging area). Khi lập trình viên sửa tệp \verb|Web.config| ở Working Tree mà không chạy \verb|git add|, lệnh \verb|git commit| sau đó sẽ lấy dữ liệu từ Index (vẫn chứa nguyên vẹn chuỗi secret cũ), khiến commit mới tái tạo lại chính lỗ hổng vừa bị từ chối.
+Giải pháp an toàn và nhanh nhất là sửa tệp trong thư mục làm việc, sau đó thực thi lệnh \verb|git commit --amend --all| để đồng thời đưa toàn bộ thay đổi vào Index và ghi đè trực tiếp lên commit vừa tạo trước khi đẩy lại lên kho chứa.
 
 Dependabot tự động mở pull request nâng cấp các gói phụ thuộc có lỗ hổng,
 ví dụ nâng cấp thư viện JavaScript trong thư mục \verb|Scripts| hay gói NuGet

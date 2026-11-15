@@ -68,7 +68,7 @@ jobs:
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
-          path: ~/.nuget/packages
+          path: packages
           key: "nuget-windows-${{ hashFiles('**/packages.config') }}"
           restore-keys: nuget-windows-
       - name: Restore packages

@@ -29,7 +29,7 @@ Tài liệu chính thức của GitHub mô tả đầy đủ vòng đời này t
 
 Một kho chứa đồ án ASPX nên có cấu trúc gọn gàng ngay từ đầu để việc cộng tác thuận lợi.
 Thư mục gốc giữ file giải pháp, thư mục dự án giữ các trang \verb|Login.aspx| và \verb|Default.aspx|.
-File \verb|Web.config| giữ cấu hình chung, thư mục \verb|App-Data| hoặc \verb|App-Code| giữ dữ liệu và mã dùng chung.
+File \verb|Web.config| giữ cấu hình chung, thư mục \verb|App_Data| giữ cơ sở dữ liệu tệp cục bộ (được IIS bảo vệ tự động bằng \verb|HttpForbiddenHandler|) hoặc thư mục \verb|App_Code| giữ các lớp mã C\# dùng chung (được ASP.NET biên dịch động).
 File \verb|README.md| mô tả cách mở dự án bằng Visual Studio, cách biên dịch bằng \verb|msbuild| và cách chạy thử.
 Nhóm cũng nên thêm file \verb|.gitignore| chuẩn cho Visual Studio để không đưa thư mục \verb|bin|, \verb|obj| và \verb|packages| lên GitHub.
 
@@ -45,11 +45,10 @@ Mỗi Issue có tiêu đề, mô tả, bình luận, nhãn, mốc thời gian v�
 Ví dụ gắn với đồ án là Issue tiêu đề đăng nhập báo lỗi khi bỏ trống mật khẩu, nhãn lỗi, gán cho thành viên phụ trách trang đăng nhập.
 Khi Pull Request sửa xong vấn đề, thông điệp commit ghi câu đóng Issue tự động để lịch sử được liên kết chặt chẽ.
 
-Projects là bảng quản lý công việc dạng kanban với các cột việc cần làm, đang làm và đã xong.
-Mỗi thẻ trên bảng có thể liên kết tới một hoặc nhiều Issue và Pull Request tương ứng.
-Ví dụ nhóm ASPX lập bảng gồm các cột ý tưởng, đang phát triển, chờ đánh giá và đã hoàn thành.
-Đầu tuần nhóm kéo các Issue như viết trang đăng nhập, viết trang quản trị và sửa file cấu hình vào cột phù hợp.
-Cuối tuần giảng viên mở bảng là thấy ngay tiến độ mà không cần hỏi từng thành viên.
+GitHub Projects (phiên bản Projects v2 hiện đại) là hệ thống quản trị dự án linh hoạt, hỗ trợ cả bảng Kanban (Board view), bảng dữ liệu dạng lưới (Table view) và biểu đồ lộ trình theo thời gian (Roadmap view).
+Trong mô hình dữ liệu của Projects v2, mỗi thẻ đại diện cho chính xác một Issue, một Pull Request hoặc một ghi chú nháp (Draft Item); ngược lại, một Issue có thể được liên kết và theo dõi đồng thời trên nhiều dự án khác nhau của nhóm.
+Bên cạnh thao tác kéo thả thủ công, Projects v2 tích hợp sẵn các quy trình tự động hóa (Built-in Workflows), chẳng hạn tự động chuyển thẻ sang cột \verb|In Progress| khi có nhánh mới, chuyển sang \verb|Done| khi Pull Request được hợp nhất, hoặc tự động lưu trữ các mục đã hoàn tất.
+Nhóm ASPX cấu hình bảng gồm các trạng thái: việc cần làm, đang phát triển, chờ đánh giá và hoàn thành, giúp theo dõi sát sao tiến độ từng trang giao diện và từng thành viên mà không phát sinh độ trễ trao đổi.
 
 Wiki là hệ thống trang tài liệu riêng của kho chứa, phù hợp cho hướng dẫn dài và ít thay đổi theo từng commit.
 Nhóm có thể viết các trang như hướng dẫn cài đặt, hướng dẫn cấu hình máy chủ và quy ước đặt tên cho các trang Web Forms.
@@ -85,12 +84,12 @@ Phạm vi & Kho chứa mới dưới tài khoản riêng & Nhánh mới trong c�
 Quyền cần có & Không cần quyền ghi kho gốc & Cần quyền ghi hoặc quyền tạo nhánh \\
 Đối tượng & Người ngoài tổ chức đóng góp & Thành viên trong nhóm đồ án \\
 Quản lý & Chủ fork tự quản lý bản sao & Nhóm quản lý tập trung một chỗ \\
-Đồng bộ & Phải kéo thủ công từ kho gốc & Tự thấy nhánh mới sau khi đẩy lên \\
+Đồng bộ & Phải cấu hình \verb|upstream| và kéo thủ công & Thành viên chạy \verb|git fetch origin| để cập nhật \\
 Phù hợp ASPX & Sinh viên khác sửa lỗi giúp & Ba thành viên làm tính năng mỗi tuần \\
-Dọn dẹp & Xóa fork khi không dùng nữa & Xóa nhánh sau khi hợp nhất \\
+Dọn dẹp & Xóa topic branch sau khi merge, giữ nguyên fork & Xóa nhánh sau khi hợp nhất \\
 \bottomrule
 \end{tabular}
-\caption{Fork va branch khi nao dung trong do an ASPX}
+\caption{Fork và Branch: khi nào nên dùng trong đồ án ASPX}
 \label{tab:c4-fork-branch}
 \end{table}
 
@@ -100,72 +99,91 @@ Fork chỉ nên dùng khi muốn thử nghiệm độc lập hoặc khi người
 Câu hỏi Fork khác Branch khi nào là một trong các câu phản biện quen thuộc của phần GitHub \cite{atlassiangit}.
 Nhóm nên trả lời ngắn gọn là trong nhóm dùng Branch, ngoài nhóm dùng Fork.
 
-Vòng đời Pull Request chuẩn gồm năm bước là đẩy nhánh, mở Pull Request, đánh giá, kiểm tra tự động và hợp nhất.
+Vòng đời Pull Request chuẩn gồm năm bước: đẩy nhánh, mở Pull Request, chạy kiểm tra tự động (CI), đánh giá (Review) và hợp nhất.
 Bước một, lập trình viên đẩy nhánh tính năng lên GitHub bằng lệnh đẩy nhánh thông thường.
 Bước hai, người đó mở Pull Request từ nhánh tính năng về nhánh chính và ghi rõ mục tiêu cùng cách kiểm thử.
-Bước ba, ít nhất một thành viên khác đọc thay đổi, bình luận và yêu cầu chỉnh sửa nếu cần.
-Bước bốn, hệ thống kiểm tra tự động biên dịch và chạy kiểm thử để bảo đảm nhánh không làm hỏng bản chính.
+Bước ba, hệ thống CI tự động biên dịch và chạy kiểm thử để bảo đảm nhánh không làm hỏng bản chính.
+Bước bốn, thành viên khác đọc thay đổi, bình luận, yêu cầu chỉnh sửa hoặc phê duyệt Pull Request sau khi CI đã chuyển sang màu xanh.
 Bước năm, người có quyền hợp nhất Pull Request và xóa nhánh tính năng sau khi mọi điều kiện đều đạt.
 
-Ví dụ sau đây minh họa toàn bộ vòng đời trên bằng dòng lệnh và công cụ dòng lệnh của GitHub.
+Ví dụ sau đây minh họa toàn bộ vòng đời trên bằng dòng lệnh và công cụ dòng lệnh của GitHub theo mô hình Forking Workflow với hai điều khiển từ xa \verb|origin| và \verb|upstream|.
 Các chú thích trong khối lệnh được viết không dấu theo đúng quy tắc của báo cáo.
 Khối lệnh giả định kho chứa đồ án đã tồn tại và máy đã đăng nhập GitHub.
 
-\begin{lstlisting}[language=bash]
-# Clone the sample ASPX project from GitHub
-git clone https://github.com/lop-aspx/AspxDemo-NET481.git
+\begin{lstlisting}[language=bash, caption={Quy trinh Forking Workflow chuan voi remote kep va dong bo upstream}, label={lst:c4-forking-workflow}]
+# 1. Fork repository goc ve tai khoan ca nhan va clone ve may
+gh repo fork lop-aspx/AspxDemo-NET481 --clone
 cd AspxDemo-NET481
 
-# Create a feature branch for login validation
+# Kiem tra hai remote: origin (fork ca nhan) va upstream (kho goc)
+git remote -v
+
+# 2. Dong bo nhanh main local voi kho goc truoc khi tao nhanh moi
+git checkout main
+git fetch upstream
+git merge upstream/main
+git push origin main
+
+# 3. Tao nhanh tinh nang tu main da cap nhat
 git checkout -b feature/login-validation
 
-# Edit Login.aspx and Login.aspx.cs in Visual Studio here,
-# then check status and review the diff before commit
+# Chinh sua Login.aspx, Login.aspx.cs va Login.aspx.designer.cs
 git status
-git diff -- Login.aspx Login.aspx.cs
+git diff -- Login.aspx*
 
-# Commit with a Conventional Commits message
-git add Login.aspx Login.aspx.cs
-git commit -m "feat: validate empty username on login form"
+# 4. Commit day du cac tep va day len kho fork ca nhan (origin)
+git add Login.aspx Login.aspx.cs Login.aspx.designer.cs
+git commit -m "feat: validate empty username and password on login form"
 git push -u origin feature/login-validation
 
-# Open a pull request from feature branch to main
-gh pr create --base main --head feature/login-validation \
+# 5. Mo Cross-Repository Pull Request tu fork ca nhan huong vao kho goc
+gh pr create --repo lop-aspx/AspxDemo-NET481 --base main \
+  --head sinhvien:feature/login-validation \
   --title "Validate login input" \
   --body "Check empty username and password. Close #12."
 
-# Show pull request status and checks from terminal
-gh pr status
+# 6. Theo doi kiem tra CI tu dong va ket qua review tren terminal
 gh pr checks --watch
+gh pr review --approve
+gh pr merge --squash --delete-branch
 \end{lstlisting}
 
 Hình dưới đây tóm tắt luồng năm bước của Pull Request từ lúc đẩy nhánh đến lúc hợp nhất.
-Nếu người đánh giá yêu cầu thay đổi, tác giả bổ sung commit mới trên cùng nhánh và vòng đánh giá lặp lại.
-Nếu kiểm tra tự động báo lỗi, Pull Request bị chặn hợp nhất cho đến khi bản sửa được đẩy lên.
-Nhờ vòng lặp này, nhánh chính luôn ở trạng thái biên dịch được và chạy được.
+Nếu hệ thống CI kiểm tra tự động báo lỗi, nhánh phản hồi màu đỏ yêu cầu tác giả sửa lỗi build trước.
+Nếu người đánh giá yêu cầu thay đổi (Request Changes), nhánh phản hồi màu cam yêu cầu tác giả bổ sung commit sửa đổi.
+Nhờ hai vòng lặp phản hồi này, nhánh chính luôn ở trạng thái biên dịch được và chạy được.
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[>=Stealth, thick, box/.style={draw, rounded corners, fill=blue!10, minimum width=1.8cm, minimum height=0.9cm, align=center, font=\small}]
-\node[box] (c4push) {Day nhanh};
-\node[box, right=0.8cm of c4push] (c4open) {Mo PR};
-\node[box, right=0.8cm of c4open] (c4review) {Review};
-\node[box, right=0.8cm of c4review] (c4ci) {Chay CI};
-\node[box, right=0.8cm of c4ci] (c4merge) {Merge};
+\begin{tikzpicture}[>=Stealth, thick, 
+  box/.style={draw, rounded corners, fill=blue!10, minimum width=2.0cm, minimum height=0.9cm, align=center, font=\small},
+  err/.style={font=\footnotesize, text=red!80!black},
+  rev/.style={font=\footnotesize, text=orange!80!black}]
+\node[box] (c4push) {1. Đẩy nhánh};
+\node[box, right=0.8cm of c4push] (c4open) {2. Mở PR};
+\node[box, right=0.8cm of c4open] (c4ci) {3. Chạy CI};
+\node[box, right=0.8cm of c4ci] (c4review) {4. Review \& Duyệt};
+\node[box, right=0.8cm of c4review] (c4merge) {5. Hợp nhất};
+
 \draw[->] (c4push) -- (c4open);
-\draw[->] (c4open) -- (c4review);
-\draw[->] (c4review) -- (c4ci);
-\draw[->] (c4ci) -- (c4merge);
-\draw[->, dashed] (c4review.south) -- ++(0,-0.6cm) -| (c4push.south);
+\draw[->] (c4open) -- (c4ci);
+\draw[->] (c4ci) -- (c4review);
+\draw[->] (c4review) -- (c4merge);
+
+% Nhanh phan hoi loi CI (Do)
+\draw[->, dashed, red!80!black] (c4ci.south) -- ++(0,-0.6cm) -| node[pos=0.25, below, err] {CI thất bại (sửa build)} (c4push.south);
+
+% Nhanh phan hoi yeu cau sua review (Cam)
+\draw[->, dashed, orange!80!black] (c4review.north) -- ++(0,0.6cm) -| node[pos=0.25, above, rev] {Request Changes (sửa code)} (c4push.north);
 \end{tikzpicture}
-\caption{Luong Pull Request 5 buoc tren GitHub}
+\caption{Quy trình 5 bước của Pull Request trên GitHub với vòng lặp kiểm thử và duyệt mã}
 \label{fig:c4-pr-flow}
 \end{figure}
 
 Luồng Fork cũng kết thúc bằng Pull Request nhưng điểm xuất phát khác với luồng Branch.
 Người đóng góp sao chép kho gốc về tài khoản của mình, tạo nhánh trên bản sao rồi mở Pull Request ngược về kho gốc.
 Chủ kho gốc xem xét, chạy kiểm tra tự động và quyết định có hợp nhất hay không.
-Mô hình này phổ biến trong dự án mã nguồn mở và được mô tả kỹ trong các hướng dẫn về quy trình phân nhánh \cite{gitflow}.
+Mô hình này phổ biến trong dự án mã nguồn mở và là mô hình Integration-Manager Workflow được phân tích trong nguyên tác Pro Git \cite{progit}.
 Đồ án môn học ít dùng Fork cho việc hằng ngày nhưng sinh viên vẫn cần hiểu để có thể đóng góp cho dự án mở sau này.
 
 \subsection{Đánh giá code: approve, request changes và suggest}
@@ -183,7 +201,18 @@ Bình luận cũng nên phân biệt lỗi bắt buộc sửa và gợi ý cải
 Thái độ trao đổi cần xây dựng vì mục tiêu chung là giữ nhánh chính ổn định chứ không phải chê bai cá nhân.
 
 Tính năng gợi ý thay đổi cho phép người đánh giá viết sẵn đoạn code thay thế ngay trong bình luận.
-Tác giả chỉ cần bấm chấp nhận là gợi ý được ghi thành commit mới trên cùng nhánh.
+Khi đánh giá mã nguồn trên giao diện web của GitHub, người đánh giá có thể nhấp vào số dòng trong tab \verb|Files changed| và sử dụng cú pháp gợi ý thay đổi bằng khối mã Markdown đặc thù \verb|suggestion|:
+
+\begin{lstlisting}[caption={Cú pháp gợi ý thay đổi trực tiếp (Inline Suggestion) trên GitHub}, label={lst:c4-suggestion}]
+Thong bao loi chung ngan chan lo hong User Enumeration (CWE-204):
+```suggestion
+        lblMessage.Text = "Invalid username or password.";
+```
+\end{lstlisting}
+
+Giao diện GitHub sẽ kết xuất khối mã trên thành một bảng so sánh khác biệt trực quan (diff) kèm nút bấm \verb|Commit suggestion|, cho phép tác giả áp dụng sửa đổi ngay lập tức thành một commit mới trên nhánh tính năng.
+Trong trường hợp có nhiều góp ý trên nhiều dòng hoặc nhiều tệp tin, tác giả nên bấm chọn \verb|Add suggestion to batch| cho từng mục, sau đó áp dụng đồng loạt bằng tính năng gom nhóm \verb|Commit suggestions| (Batch Suggestion).
+Cơ chế này gom toàn bộ các sửa đổi nhỏ vào duy nhất một commit chuẩn mực, tránh làm phân mảnh lịch sử Git bằng hàng loạt commit sửa lỗi vụn vặt.
 Tính năng này rất tiện cho các sửa nhỏ như đổi tên biến, thêm kiểm tra rỗng hay sửa chính tả thông báo.
 Với các sửa lớn ảnh hưởng logic, người đánh giá nên mô tả bằng lời để tác giả chủ động sửa và kiểm thử lại.
 Mọi trao đổi đều lưu lại trong Pull Request nên cuối kỳ nhóm có thể trích dẫn làm minh chứng phản biện.
@@ -227,10 +256,11 @@ protected void btnLogin_Click(object sender, EventArgs e)
 }
 \end{lstlisting}
 
-Một bình luận đánh giá tốt cho đoạn code trên có thể viết theo cấu trúc khen đúng, nêu vấn đề và gợi ý sửa.
-Ví dụ người đánh giá viết rằng việc cắt khoảng trắng và kiểm tra rỗng là đúng hướng cho trang đăng nhập.
-Sau đó người đó nhận xét rằng thông báo lỗi nên phân biệt rõ tên đăng nhập sai hay mật khẩu sai trong môi trường học tập.
-Cuối cùng người đó gợi ý dùng hằng số cho độ dài tối thiểu thay vì ghi trực tiếp số 6 trong code.
+Một bình luận đánh giá tốt cho đoạn code trên tuân thủ cấu trúc khen đúng, nêu vấn đề và gợi ý cải tiến an ninh.
+Người đánh giá khen ngợi việc cắt khoảng trắng, kiểm tra chuỗi rỗng và đặc biệt là việc sử dụng thông báo lỗi gộp chung \verb|"Invalid username or password."| ở dòng 225.
+Cách dùng thông báo chung này tuân thủ nghiêm ngặt tiêu chuẩn bảo mật OWASP ASVS v4.0 (Mục V2.2) và khuyến nghị MITRE CWE-204, ngăn chặn kẻ tấn công dò đoán danh tính tài khoản hợp lệ qua sai khác phản hồi (User Enumeration Attack).
+Tiếp đó, người đánh giá góp ý rằng nếu muốn phân biệt lỗi để phục vụ quản trị và hỗ trợ người dùng, nhóm nên ghi chi tiết vào nhật ký an ninh phía máy chủ (\verb|System.Diagnostics.Trace| hoặc bảng log bảo mật) thay vì trả về giao diện người dùng.
+Cuối cùng, người đánh giá gợi ý định nghĩa hằng số cho độ dài tối thiểu của mật khẩu thay vì gắn cứng số 6 trực tiếp trong mã nguồn.
 Tác giả trả lời từng ý, đẩy commit sửa và nhờ đánh giá lại cho đến khi Pull Request được chấp thuận.
 
 Nhóm ba sinh viên nên thống nhất checklist đánh giá chung cho mọi Pull Request của đồ án ASPX.
@@ -248,7 +278,7 @@ Nhờ vậy một commit lỗi lúc nửa đêm không thể làm hỏng bản d
 
 Hai quy tắc quan trọng nhất là số lượt đánh giá bắt buộc và các kiểm tra trạng thái bắt buộc.
 Quy tắc đánh giá yêu cầu ít nhất một người khác chấp thuận trước khi nút hợp nhất được mở.
-Nhóm có thể yêu cầu chủ sở hữu code phải đánh giá, nghĩa là đúng người phụ trách module đó phải duyệt.
+Đặc biệt, để quy tắc phân quyền mã nguồn thực sự có hiệu lực cưỡng chế, nhóm bắt buộc phải bật tùy chọn ``Require review from Code Owners'' trong thiết lập Branch Protection Rules; nếu không bật tùy chọn này, file CODEOWNERS chỉ tự động gán tên người review chứ không khóa quyền hợp nhất của các thành viên khác.
 Quy tắc kiểm tra trạng thái yêu cầu các công việc tự động như biên dịch và kiểm thử đều phải báo thành công.
 Tài liệu GitHub Actions mô tả cách gắn các công việc này vào Pull Request để chặn hợp nhất khi còn lỗi \cite{ghactions}.
 
@@ -264,24 +294,30 @@ Ví dụ yêu cầu của nhóm là mọi thay đổi trong thư mục quản tr
 Khi đó nhóm tạo file CODEOWNERS ở thư mục gốc hoặc trong thư mục \verb|.github| với nội dung như khối dưới đây.
 Các dòng chú thích trong file được viết không dấu để giữ đúng quy tắc ASCII.
 
-\begin{lstlisting}[language=bash]
+\begin{lstlisting}[language=bash, caption={File CODEOWNERS chuan cho do an ASPX voi thu tu uu tien chinh xac}, label={lst:c4-codeowners}]
 # CODEOWNERS - owners for the ASPX course project
-# Every change in /Admin/ needs a review from TV2
-/Admin/ @TV2
+# Rule mac dinh cho toan bo kho ma nguon
+* @TV1
 
-# ASPX pages need reviews from TV2 and TV3
+# Cac trang giao dien ASPX can review tu TV2 hoac TV3 (logic OR)
 *.aspx @TV2 @TV3
 
-# Code behind files need a review from TV1
+# Code behind files can review tu TV1 hoac TV2 (logic OR)
 *.aspx.cs @TV1 @TV2
 
-# Config and workflow files need two reviewers
+# File cau hinh va workflow
 /Web.config @TV1 @TV2
 /.github/ @TV2
+
+# Thu muc quan tri Admin dat cuoi cung de chiem uu tien cao nhat (Last match wins)
+/Admin/ @TV2
 \end{lstlisting}
 
 Khi file trên có hiệu lực, một Pull Request sửa trang trong thư mục \verb|Admin| sẽ tự động yêu cầu TV2 đánh giá.
-Nếu TV2 chưa chấp thuận, nút hợp nhất vẫn bị chặn cho dù các thành viên khác đã đồng ý.
+Đoạn mã trên minh họa hai nguyên lý cốt lõi khi thiết lập CODEOWNERS theo tài liệu chuẩn của GitHub:
+Thứ nhất là nguyên tắc thứ tự ưu tiên ``Last match wins'': GitHub quét các quy tắc từ trên xuống dưới và quy tắc khớp mẫu nằm ở dòng cuối cùng sẽ ghi đè các quy tắc phía trên. Vì vậy, các mẫu rộng như \verb|*| và \verb|*.aspx| phải đặt ở trên, còn quy tắc cho thư mục nhạy cảm \verb|/Admin/| bắt buộc phải đặt ở cuối cùng. Nếu đặt \verb|/Admin/| ở đầu, một tệp như \verb|/Admin/Login.aspx| sẽ bị quy tắc \verb|*.aspx| phía dưới ghi đè hoàn toàn.
+Thứ hai là logic giữa nhiều chủ sở hữu: việc khai báo nhiều tài khoản trên cùng một dòng như \verb|*.aspx @TV2 @TV3| mang ngữ nghĩa toán tử \textbf{HOẶC (OR)} — nghĩa là chỉ cần TV2 hoặc TV3 phê duyệt là thỏa mãn điều kiện (nếu muốn bắt buộc cả hai người phải duyệt thì nhóm phải cấu hình số lượng review yêu cầu tối thiểu là 2 trong Branch Protection).
+Cuối cùng, khi bật kèm tùy chọn \verb|Require review from Code Owners|, nếu TV2 chưa chấp thuận thì nút hợp nhất vẫn bị khóa chặt cho dù các thành viên khác đã đồng ý.
 Cách làm này bảo đảm người hiểu rõ module quản trị luôn được đọc qua thay đổi liên quan.
 Nhóm nên đặt tên tài khoản GitHub thật thay cho ký hiệu TV2 trước khi nộp bài.
 Ví dụ nếu TV2 có tài khoản là \verb|nguyen-van-b| thì dòng tương ứng ghi \verb|/Admin/| kèm tên tài khoản đó.
