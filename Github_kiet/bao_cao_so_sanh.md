@@ -41,7 +41,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 - **Mô tả**: Khẳng định "Mỗi thẻ trên bảng có thể liên kết tới một hoặc nhiều Issue và Pull Request" là sai.
 - **Vị trí main.pdf**: Mục 4.2, Trang 56, đoạn 3, dòng 14–17.
 - **Trích dẫn gốc**: *"Mỗi thẻ trên bảng có thể liên kết tới một hoặc nhiều Issue và Pull Request tương ứng."*
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 218–221.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "The GitHub API", Trang PDF 218–223 (Trang sách 212–217) & Mục "GitHub Flavored Markdown" -> Task lists, Trang PDF 191–192 (Trang sách 185–186).
 - **Phân tích kỹ thuật**: Mỗi thẻ trong GitHub Projects ánh xạ 1:1 với một Issue, một PR, hoặc một Draft Note. Một Issue lại có thể thuộc nhiều dự án khác nhau (quan hệ 1-nhiều). Phân cấp công việc dùng Task Lists (`- [ ] #<number>`) bên trong Issue.
 - **Đề xuất giải pháp**: Hiệu chỉnh mô tả: "Mỗi thẻ đại diện cho chính xác một Issue, một Pull Request hoặc một ghi chú nháp. Ngược lại, một Issue có thể được liên kết vào nhiều dự án khác nhau."
 
@@ -51,7 +51,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Mô tả Projects thuần túy là kéo thả thẻ thủ công, bỏ qua Built-in Workflow Automation và các chế độ xem Table/Roadmap.
 - **Vị trí main.pdf**: Mục 4.2, Trang 56, đoạn 3, dòng 18–22.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 218–221; GitHub Docs: *Automating your project with built-in workflows (Projects v2)*.
+- **Đối chiếu Pro Git & Chuẩn**: *Pro Git (2nd Ed.)*, Chapter 6, Trang PDF 218–223 (Trang sách 212–217); GitHub Docs: *Automating your project with built-in workflows (Projects v2)*. (Lưu ý: Pro Git xuất bản năm 2014 trước khi Projects v2 ra đời năm 2021).
 - **Đề xuất giải pháp**: Bổ sung mô tả về Built-in Workflows (tự động chuyển trạng thái khi tạo Issue/merge PR), Table view (lọc/nhóm theo Assignee, Milestone), và Roadmap view (biểu đồ Gantt theo thời gian).
 
 ---
@@ -61,7 +61,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 - **Mô tả**: Nêu tính năng đóng Issue tự động nhưng không cung cấp cú pháp từ khóa chuẩn và điều kiện kích hoạt trên nhánh mặc định.
 - **Vị trí main.pdf**: Mục 4.2, Trang 56, đoạn 2, dòng 11–13.
 - **Trích dẫn gốc**: *"Khi Pull Request sửa xong vấn đề, thông điệp commit ghi câu đóng Issue tự động để lịch sử được liên kết chặt chẽ."*
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 188–190.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "Advanced Pull Requests" -> References, Trang PDF 188–190 (Trang sách 182–184).
 - **Phân tích kỹ thuật**: GitHub chỉ đóng Issue khi commit/PR chứa từ khóa chuẩn (`Fixes #12`, `Closes #12`, `Resolves #12`) và được merge vào **nhánh mặc định (main)**.
 - **Đề xuất giải pháp**: Bổ sung danh sách từ khóa chuẩn và giải thích điều kiện merge vào nhánh mặc định.
 
@@ -71,7 +71,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Không đề cập đến sự khác biệt giữa kho Public/Private và quy trình cấp quyền cộng tác viên.
 - **Vị trí main.pdf**: Mục 4.1 & 4.2, Trang 55–56.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 197–200 (Creating Repository, Adding Collaborators).
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "Maintaining a Project" -> "Creating a New Repository", Trang PDF 197–198 (Trang sách 191–192); Mục "Adding Collaborators", Trang PDF 198–199 (Trang sách 192–193).
 - **Đề xuất giải pháp**: Khuyến nghị kho Private cho đồ án môn học; hướng dẫn Settings → Collaborators để mời thành viên với quyền Write access.
 
 ---
@@ -80,7 +80,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Hướng dẫn `git clone/pull/push` nhưng không đề cập Personal Access Token (thay thế password từ 8/2021) và cấu hình SSH.
 - **Vị trí main.pdf**: Mục 4.1, Trang 55, đoạn 4.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 173–176.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "Account Setup and Configuration" -> "SSH Keys", Trang PDF 173–176 (Trang sách 167–170); Chapter 4, Trang PDF 118–119 (Trang sách 112–113).
 - **Đề xuất giải pháp**: Giải thích PAT Classic (phạm vi `repo`) cho HTTPS; hướng dẫn `ssh-keygen -t ed25519` và đưa khóa công khai lên Settings → SSH and GPG keys.
 
 ---
@@ -89,7 +89,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Mô tả Wiki như giao diện soạn thảo web, không đề cập bản chất `.wiki.git` repository độc lập và giới hạn không hỗ trợ Pull Request.
 - **Vị trí main.pdf**: Mục 4.2, Trang 56, đoạn 4, dòng 23–29.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 172.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "Account Setup and Configuration", Trang PDF 172 (Trang sách 166); GitHub Docs: *About Wikis*.
 - **Đề xuất giải pháp**: Nêu rõ Wiki có thể clone về máy bằng địa chỉ `.wiki.git`, không hỗ trợ phân nhánh/PR, và cần GitHub Student Pack để bật trên kho Private.
 
 ---
@@ -134,7 +134,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Mục 4.3 tiêu đề "Fork và Pull Request" nhưng khối lệnh thực hành chỉ minh họa Shared Repository Workflow (thành viên có quyền ghi trực tiếp vào kho gốc).
 - **Vị trí main.pdf**: Mục 4.3, Trang 56–57.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6 – *Forking Projects*, p. 178–181; *Keeping up with Upstream*, p. 187–188.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "Forking Projects", Trang PDF 177–181 (Trang sách 171–175); Mục "Keeping up with Upstream", Trang PDF 187–188 (Trang sách 181–182).
 - **Phân tích kỹ thuật**: Thiếu: (1) `gh repo fork ... --clone`; (2) Cấu hình remote kép `origin`/`upstream`; (3) Lệnh đồng bộ `git fetch upstream && git merge upstream/main`; (4) Mở cross-repository PR từ fork về kho gốc.
 - **Đề xuất giải pháp**: Bổ sung khối lệnh Forking Workflow đầy đủ (xem mã nguồn LaTeX đề xuất trong báo cáo đơn vị Segment 2).
 
@@ -144,7 +144,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Hình 8 xếp Review (Bước 3) trước Chạy CI (Bước 4), mâu thuẫn với quy trình chuẩn và chính Mục 7.2 của báo cáo.
 - **Vị trí main.pdf**: Mục 4.3, Trang 57, Hình 8.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, p. 185–187.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "The GitHub Flow", Trang PDF 178–186 (Trang sách 172–180); Mục "Advanced Pull Requests", Trang PDF 186–188 (Trang sách 180–182).
 - **Đề xuất giải pháp**: Chuẩn hóa thứ tự: *1. Đẩy nhánh → 2. Mở PR → 3. Chạy CI → 4. Review & Approve → 5. Merge*. Vẽ lại sơ đồ TikZ với nhánh phản hồi lỗi CI (màu đỏ) và nhánh Review yêu cầu sửa (màu cam).
 
 ---
@@ -153,6 +153,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Tiêu đề mục có từ "suggest" nhưng toàn bộ nội dung không có dòng code minh họa cú pháp suggestion; bỏ qua "Add suggestion to batch".
 - **Vị trí main.pdf**: Mục 4.4, Trang 58.
+- **Đối chiếu Pro Git & Chuẩn**: *Pro Git (2nd Ed.)*, Chapter 6, Mục "GitHub Flavored Markdown", Trang PDF 190–196 (Trang sách 184–190); GitHub Docs: *Incorporating feedback in your pull request*.
 - **Đề xuất giải pháp**: Bổ sung khối mã Markdown minh họa cú pháp ` ```suggestion ``` `; giải thích cơ chế batch commit tránh phân mảnh lịch sử Git.
 
 ---
@@ -161,7 +162,8 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Gán trích dẫn bài báo GitFlow của Vincent Driessen (mô hình nhánh nội bộ một kho) cho mô hình Forking (nhiều kho phân tán).
 - **Vị trí main.pdf**: Mục 4.3, Trang 57.
-- **Đề xuất giải pháp**: Thay bằng `\cite{progit}` trỏ về *Pro Git* Chương 5 (Integration-Manager Workflow).
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 5: "Distributed Git" -> Mục "Distributed Workflows" -> "Integration-Manager Workflow", Trang PDF 132–135 (Trang sách 126–129).
+- **Đề xuất giải pháp**: Thay bằng `\cite{progit}` trỏ về *Pro Git* Chương 5 (Integration-Manager Workflow, Trang PDF 133, Trang sách 127).
 
 ---
 
@@ -185,6 +187,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Nhận định "Branch tự thấy nhánh mới sau khi đẩy" sai bản chất phân tán của Git. Khuyến nghị "Xóa fork khi không dùng nữa" phá hủy PR đang chờ duyệt.
 - **Vị trí main.pdf**: Mục 4.3, Trang 56, Bảng 11.
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 2, Mục "Working with Remotes" -> Fetching and Pulling from Your Remotes, Trang PDF 58–59 (Trang sách 52–53); Chapter 6, Mục "Contributing to a Project", Trang PDF 177–188 (Trang sách 171–182).
 - **Đề xuất giải pháp**: Hàng Đồng bộ Branch: "Thành viên chạy `git fetch origin`". Hàng Dọn dẹp Fork: "Xóa topic branch (`git push origin --delete <branch>`), giữ lại fork để tiếp tục đóng góp".
 
 ---
@@ -345,7 +348,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 | Mã | Vấn đề | Mức |
 |:--|:--|:--:|
-| I6 | Thiếu liên hệ kiến trúc GitHub Actions ↔ Webhooks/Commit Status API (Pro Git p. 214–223) | Observation |
+| I6 | Thiếu liên hệ kiến trúc GitHub Actions ↔ Webhooks & Commit Status API (Pro Git Chapter 6, Trang PDF 214–223, Trang sách 208–217) | Observation |
 | I7 | Độ lệch số trang PDF vs folio 1 trang; cần ghi cả hai chỉ số | Observation |
 | I8 | Gọi file YAML là "đơn vị cấu hình nhỏ nhất" (sai; đơn vị nhỏ nhất là Step/Action) | Minor |
 | I9 | Khối `concurrency:` trong Listing 24 không được giải thích ở Mục 4.7.2 | Minor |
@@ -496,7 +499,7 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 - **Mô tả**: Quy trình dùng `git reset --soft HEAD~1` không cập nhật Index. Thiếu `git add Web.config` sau khi sửa file. Kết quả: `git commit` lấy nội dung từ Index vẫn chứa secret → push tiếp tục bị từ chối lần 2. Thêm nữa, mã lỗi `GH013` là sai; đúng phải là **`GH009`** (Secret Scanning Push Protection).
 - **Vị trí main.pdf**: Trang 74, Mục 4.14, dòng 207–221.
-- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 7, p. 257–264 ("Reset Demystified" – Three Trees).
+- **Đối chiếu Pro Git**: *Pro Git (2nd Ed.)*, Chapter 7: "Git Tools" -> Mục "Reset Demystified" (The Three Trees & Reset Levels: --soft vs --mixed), Trang PDF 257–266 (Trang sách 251–260).
 - **Đề xuất giải pháp**: Thay bằng `git reset HEAD~1` (mixed reset, unstage Index), sau đó sửa file, **`git add Web.config`** tường minh, rồi commit lại. Hiển thị đúng mã lỗi `GH009` và URL bypass.
 
 ---
@@ -562,62 +565,67 @@ Báo cáo này tổng hợp kết quả thẩm định kỹ thuật chuyên sâu
 
 ---
 
-## BẢNG TỔNG HỢP TOÀN BỘ VẤN ĐỀ PHÁT HIỆN
+## BẢNG TỔNG HỢP TOÀN BỘ VẤN ĐỀ PHÁT HIỆN KÈM ĐỐI CHIẾU SỐ TRANG PRO GIT
 
-| Mã vấn đề | Mức độ | Mục | Trang | Tiêu đề vắn tắt |
-| :--- | :---: | :---: | :---: | :--- |
-| FIND-S1-01 | **Major** | 4.1 | 55 | Sai quy ước `App-Data`/`App-Code` → lộ CSDL, lỗi CS0246 |
-| FIND-S1-02 | **Major** | 4.2 | 56 | Mô hình dữ liệu thẻ Projects sai (1 thẻ → nhiều Issue) |
-| FIND-S1-03 | **Major** | 4.2 | 56 | Projects chỉ mô tả kéo thả, thiếu Workflow Automation & Projects v2 |
-| FIND-S1-04 | **Major** | 4.2 | 56 | Thiếu cú pháp `Fixes #N`, `Closes #N` và điều kiện nhánh mặc định |
-| FIND-S1-05 | **Major** | 4.1–4.2 | 55–56 | Bỏ sót Public vs Private và quy trình Collaborators |
-| FIND-S1-06 | **Major** | 4.1 | 55 | Bỏ sót PAT và SSH cho xác thực clone/push |
-| FIND-S1-07 | **Major** | 4.2 | 56 | Wiki là Git repo độc lập `.wiki.git`; không hỗ trợ PR |
-| FIND-S1-08 | **Major** | 4.2 | 56 | Nhầm trạng thái mặc định Issues/Discussions; bỏ "Convert to issue" |
-| FIND-S1-09 đến S1-14 | **Minor** | 4.1–4.3 | 55–57 | Thuật ngữ Milestone, Assignee; bộ đếm `#N` chung; `-u origin`; `.vs/`; Kanban; caption Bảng 11 |
-| S2-AGG-CRIT-01 | **Critical** | 4.4 | 59 | Code review hướng dẫn User Enumeration Attack (CWE-204) |
-| S2-AGG-CRIT-02 | **Critical** | 4.3 | 56–57 | Mục 4.3 không có lệnh Forking Workflow; nhầm Shared Repository |
-| S2-AGG-MAJ-01 | **Major** | 4.3 | 57 | Hình 8 nghịch đảo thứ tự Review → CI; đứt gãy nhánh phản hồi lỗi |
-| S2-AGG-MAJ-02 | **Major** | 4.4 | 58 | Thiếu cú pháp ` ```suggestion ``` ` và Batch Suggestion |
-| S2-AGG-MAJ-03 | **Major** | 4.3 | 57 | Trích dẫn sai `\cite{gitflow}` cho mô hình Forking |
-| S2-AGG-MAJ-04 | **Major** | 4.3 | 57 | Bỏ sót `Login.aspx.designer.cs` → CI lỗi CS0103 |
-| S2-AGG-MAJ-05 | **Major** | 4.3 | 57 | Khối lệnh CLI thiếu bước Review và Merge |
-| S2-AGG-MAJ-06 | **Major** | 4.3 | 56 | Bảng 11 sai cơ chế đồng bộ Git; khuyến nghị xóa Fork nguy hại |
-| S2-MIN-01 đến S2-TYPO-03 | **Minor/Editorial** | 4.3–4.4 | 57–60 | Branch base mâu thuẫn; NullRef risk; Three-Dot Diff; Pending Review; caption/label listing |
-| Finding 1 | **Critical** | 4.5 | 61 | CODEOWNERS không tự khóa Merge nếu thiếu "Require review from Code Owners" |
-| Finding 2 | **Critical** | 4.5 | 61 | Đảo lộn thứ tự khớp mẫu CODEOWNERS (last match wins) vô hiệu `/Admin/` |
-| Finding 3 | **Critical** | 4.5 | 61 | Nhầm nhiều owner là AND thay vì OR |
-| Finding 4 | **Major** | 4.5 | 61 | Thuật ngữ hư cấu; sai cơ chế Admin Bypass |
-| Finding 5 | **Major** | 4.5 | 61 | Deadlock single-owner; thắt cổ chai `.aspx`/`.aspx.cs` |
-| Finding 6 | **Major** | 4.5 | 60–61 | Bỏ sót Block force push, Linear History, Dismiss stale approvals |
-| Findings 7–13 | **Minor/Typo** | 4.5 | 61–62 | Mâu thuẫn chú thích; thiếu `@`; thiếu `docs/CODEOWNERS`; thiếu Write permission; dàn trang LaTeX |
-| Issue 1 | **Critical** | 4.7 | 64–65 | MSBuild thiếu `/p:DeployOnBuild=true` → Artifact path không tồn tại |
-| Issue 2 | **Critical** | 4.7 | 64 | Cache NuGet sai path `~/.nuget/packages` cho Web Forms |
-| Issue 3 | **Major** | 4.7 | 64–65 | `vstest.console.exe` không trong PATH → thay bằng `dotnet test` |
-| Issue 4 | **Major** | 4.7 | 64 | PowerShell bóc tách `"Any CPU"` gây MSB1008 |
-| Issue 5 | **Major** | 4.6–4.7 | 62–63 | Thiếu `workflow_dispatch` và `develop` trong `pull_request` triggers |
-| Issues 6–14 | **Minor/Obs** | 4.6–4.7 | 62–66 | Webhooks/Status API; đơn vị cấu hình; concurrency; mâu thuẫn artifact; tên solution bất nhất; dấu nháy Unicode |
-| S5-01 | **Critical** | 4.9 | 67 | Sai path cache NuGet (lặp lại + Phụ lục C) |
-| S5-02 | **Critical** | 4.8 | 66 | Bảo mật: truyền Secret qua CLI arguments + triển khai song song thiếu `needs:` |
-| S5-03 | **Major** | 4.8 | 66 | Vi phạm Environment Secret Polymorphism |
-| S5-04 | **Major** | 4.8 | 66 | Tuyệt đối hóa sai cơ chế `***` masking |
-| S5-05 | **Major** | 4.9 | 67–68 | Thiếu `if: always()` cho Upload Test Results |
-| S5-06 | **Major** | 4.10 | 69 | Bỏ sót hệ số nhân chi phí 2x Windows Runner |
-| S5-07 | **Major** | 4.10 | 68 | Thiếu phân tích kỹ thuật lý giải Web Forms không build được trên Ubuntu |
-| S5-M1 đến M6 | **Minor** | 4.9–4.10 | 67–69 | Thông số Cache; `packages.lock.json`; `.csproj` trong hashFiles; Environment Rules; Ubuntu version |
-| F-01 | **Critical** | 4.13 | 72 | Nhầm tên "Muse" thay vì "GitHub Copilot" |
-| F-02 | **Critical** | 4.13 | 72–73 | Timing Attack trong `hashLuu == hashNhap` |
-| F-03 | **Critical** | 4.11 | 69–70 | Nhầm `GITHUB_TOKEN` với PAT cho máy cá nhân |
-| F-04 đến F-11 | **Major** | 4.11–4.13 | 69–73 | CLI lỗi thời; `dotnet pack` không tương thích; RepositoryUrl thiếu; Pages public; nuget.config thiếu; Codespaces bất khả thi; Hình 10 sai; Copilot Block filter |
-| F-12 đến F-16 | **Minor** | 4.11–4.13 | 70–73 | `AddWithValue` Index Scan; "30%" không có nguồn; bash syntax; caption/label; Codespaces quota |
-| S7-01 | **Critical** | 4.14 | 74 | Git reset sai logic → commit lại chính secret; mã lỗi GH013 sai (đúng là GH009) |
-| S7-02 | **Major** | 4.14 | 73 | Push Protection không chặn SQL Server connection string nội bộ |
-| S7-03 | **Major** | 4.14 | 74 | Dependabot không quét file JS tĩnh trong `Scripts/` |
-| S7-04 | **Major** | 4.14 | 74 | CodeQL mặc định Ubuntu + autobuild thất bại với C# .NET Framework 4.8.1 |
-| S7-05 | **Major** | 4.14 | 74 | Bảng 13 sai bản chất bảo mật cột "Chặn ở đâu" |
-| S7-06 | **Major** | 4.14 | 74 | Thiếu `dependabot.yml`; thiếu cảnh báo `FileLoadException` khi nâng cấp gói |
-| S7-07 đến S7-09 | **Major** | 4.15 | 75 | Codespaces bất khả thi; tính năng miễn phí phổ thông nhầm thành Education; đăng ký thiếu 2FA/Camera/Geo |
-| S7-10 đến S7-14 | **Minor** | 4.14–4.15 | 73–75 | ConfigurationManager; Bảng 13 mất dấu; caption/label; khoảng trắng listings; trích dẫn chung chung |
+> [!NOTE]
+> - **Trang PDF Pro Git**: Là số trang bạn nhập trực tiếp vào trình đọc PDF (Adobe Acrobat, Edge, Chrome) khi mở tệp `progit.pdf`.
+> - **Trang in Pro Git**: Là số trang in thực tế ở góc chân trang của cuốn sách (độ lệch 6 trang: `Trang PDF = Trang in + 6`).
+> - Với các tính năng ra mắt sau khi sách *Pro Git (2nd Ed., 2014)* xuất bản (Actions, Dependabot, CodeQL, Copilot, Secrets, CODEOWNERS, Projects v2), cột đối chiếu ghi rõ nguồn tài liệu chuẩn mực chính thức tương ứng (GitHub Docs, Microsoft Learn, OWASP).
+
+| Mã vấn đề | Mức độ | Mục main.pdf | Trang main.pdf | Đối chiếu Pro Git (Trang PDF / Trang in) & Chuẩn kỹ thuật | Tiêu đề tóm tắt sai phạm & Giải pháp |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| **FIND-S1-01** | **Major** | 4.1 | 55 | Microsoft Learn (.NET 4.8.1 / IIS Request Filtering) | Sai `App-Data`/`App-Code` (gạch nối) → đổi thành `App_Data`/`App_Code` |
+| **FIND-S1-02** | **Major** | 4.2 | 56 | Pro Git Ch.6, **Trang PDF 218–223 (Trang in 212–217)** & **Trang PDF 191–192 (Trang in 185–186)** | Thẻ Projects ánh xạ 1:1, không phải 1 thẻ chứa nhiều Issue/PR |
+| **FIND-S1-03** | **Major** | 4.2 | 56 | Pro Git Ch.6, **Trang PDF 218–223 (Trang in 212–217)**; GitHub Docs (Projects v2) | Projects v2 có Built-in Workflows, Table/Roadmap views |
+| **FIND-S1-04** | **Major** | 4.2 | 56 | Pro Git Ch.6, **Trang PDF 188–190 (Trang in 182–184)** | Cú pháp `Fixes #N`, `Closes #N` và điều kiện merge vào nhánh mặc định |
+| **FIND-S1-05** | **Major** | 4.1–4.2 | 55–56 | Pro Git Ch.6, **Trang PDF 197–199 (Trang in 191–193)** | Bỏ sót phân định Public/Private và quy trình cấp quyền Collaborators |
+| **FIND-S1-06** | **Major** | 4.1 | 55 | Pro Git Ch.6, **Trang PDF 173–176 (Trang in 167–170)**; Ch.4, **Trang PDF 118–119 (Trang in 112–113)** | Bỏ sót xác thực PAT thay password và cấu hình khóa SSH |
+| **FIND-S1-07** | **Major** | 4.2 | 56 | Pro Git Ch.6, **Trang PDF 172 (Trang in 166)**; GitHub Docs | Wiki là Git repo riêng `.wiki.git`, không hỗ trợ nhánh/PR |
+| **FIND-S1-08** | **Major** | 4.2 | 56 | GitHub Docs (Features Settings) | Nhầm trạng thái mặc định; bỏ "Convert to issue" / "Mark as answer" |
+| **FIND-S1-09..14**| **Minor** | 4.1–4.3 | 55–57 | Pro Git Ch.6, **Trang PDF 188–189 (Trang in 182–183)**; Ch.2, **Trang PDF 58–61 (Trang in 52–55)** | Chuẩn hóa thuật ngữ Milestone/Assignee, bộ đếm `#N`, cờ `-u origin` |
+| **S2-AGG-CRIT-01**| **Critical**| 4.4 | 59 | OWASP ASVS v4.0 V2.1.12; MITRE CWE-204 | Code review gợi ý thông báo lỗi riêng tạo lỗ hổng User Enumeration |
+| **S2-AGG-CRIT-02**| **Critical**| 4.3 | 56–57 | Pro Git Ch.6, **Trang PDF 177–181 (Trang in 171–175)** & **Trang PDF 187–188 (Trang in 181–182)** | Thiếu lệnh Forking Workflow, cấu hình remote kép `origin`/`upstream` |
+| **S2-AGG-MAJ-01** | **Major** | 4.3 | 57 | Pro Git Ch.6, **Trang PDF 178–188 (Trang in 172–182)** | Hình 8 đảo ngược Review trước CI; đứt gãy nhánh phản hồi lỗi |
+| **S2-AGG-MAJ-02** | **Major** | 4.4 | 58 | Pro Git Ch.6, **Trang PDF 190–196 (Trang in 184–190)**; GitHub Docs | Thiếu cú pháp Markdown Suggestion ` ```suggestion ` và Batch Suggestion |
+| **S2-AGG-MAJ-03** | **Major** | 4.3 | 57 | Pro Git Ch.5, **Trang PDF 132–135 (Trang in 126–129)** | Trích dẫn sai `\cite{gitflow}` cho Forking (chuẩn là Integration-Manager) |
+| **S2-AGG-MAJ-04** | **Major** | 4.3 | 57 | MSBuild .NET 4.8.1 Compilation Specs | Lệnh `git add` bỏ sót `Login.aspx.designer.cs` gây lỗi biên dịch CS0103 |
+| **S2-AGG-MAJ-05** | **Major** | 4.3 | 57 | GitHub CLI Documentation | Khối lệnh CLI dừng ở checks, bỏ quên bước approve và merge |
+| **S2-AGG-MAJ-06** | **Major** | 4.3 | 56 | Pro Git Ch.2, **Trang PDF 58–59 (Trang in 52–53)**; Ch.6, **Trang PDF 177–188** | Bảng 11 sai cơ chế fetch Git; khuyến nghị xóa Fork gây hỏng PR |
+| **S2-MIN-01..TYPO**| **Minor** | 4.3–4.4 | 57–60 | Pro Git Ch.6, **Trang PDF 182–186 (Trang in 176–180)** | Ba chiến lược Merge, lỗi NullRef, thiếu caption/label listings |
+| **Finding 1** | **Critical**| 4.5 | 61 | GitHub Docs: *About protected branches* (Sau Pro Git 2014) | CODEOWNERS không tự khóa merge nếu thiếu Require Code Owner Reviews |
+| **Finding 2** | **Critical**| 4.5 | 61 | GitHub Docs: *CODEOWNERS syntax* (Sau Pro Git 2014) | Đảo lộn thứ tự ưu tiên (Last Match Wins) vô hiệu hóa quy tắc `/Admin/` |
+| **Finding 3** | **Critical**| 4.5 | 61 | GitHub Docs: *About code owners* (Sau Pro Git 2014) | Nhiều Code Owner trên một dòng là quan hệ OR, không phải AND |
+| **Finding 4** | **Major** | 4.5 | 61 | GitHub Docs: *Managing a branch protection rule* | Sáng tác thuật ngữ; Admin mặc định bypass trừ khi chọn Do not allow bypassing |
+| **Finding 5** | **Major** | 4.5 | 61 | GitHub Docs Best Practices | Deadlock gán 1 owner cho Admin; thắt cổ chai chia rẽ `.aspx`/`.aspx.cs` |
+| **Finding 6** | **Major** | 4.5 | 60–61 | GitHub Docs: *Branch protection settings* | Bỏ sót Block force pushes, Require linear history, Dismiss stale approvals |
+| **Findings 7–13** | **Minor** | 4.5 | 61–62 | GitHub Docs: *CODEOWNERS syntax* | Thiếu ký tự `@`, thiếu vị trí `docs/CODEOWNERS`, lỗi bẻ đôi từ tiếng Việt |
+| **Issue 1** | **Critical**| 4.7 | 64–65 | Microsoft Learn (MSBuild Web Publishing Pipeline) | Thiếu `/p:DeployOnBuild=true` khiến thư mục Package không được tạo ra |
+| **Issue 2** | **Critical**| 4.7 | 64 | Microsoft Learn (NuGet in ASP.NET Web Forms) | Cache NuGet sai đường dẫn `~/.nuget/packages` cho Web Forms |
+| **Issue 3** | **Major** | 4.7 | 64–65 | GitHub Actions Runner Images Specs | `vstest.console.exe` không có trong PATH sau `setup-msbuild@v2` |
+| **Issue 4** | **Major** | 4.7 | 64 | PowerShell Core Argument Parsing Rules | PowerShell bóc tách nháy kép `/p:Platform="Any CPU"` gây MSB1008 |
+| **Issue 5** | **Major** | 4.6–4.7 | 62–63 | GitHub Actions Workflow Syntax Docs | Mâu thuẫn trigger: thiếu `workflow_dispatch` và nhánh `develop` |
+| **Issues 6–14** | **Minor/Obs**| 4.6–4.7 | 62–66 | Pro Git Ch.6, **Trang PDF 214–223 (Trang in 208–217)** | Webhooks/Commit Status API tiền thân CI; tên solution; nháy Unicode cong |
+| **S5-01** | **Critical**| 4.9 | 67 | Microsoft Learn (NuGet cache path) | Lặp lại lỗi cache NuGet trong Listing 26 và Phụ lục C |
+| **S5-02** | **Critical**| 4.8 | 66 | OWASP Top 10 CI/CD; GitHub Actions Security Hardening | Truyền Secret qua đối số CLI lộ mật khẩu trong tiến trình & Event Log |
+| **S5-03** | **Major** | 4.8 | 66 | GitHub Docs: *Using environments for deployment* | Vi phạm nguyên lý đa hình secret (phải dùng chung tên biến môi trường) |
+| **S5-04** | **Major** | 4.8 | 66 | GitHub Docs: *Masking secrets in logs* | Tuyệt đối hóa sai cơ chế che giấu `***` (vẫn lộ nếu base64/url-encode) |
+| **S5-05** | **Major** | 4.9 | 67–68 | GitHub Actions: Status check functions | Thiếu `if: always()` khiến mất kết quả `.trx` khi kiểm thử bị fail |
+| **S5-06** | **Major** | 4.10 | 69 | GitHub Docs: *About billing for GitHub Actions* | Bỏ sót hệ số nhân chi phí 2x của Windows Runner (1 phút = 2 phút quota) |
+| **S5-07** | **Major** | 4.10 | 68 | Microsoft Learn (.NET Framework Architecture) | Thiếu giải thích nguyên nhân kỹ thuật Web Forms không build được trên Linux |
+| **S5-M1..M6** | **Minor** | 4.9–4.10| 67–69 | GitHub Actions Documentation | Hạn ngạch cache 10 GB, `packages.lock.json`, cập nhật Ubuntu 24.04 |
+| **F-01** | **Critical**| 4.13 | 72 | GitHub Official Product Catalog | Nhầm tên GitHub Copilot thành "Muse" (tên sản phẩm không tồn tại) |
+| **F-02** | **Critical**| 4.13 | 72–73 | OWASP ASVS v4.0 V3.2.1; CWE-208 | Toán tử `==` bị Timing Attack; phải dùng `FixedTimeEquals` |
+| **F-03** | **Critical**| 4.11 | 69–70 | GitHub Docs: *Automatic token authentication* | Nhầm `GITHUB_TOKEN` (runtime Actions) với Personal Access Token (local) |
+| **F-04..F-11** | **Major** | 4.11–4.13| 69–73 | GitHub CLI, NuGet, Pages, Codespaces Docs | `dotnet pack` lỗi thời với Web Forms; Pages 100% public trên Free; Hình 10 sai |
+| **F-12..F-16** | **Minor** | 4.11–4.13| 70–73 | ADO.NET Docs, Research Papers | `AddWithValue` gây Index Scan; thiếu trích dẫn nghiên cứu 30%; quota Codespaces |
+| **S7-01** | **Critical**| 4.14 | 74 | Pro Git Ch.7, **Trang PDF 257–266 (Trang in 251–260)** ("Reset Demystified") | Reset sai logic (`--soft` không unstage) commit lại chính secret; mã GH013 sai |
+| **S7-02** | **Major** | 4.14 | 73 | GitHub Docs: *Secret scanning partner patterns* | Push Protection mặc định không chặn SQL Server connection string nội bộ |
+| **S7-03** | **Major** | 4.14 | 74 | GitHub Docs: *About Dependabot version updates* | Dependabot không quét file JS tĩnh trong `Scripts/` (chỉ quét qua npm) |
+| **S7-04** | **Major** | 4.14 | 74 | GitHub Docs: *CodeQL runner requirements* | CodeQL mặc định Ubuntu + autobuild thất bại 100% với C# .NET Framework |
+| **S7-05** | **Major** | 4.14 | 74 | GitHub Advanced Security Architecture | Bảng 13 sai bản chất "Chặn ở đâu" (Secret Scanning là phát hiện sau push) |
+| **S7-06** | **Major** | 4.14 | 74 | Microsoft Learn (.NET Assembly Binding) | Thiếu cảnh báo lỗi `FileLoadException` khi nâng cấp gói nuget qua Dependabot |
+| **S7-07..S7-09** | **Major** | 4.15 | 75 | GitHub Education Guidelines (2024) | Codespaces bất khả thi; repo private là tính năng phổ thông; thiếu điều kiện 2FA |
+| **S7-10..S7-14** | **Minor** | 4.14–4.15| 73–75 | .NET ConfigurationManager; LaTeX formatting | Đọc biến môi trường trong .NET 4.8.1; Bảng 13 mất dấu; lỗi khoảng trắng listings |
 
 ---
 
