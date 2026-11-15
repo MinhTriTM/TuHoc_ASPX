@@ -1,4 +1,4 @@
-﻿# SÁCH PRO GIT (TÁC GIẢ: SCOTT CHACON & BEN STRAUB)
+# SÁCH PRO GIT (TÁC GIẢ: SCOTT CHACON & BEN STRAUB)
 ## BẢN DỊCH TIẾNG VIỆT — CHƯƠNG 6: GITHUB (ĐẦY ĐỦ VÀ CHUẨN KỸ THUẬT)
 
 > **Nguyên tác:** *Pro Git (Second Edition)*, Chapter 6: GitHub (trang 172–223)  
