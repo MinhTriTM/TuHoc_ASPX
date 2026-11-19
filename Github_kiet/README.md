@@ -8,6 +8,7 @@ Thư mục này dành riêng cho việc thực hành, ghi chép và triển khai
 - [ProGit_Chuong6_GitHub_TiengViet.md](file:///T:/HK1_26_27/Lap_trinh_aspx/TuHoc_ASPX/Github_kiet/ProGit_Chuong6_GitHub_TiengViet.md): Bản dịch Markdown tiếng Việt hoàn chỉnh Chương 6 (GitHub) của sách Pro Git.
 - [BaoCao_TinhTrang_VietHoa_ProGit_GitHub.md](file:///T:/HK1_26_27/Lap_trinh_aspx/TuHoc_ASPX/Github_kiet/BaoCao_TinhTrang_VietHoa_ProGit_GitHub.md): Báo cáo đánh giá và đối chiếu tình trạng Việt hóa Chương GitHub.
 - [TaiLieu_TrinhBay_TV2_GitHub.md](file:///T:/HK1_26_27/Lap_trinh_aspx/TuHoc_ASPX/Github_kiet/TaiLieu_TrinhBay_TV2_GitHub.md): Tài liệu và kịch bản trình bày của TV2 (GitHub + CI/CD cho ASPX).
+- [HuongDan_ChupAnh_MinhHoa_TV2.md](file:///T:/HK1_26_27/Lap_trinh_aspx/TuHoc_ASPX/Github_kiet/HuongDan_ChupAnh_MinhHoa_TV2.md): Hướng dẫn chi tiết chụp và thay thế 12 ảnh minh họa TV2 cho Báo cáo và Slide.
 - [bao_cao_so_sanh.md](file:///T:/HK1_26_27/Lap_trinh_aspx/TuHoc_ASPX/Github_kiet/bao_cao_so_sanh.md): Báo cáo so sánh và thẩm định kỹ thuật giữa Báo cáo LaTeX và tài liệu chuẩn.
 
 ## Nguyên tắc làm việc

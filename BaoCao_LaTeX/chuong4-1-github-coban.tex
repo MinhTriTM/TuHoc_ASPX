@@ -45,10 +45,24 @@ Mỗi Issue có tiêu đề, mô tả, bình luận, nhãn, mốc thời gian v�
 Ví dụ gắn với đồ án là Issue tiêu đề đăng nhập báo lỗi khi bỏ trống mật khẩu, nhãn lỗi, gán cho thành viên phụ trách trang đăng nhập.
 Khi Pull Request sửa xong vấn đề, thông điệp commit ghi câu đóng Issue tự động để lịch sử được liên kết chặt chẽ.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-2-issues-chitiet.png}
+\caption{Giao diện quản lý lỗi và tính năng chi tiết qua GitHub Issues}
+\label{fig:c4-issues-chitiet}
+\end{figure}
+
 GitHub Projects (phiên bản Projects v2 hiện đại) là hệ thống quản trị dự án linh hoạt, hỗ trợ cả bảng Kanban (Board view), bảng dữ liệu dạng lưới (Table view) và biểu đồ lộ trình theo thời gian (Roadmap view).
 Trong mô hình dữ liệu của Projects v2, mỗi thẻ đại diện cho chính xác một Issue, một Pull Request hoặc một ghi chú nháp (Draft Item); ngược lại, một Issue có thể được liên kết và theo dõi đồng thời trên nhiều dự án khác nhau của nhóm.
 Bên cạnh thao tác kéo thả thủ công, Projects v2 tích hợp sẵn các quy trình tự động hóa (Built-in Workflows), chẳng hạn tự động chuyển thẻ sang cột \verb|In Progress| khi có nhánh mới, chuyển sang \verb|Done| khi Pull Request được hợp nhất, hoặc tự động lưu trữ các mục đã hoàn tất.
 Nhóm ASPX cấu hình bảng gồm các trạng thái: việc cần làm, đang phát triển, chờ đánh giá và hoàn thành, giúp theo dõi sát sao tiến độ từng trang giao diện và từng thành viên mà không phát sinh độ trễ trao đổi.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-1-kanban-project.png}
+\caption{Bảng quản lý tiến độ GitHub Projects theo mô hình Kanban cho đồ án ASPX}
+\label{fig:c4-kanban-projects}
+\end{figure}
 
 Wiki là hệ thống trang tài liệu riêng của kho chứa, phù hợp cho hướng dẫn dài và ít thay đổi theo từng commit.
 Nhóm có thể viết các trang như hướng dẫn cài đặt, hướng dẫn cấu hình máy chủ và quy ước đặt tên cho các trang Web Forms.
@@ -180,6 +194,13 @@ Nhờ hai vòng lặp phản hồi này, nhánh chính luôn ở trạng thái b
 \label{fig:c4-pr-flow}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-3-pull-request-diff.png}
+\caption{Giao diện tạo Pull Request và đối chiếu thay đổi mã nguồn (diff) trên GitHub}
+\label{fig:c4-pr-diff}
+\end{figure}
+
 Luồng Fork cũng kết thúc bằng Pull Request nhưng điểm xuất phát khác với luồng Branch.
 Người đóng góp sao chép kho gốc về tài khoản của mình, tạo nhánh trên bản sao rồi mở Pull Request ngược về kho gốc.
 Chủ kho gốc xem xét, chạy kiểm tra tự động và quyết định có hợp nhất hay không.
@@ -216,6 +237,13 @@ Cơ chế này gom toàn bộ các sửa đổi nhỏ vào duy nhất một comm
 Tính năng này rất tiện cho các sửa nhỏ như đổi tên biến, thêm kiểm tra rỗng hay sửa chính tả thông báo.
 Với các sửa lớn ảnh hưởng logic, người đánh giá nên mô tả bằng lời để tác giả chủ động sửa và kiểm thử lại.
 Mọi trao đổi đều lưu lại trong Pull Request nên cuối kỳ nhóm có thể trích dẫn làm minh chứng phản biện.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-4-inline-code-review.png}
+\caption{Thao tác đánh giá mã nguồn trực tiếp (Code Review) và đề xuất sửa đổi (Inline Suggestion)}
+\label{fig:c4-code-review}
+\end{figure}
 
 Ví dụ sau đây là đoạn trích trang đăng nhập trong đồ án ASPX sau khi đã áp dụng góp ý đánh giá.
 Đoạn code kiểm tra tên đăng nhập và mật khẩu ngay khi người dùng bấm nút đăng nhập.
@@ -327,3 +355,10 @@ Không ai đẩy thẳng lên nhánh chính, mọi việc đều đi qua Pull Re
 Thành viên thứ nhất phụ trách hạ tầng Git và file cấu hình, thành viên thứ hai phụ trách GitHub và luồng hợp nhất.
 Thành viên thứ ba phụ trách tổng hợp báo cáo và đối chiếu với phía GitLab trong chương sau.
 Nhờ kỷ luật này, lịch sử kho chứa luôn sạch, dễ truy vết và đủ minh chứng cho phần thuyết trình.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-5-repository-rulesets.png}
+\caption{Cấu hình quy tắc bảo vệ nhánh hiện đại với GitHub Repository Rulesets}
+\label{fig:c4-repository-rulesets}
+\end{figure}

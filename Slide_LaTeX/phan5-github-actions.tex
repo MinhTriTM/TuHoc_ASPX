@@ -39,6 +39,11 @@ jobs:
 \end{lstlisting}
 \end{frame}
 
+\begin{frame}{Minh họa: Pipeline GitHub Actions chạy xanh}
+\centering
+\includegraphics[width=0.82\textwidth,height=0.68\textheight,keepaspectratio]{hinh4-6-actions-pipeline-green.png}
+\end{frame}
+
 \begin{frame}{Vì sao ASPX 4.8.1 bắt buộc Windows runner}
 \begin{itemize}
 \item .NET Framework 4.8.1 và \texttt{msbuild} bản full chỉ có trên Windows.
@@ -74,6 +79,11 @@ msbuild AspxDemo.sln /p:Conn="${{ secrets.CONN_STR }}"
 \end{lstlisting}
 \end{frame}
 
+\begin{frame}{Minh họa: Quản lý biến môi trường bảo mật (Secrets)}
+\centering
+\includegraphics[width=0.82\textwidth,height=0.68\textheight,keepaspectratio]{hinh4-8-secrets-variables.png}
+\end{frame}
+
 \begin{frame}{Demo TV2: PR và pipeline xanh}
 \begin{enumerate}
 \item Tạo nhánh \texttt{feature/github-actions}, thêm file workflow, push lên GitHub.
@@ -84,6 +94,11 @@ msbuild AspxDemo.sln /p:Conn="${{ secrets.CONN_STR }}"
 \end{enumerate}
 \end{frame}
 
+\begin{frame}{Minh họa: Gói Build Artifact sẵn sàng triển khai}
+\centering
+\includegraphics[width=0.82\textwidth,height=0.68\textheight,keepaspectratio]{hinh4-7-actions-build-artifact.png}
+\end{frame}
+
 \begin{frame}{Bảo mật: secret scanning, Dependabot, CodeQL}
 \begin{itemize}
 \item \textbf{Secret scanning}: quét token và key lộ trong code, chặn push chứa secret mới.
@@ -91,4 +106,9 @@ msbuild AspxDemo.sln /p:Conn="${{ secrets.CONN_STR }}"
 \item \textbf{CodeQL}: phân tích tĩnh, tìm SQL injection và XSS trong code C\#.
 \item Bật cả ba trong mục Security; job thất bại khi phát hiện lỗi nghiêm trọng.
 \end{itemize}
+\end{frame}
+
+\begin{frame}{Minh họa: Secret Scanning Push Protection (GH009) chặn lộ Secret}
+\centering
+\includegraphics[width=0.82\textwidth,height=0.68\textheight,keepaspectratio]{hinh4-11-push-protection-block.png}
 \end{frame}

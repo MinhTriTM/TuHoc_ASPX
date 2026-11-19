@@ -152,6 +152,14 @@ Bước này bắt buộc đứng trước biên dịch, nếu thiếu gói thì
 
 Với tám bước trên, mọi pull request đều được biên dịch và kiểm thử tự động trước khi review.
 Nhóm nên bật quy tắc yêu cầu workflow đạt mới được hợp nhất để nhánh chính luôn biên dịch được.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-6-actions-pipeline-green.png}
+\caption{Nhật ký thực thi pipeline GitHub Actions tự động build ứng dụng ASP.NET 4.8.1 thành công}
+\label{fig:c4-actions-green}
+\end{figure}
+
 Phần tiếp theo trình bày cách quản lý secret và môi trường triển khai an toàn.
 
 \subsection{Secrets và Environments}
@@ -212,6 +220,13 @@ Môi trường production yêu cầu ít nhất một người review phê duy�
 \item Dùng secret khác nhau cho staging và production để lộ môi trường thử nghiệm không ảnh hưởng hệ thống thật.
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-8-secrets-variables.png}
+\caption{Giao diện quản lý biến môi trường bảo mật (GitHub Secrets) cho chuỗi kết nối cơ sở dữ liệu}
+\label{fig:c4-secrets-variables}
+\end{figure}
+
 \subsection{Cache NuGet và artifacts}
 
 Mỗi lần pipeline chạy, lệnh khôi phục gói phải tải hàng trăm MB thư viện từ Internet,
@@ -247,6 +262,13 @@ steps:
       path: TestResults/*.trx
 \end{lstlisting}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-9-actions-nuget-cache.png}
+\caption{Cơ chế lưu bộ nhớ đệm phụ thuộc (Dependency Caching) giúp tăng tốc pipeline khôi phục NuGet}
+\label{fig:c4-nuget-cache}
+\end{figure}
+
 Artifact là nơi lưu kết quả đầu ra của pipeline: gói triển khai website, tệp tin nhật ký kiểm thử
 định dạng \verb|.trx| hoặc bản dựng để job triển khai tải về dùng tiếp. Khác với cache vốn có thể
 bị xóa bất cứ lúc nào, artifact được đảm bảo tồn tại đúng số ngày đã cấu hình qua \verb|retention-days|.
@@ -257,6 +279,13 @@ Nhờ artifact, thành viên review có thể tải đúng bản đã kiểm th�
 \item Đưa tệp tin khóa gói vào repository để khóa cache ổn định giữa các lần chạy.
 \item Chỉ tải artifact thật sự cần thiết và đặt thời gian lưu ngắn để tiết kiệm dung lượng.
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-7-actions-build-artifact.png}
+\caption{Gói sản phẩm biên dịch (Build Artifact) được đóng gói và lưu trữ trên GitHub Actions}
+\label{fig:c4-build-artifact}
+\end{figure}
 
 \subsection{Runner Windows và Ubuntu cho .NET Framework 4.8.1}
 

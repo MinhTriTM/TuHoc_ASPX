@@ -201,6 +201,13 @@ trong prompt, trong code mẫu hay trong lịch sử commit.
 Khi dùng đúng cách, Copilot là gia sư kiên nhẫn: giải thích code khó,
 gợi ý test case, đề xuất refactor tên biến rõ nghĩa hơn cho sinh viên năm nhất.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-10-copilot-suggestion.png}
+\caption{Trợ lý AI GitHub Copilot hỗ trợ sinh mã an toàn và tăng tốc lập trình Web Forms}
+\label{fig:c4-copilot-suggestion}
+\end{figure}
+
 \subsection{Bảo mật nâng cao: quét secret, Dependabot và CodeQL}
 
 Repository đồ án thường chứa file \verb|Web.config| với chuỗi kết nối cơ sở dữ liệu,
@@ -238,6 +245,13 @@ Mã lỗi chính thức khi push bị chặn bảo vệ là \verb|GH009: Secrets
 Đặc biệt, nhóm cần tránh sai lầm kinh điển khi dùng \verb|git reset --soft HEAD~1|: theo mô hình Three Trees của Git, cờ \verb|--soft| chỉ đưa con trỏ \verb|HEAD| lùi lại 1 commit nhưng giữ nguyên toàn bộ vùng Index (Staging area). Khi lập trình viên sửa tệp \verb|Web.config| ở Working Tree mà không chạy \verb|git add|, lệnh \verb|git commit| sau đó sẽ lấy dữ liệu từ Index (vẫn chứa nguyên vẹn chuỗi secret cũ), khiến commit mới tái tạo lại chính lỗ hổng vừa bị từ chối.
 Giải pháp an toàn và nhanh nhất là sửa tệp trong thư mục làm việc, sau đó thực thi lệnh \verb|git commit --amend --all| để đồng thời đưa toàn bộ thay đổi vào Index và ghi đè trực tiếp lên commit vừa tạo trước khi đẩy lại lên kho chứa.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-11-push-protection-block.png}
+\caption{Cơ chế Secret Scanning Push Protection ngăn chặn kịp thời việc đẩy chuỗi kết nối lên kho chứa}
+\label{fig:c4-push-protection}
+\end{figure}
+
 Dependabot tự động mở pull request nâng cấp các gói phụ thuộc có lỗ hổng,
 ví dụ nâng cấp thư viện JavaScript trong thư mục \verb|Scripts| hay gói NuGet
 cũ trong project \verb|packages.config| \cite{githubdocs}.
@@ -268,6 +282,13 @@ CodeQL & Mẫu code dễ bị tấn công & Workflow Actions & Cả nhóm \\
 Bảng trên giúp nhóm phân công rõ ràng: người push chịu trách nhiệm gỡ secret,
 người review chịu trách nhiệm merge bản vá Dependabot, cả nhóm cùng đọc báo cáo
 CodeQL trước mỗi mốc nộp bài.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{hinh4-12-security-overview.png}
+\caption{Bảng điều khiển an ninh toàn diện (GitHub Security Suite) bảo vệ dự án ASPX}
+\label{fig:c4-security-overview}
+\end{figure}
 
 \subsection{Gói GitHub Education cho sinh viên}
 
