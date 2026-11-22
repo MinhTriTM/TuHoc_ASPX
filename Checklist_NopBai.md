@@ -1,7 +1,6 @@
 # CHECKLIST NỘP BÀI — Đề tài GIT, GitHub, GitLab (ASPX, .NET Framework 4.8.1)
 
-> Nhóm 3 thành viên: TV1 (Git) — TV2 (GitHub + CI/CD) — TV3 (GitLab + tổng hợp).
-> Đổi `TV1/TV2/TV3` thành họ tên + MSSV thật trước khi nộp.
+> Nhóm 3 thành viên: TV1 = Lê Quang An – 0024415453 (Git) — TV2 = Lê Tuấn Kiệt – 0024417193 (GitHub + CI/CD) — TV3 = Đoàn Minh Trí – 0024417136, trưởng nhóm (GitLab + tổng hợp).
 > Nguyên tắc: mục nào tick xong phải có người kiểm tra ký nháy; không tick hộ khi chưa xem tận mắt.
 > Deadline chung: ngày nộp ghi ở dòng cuối mỗi nhóm, chậm nhất 1 ngày trước giờ nộp chính thức.
 
@@ -41,10 +40,10 @@
 |---|--------------|----------------|----------|------------|
 | 3.1 | Nộp đủ source: `main.tex`, `tailieu_thamkhao.bib`, `slide.tex`, không thiếu file con (`\input`, style, logo nếu có) | TV3 | Tuần 2 – Ngày 5 | [ ] |
 | 3.2 | Xóa file rác trước khi nén (`.aux`, `.log`, `.toc`, `.out`, `.synctex.gz`); chỉ giữ `.tex`, `.bib`, hình và PDF final | TV2 | Tuần 2 – Ngày 5 | [ ] |
-| 3.3 | Đủ 7 hình SVG trong `HinhAnh/`: `git-3-vung`, `git-branch-merge`, `gitflow`, `pr-flow`, `cicd-tongquan`, `cicd-github`, `cicd-gitlab` | TV1 | Tuần 2 – Ngày 4 | [ ] |
+| 3.3 | Đủ 15 hình SVG trong `HinhAnh/`: 7 hình lõi (`git-3-vung`, `git-branch-merge`, `gitflow`, `pr-flow`, `cicd-tongquan`, `cicd-github`, `cicd-gitlab`) + 8 hình bổ sung (`rebase-vs-merge`, `internals-objects`, `timeline`, `protected-branch`, `conventional-commits`, `secrets-quanly`, `mr-approvals`, `trangthai-file`) | TV1 | Tuần 2 – Ngày 4 | [ ] |
 | 3.4 | Mỗi hình SVG mở được, chữ tiếng Việt không lỗi font; có bản TikZ hoặc bản PDF/PNG dự phòng để biên dịch ngay | TV1 | Tuần 2 – Ngày 4 | [ ] |
 | 3.5 | Biên dịch lại từ đầu trên máy sạch (hoặc Overleaf với compiler `pdfLaTeX`) ra đúng `main.pdf` + `slide.pdf`, chụp ảnh làm bằng chứng | TV2 | Tuần 2 – Ngày 5 | [ ] |
-| 3.6 | File ZIP nộp bài đặt tên đúng quy định lớp (ví dụ `Nhom3_Git_GitHub_GitLab_MSSV1_MSSV2_MSSV3.zip`), giải nén thử 1 lần | TV3 | Tuần 2 – Ngày 6 | [ ] |
+| 3.6 | File ZIP nộp bài đặt tên đúng quy định lớp (ví dụ `Nhom_Git_GitHub_GitLab_0024415453_0024417193_0024417136.zip`), giải nén thử 1 lần | TV3 | Tuần 2 – Ngày 6 | [ ] |
 
 ---
 
@@ -80,8 +79,8 @@
 
 | Thành viên | Họ tên | MSSV | Chữ ký | Ngày ký |
 |------------|--------|------|--------|---------|
-| TV1 — Git căn bản → nâng cao | | | | |
-| TV2 — GitHub + CI/CD | | | | |
-| TV3 — GitLab + so sánh + tổng hợp | | | | |
+| TV1 — Git căn bản → nâng cao | Lê Quang An | 0024415453 | | |
+| TV2 — GitHub + CI/CD | Lê Tuấn Kiệt | 0024417193 | | |
+| TV3 — GitLab + so sánh + tổng hợp (trưởng nhóm) | Đoàn Minh Trí | 0024417136 | | |
 
 > Cam kết: cả 3 thành viên đã cùng kiểm tra checklist này, mọi mục tick [x] đều đã xem tận mắt. File nộp cuối cùng là bản cả nhóm thống nhất.

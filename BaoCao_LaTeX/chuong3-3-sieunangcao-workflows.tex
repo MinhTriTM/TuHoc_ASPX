@@ -106,7 +106,7 @@ Quy trình gọn nhất gồm ba bước: clone với bộ lọc để bỏ nộ
 
 \begin{lstlisting}[language=bash, caption={Clone loc va giu hai thu muc can thiet}, label={lst:c33-sparse}]
 # 1. Clone without file contents, download on demand
-git clone --filter=blob:none --no-checkout https://github.com/lop/aspx-group.git
+git clone --filter=blob:none --no-checkout https://github.com/MinhTriTM/AspxDemo_NET481.git
 cd aspx-group
 # 2. Enable cone-mode sparse checkout
 git sparse-checkout init --cone
@@ -127,13 +127,13 @@ Quy trình xử lý gồm bốn bước: thông báo cho cả nhóm dừng push,
 
 \begin{lstlisting}[language=bash, caption={Xoa chuoi ket noi that khoi toan bo lich su}, label={lst:c33-filterrepo}]
 # 0. Backup first, history rewrite is destructive
-git clone --mirror https://github.com/lop/aspx-group.git backup.git
+git clone --mirror https://github.com/MinhTriTM/AspxDemo_NET481.git backup.git
 # 1. Install filter-repo once (Windows example with pip)
 pip install git-filter-repo
 # 2. Replace the leaked secret in every commit
 git filter-repo --replace-text <(echo "connStrThat==>REMOVED_SECRET")
 # 3. Reconnect the remote and force-push with lease
-git remote add origin https://github.com/lop/aspx-group.git
+git remote add origin https://github.com/MinhTriTM/AspxDemo_NET481.git
 git push --force-with-lease origin main
 \end{lstlisting}
 

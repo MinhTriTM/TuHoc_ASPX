@@ -100,7 +100,7 @@ Toàn bộ lệnh đẩy code và tạo pull request bằng dòng lệnh đượ
 
 \begin{lstlisting}[language=bash,caption={Đẩy code và tạo pull request trên GitHub},label={lst:phulucD-tv2-bash}]
 # 0. link local repo to GitHub (done once before class)
-git remote add origin https://github.com/nhom3/aspx-demo.git
+git remote add origin https://github.com/MinhTriTM/AspxDemo_NET481.git
 git remote -v
 # 1. push main and feature branch
 git push -u origin main
@@ -158,8 +158,8 @@ build_web:
   stage: build
   tags: [windows, msbuild]
   script:
-    - '%NUGET_PATH% restore AspxDemo.sln'
-    - '%MSBUILD_PATH% AspxDemo.sln /p:Configuration=Release'
+    - '%NUGET_PATH% restore AspxDemo_NET481.sln'
+    - '%MSBUILD_PATH% AspxDemo_NET481.sln /p:Configuration=Release'
   artifacts:
     paths: ['Publish/']
     expire_in: 1 week

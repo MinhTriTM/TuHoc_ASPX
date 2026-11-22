@@ -47,7 +47,7 @@ Khối lệnh dưới đây tóm tắt cách kiểm tra nhanh một máy mới s
 
 \begin{lstlisting}[language=bash]
 # 1. Clone the demo repo and inspect history
-git clone https://github.com/nhom3/AspxDemo_NET481.git
+git clone https://github.com/MinhTriTM/AspxDemo_NET481.git
 cd AspxDemo_NET481
 git log --oneline --graph --decorate -n 12
 git status -sb
@@ -56,8 +56,8 @@ git branch -a
 git show --stat HEAD
 git tag -l "v*"
 # 3. Restore packages and build with MSBuild (.NET 4.8.1)
-nuget restore AspxDemo.sln
-msbuild AspxDemo.sln /p:Configuration=Release /m
+nuget restore AspxDemo_NET481.sln
+msbuild AspxDemo_NET481.sln /p:Configuration=Release /m
 \end{lstlisting}
 
 Nếu cả ba nhóm lệnh trên đều chạy không lỗi và cho ra artifact Release, người chấm có thể kết luận môi trường tái hiện của nhóm là đúng.
@@ -80,7 +80,7 @@ Khối lệnh dưới đây mô tả đúng quy trình thủ công hiện tại 
 
 \begin{lstlisting}[language=bash]
 # Current manual publish (gap to automate later)
-msbuild AspxDemo.sln /p:Configuration=Release /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
+msbuild AspxDemo_NET481.sln /p:Configuration=Release /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
 # Copy output to the demo IIS folder by hand
 xcopy /E /I /Y .\AspxDemo\Publish C:\inetpub\wwwroot\AspxDemo
 # No coverage gate yet: tests run without threshold

@@ -37,7 +37,7 @@ Nhóm cũng nên thêm file \verb|.gitignore| chuẩn cho Visual Studio để kh
 \label{subsec:c4-kho-chua-va-cong-cu}
 Repository là đơn vị trung tâm trên GitHub, chứa mã nguồn, lịch sử commit, nhánh, thẻ và toàn bộ thiết lập cộng tác.
 Mỗi repository có địa chỉ web riêng, trang tổng quan hiển thị cây thư mục, file giới thiệu và trạng thái nhánh mặc định.
-Với đồ án ASPX, nhóm đặt tên kho chứa rõ ràng như \verb|AspxDemo-NET481| và viết phần mô tả nêu đúng phiên bản Framework.
+Với đồ án ASPX, nhóm đặt tên kho chứa rõ ràng như \verb|AspxDemo_NET481| và viết phần mô tả nêu đúng phiên bản Framework.
 Nhóm bật Issues và Discussions ngay khi tạo kho chứa để mọi trao đổi đều lưu lại một chỗ thay vì nhắn tin rời rạc.
 
 Issues là nơi ghi nhận công việc, lỗi và ý tưởng cải tiến dưới dạng các thẻ có thể gán người thực hiện và nhãn.
@@ -124,10 +124,10 @@ Ví dụ sau đây minh họa toàn bộ vòng đời trên bằng dòng lệnh 
 Các chú thích trong khối lệnh được viết không dấu theo đúng quy tắc của báo cáo.
 Khối lệnh giả định kho chứa đồ án đã tồn tại và máy đã đăng nhập GitHub.
 
-\begin{lstlisting}[language=bash, caption={Quy trinh Forking Workflow chuan voi remote kep va dong bo upstream}, label={lst:c4-forking-workflow}]
+egin{lstlisting}[language=bash, caption={Quy trinh Forking Workflow chuan voi remote kep va dong bo upstream}, label={lst:c4-forking-workflow}]
 # 1. Fork repository goc ve tai khoan ca nhan va clone ve may
-gh repo fork lop-aspx/AspxDemo-NET481 --clone
-cd AspxDemo-NET481
+gh repo fork MinhTriTM/AspxDemo_NET481 --clone
+cd AspxDemo_NET481
 
 # Kiem tra hai remote: origin (fork ca nhan) va upstream (kho goc)
 git remote -v
@@ -328,7 +328,7 @@ Các dòng chú thích trong file được viết không dấu để giữ đún
 * @TV1
 
 # Cac trang giao dien ASPX can review tu TV2 hoac TV3 (logic OR)
-*.aspx @TV2 @TV3
+*.aspx @TV2 @MinhTriTM
 
 # Code behind files can review tu TV1 hoac TV2 (logic OR)
 *.aspx.cs @TV1 @TV2
@@ -347,8 +347,7 @@ Thứ nhất là nguyên tắc thứ tự ưu tiên ``Last match wins'': GitHub 
 Thứ hai là logic giữa nhiều chủ sở hữu: việc khai báo nhiều tài khoản trên cùng một dòng như \verb|*.aspx @TV2 @TV3| mang ngữ nghĩa toán tử \textbf{HOẶC (OR)} — nghĩa là chỉ cần TV2 hoặc TV3 phê duyệt là thỏa mãn điều kiện (nếu muốn bắt buộc cả hai người phải duyệt thì nhóm phải cấu hình số lượng review yêu cầu tối thiểu là 2 trong Branch Protection).
 Cuối cùng, khi bật kèm tùy chọn \verb|Require review from Code Owners|, nếu TV2 chưa chấp thuận thì nút hợp nhất vẫn bị khóa chặt cho dù các thành viên khác đã đồng ý.
 Cách làm này bảo đảm người hiểu rõ module quản trị luôn được đọc qua thay đổi liên quan.
-Nhóm nên đặt tên tài khoản GitHub thật thay cho ký hiệu TV2 trước khi nộp bài.
-Ví dụ nếu TV2 có tài khoản là \verb|nguyen-van-b| thì dòng tương ứng ghi \verb|/Admin/| kèm tên tài khoản đó.
+Nhóm thay các ký hiệu TV bằng tài khoản GitHub thật: TV3 (Đoàn Minh Trí) dùng \verb|@MinhTriTM|; TV1 (Lê Quang An) và TV2 (Lê Tuấn Kiệt) điền tài khoản của mình vào các dòng tương ứng trước khi nộp bài.
 
 Quy trình chuẩn cho đồ án môn học có thể tóm tắt thành một câu dễ nhớ cho cả ba thành viên.
 Không ai đẩy thẳng lên nhánh chính, mọi việc đều đi qua Pull Request có đánh giá và kiểm tra tự động.

@@ -67,7 +67,7 @@ pdflatex slide.tex
 1. Nén `BaoCao_LaTeX/` + `Slide_LaTeX/` + `HinhAnh/` + 2 file `.md` thành 1 ZIP.
 2. Xuất thêm `main.pdf` + `slide.pdf` để thầy/cô chấm nhanh không cần biên dịch.
 3. Đính kèm link repo GitHub + GitLab (public) có pipeline xanh trong báo cáo (Chương 7).
-4. Điền tên + MSSV 3 thành viên vào: bìa báo cáo, slide đầu, file phân công.
+4. Tên + MSSV đã điền sẵn (TV1 Lê Quang An 0024415453 · TV2 Lê Tuấn Kiệt 0024417193 · TV3 Đoàn Minh Trí 0024417136) — kiểm tra lại trên PDF sau khi biên dịch.
 
 ## Quy ước viết chung (đọc trước khi sửa file)
 

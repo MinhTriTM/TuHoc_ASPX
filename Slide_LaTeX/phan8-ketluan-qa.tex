@@ -11,9 +11,9 @@
 \begin{frame}{Mỗi thành viên một câu takeaway}
 \begin{itemize}
 \item Mỗi thành viên đúc kết một câu sau khi làm đồ án này.
-\item TV1 -- Git local: hiểu 3 vùng và \texttt{commit} thì không còn sợ mất code.
-\item TV2 -- GitHub: PR và Actions giúp review kỹ và build ASPX tự động.
-\item TV3 -- GitLab: MR và pipeline giúp nhóm nhỏ làm việc như nhóm chuyên nghiệp.
+\item Lê Quang An (TV1) -- Git local: hiểu 3 vùng và \texttt{commit} thì không còn sợ mất code.
+\item Lê Tuấn Kiệt (TV2) -- GitHub: PR và Actions giúp review kỹ và build ASPX tự động.
+\item Đoàn Minh Trí (TV3) -- GitLab: MR và pipeline giúp nhóm nhỏ làm việc như nhóm chuyên nghiệp.
 \item Điểm chung: kỷ luật \texttt{commit} và review quan trọng hơn công cụ.
 \end{itemize}
 \end{frame}
@@ -30,9 +30,9 @@
 \toprule
 Thành viên & Mảng phụ trách & Demo live \\
 \midrule
-TV1 & Git cơ bản và nâng cao & init, branch, merge, conflict Web.config \\
-TV2 & GitHub và Actions & PR, review, Actions build msbuild \\
-TV3 & GitLab và so sánh & MR, approval, pipeline, bảng so sánh \\
+Lê Quang An (TV1) & Git cơ bản và nâng cao & init, branch, merge, conflict Web.config \\
+Lê Tuấn Kiệt (TV2) & GitHub và Actions & PR, review, Actions build msbuild \\
+Đoàn Minh Trí (TV3) & GitLab và so sánh & MR, approval, pipeline, bảng so sánh \\
 \bottomrule
 \end{tabular}
 }
@@ -40,14 +40,15 @@ TV3 & GitLab và so sánh & MR, approval, pipeline, bảng so sánh \\
 
 \begin{frame}[fragile]{Repo demo và pipeline xanh}
 \begin{itemize}
-\item Repo GitHub: \url{https://github.com/nhom-aspx/AspxDemo-NET481}
-\item Repo GitLab: \url{https://gitlab.com/nhom-aspx/AspxDemo-NET481}
+\item Repo bài làm: \url{https://github.com/MinhTriTM/TuHoc_ASPX}
+\item Repo demo ASPX: \url{https://github.com/MinhTriTM/AspxDemo_NET481}
+\item Repo GitLab (mirror, điền khi tạo project): \url{https://gitlab.com/<ten-nhom>/AspxDemo_NET481}
 \item Pipeline GitHub Actions và GitLab CI đều xanh trước khi merge.
 \item Clone repo về máy và xem lịch sử như sau:
 \end{itemize}
 \begin{lstlisting}[language=bash]
-git clone https://github.com/nhom-aspx/AspxDemo-NET481.git
-cd AspxDemo-NET481
+git clone https://github.com/MinhTriTM/AspxDemo_NET481.git
+cd AspxDemo_NET481
 git log --oneline -5
 git branch -a
 \end{lstlisting}
@@ -61,6 +62,6 @@ git branch -a
 \vspace{0.4cm}
 {\large Mời thầy cô và các bạn đặt câu hỏi}\\
 \vspace{0.4cm}
-Git $\rightarrow$ TV1 \quad GitHub $\rightarrow$ TV2 \quad GitLab $\rightarrow$ TV3
+Git $\rightarrow$ An (TV1) \quad GitHub $\rightarrow$ Kiệt (TV2) \quad GitLab $\rightarrow$ Trí (TV3)
 \end{center}
 \end{frame}

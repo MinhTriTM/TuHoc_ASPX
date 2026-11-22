@@ -45,7 +45,7 @@ sau khi commit được build bằng MSBuild, kiểm thử bằng VSTest, rồi 
 
 Mọi pipeline của GitLab đều được khai báo trong tệp \verb|.gitlab-ci.yml| đặt ở thư mục gốc
 của repository. Liệt kê \ref{lst:c52-full-yml} là một tệp hoàn chỉnh, áp dụng trực tiếp cho
-solution \verb|AspxDemo.sln| gồm một project Web Forms và một project kiểm thử đơn vị. Ví dụ giả
+solution \verb|AspxDemo_NET481.sln| gồm một project Web Forms và một project kiểm thử đơn vị. Ví dụ giả
 định runner Windows dùng shell PowerShell là mặc định của executor \verb|shell| trên Windows.
 \begin{lstlisting}[language=yaml,caption={Tệp cấu hình GitLab CI đầy đủ cho ASPX 4.8.1},label={lst:c52-full-yml}]
 # Full GitLab CI pipeline for ASPX (.NET Framework 4.8.1)
@@ -56,7 +56,7 @@ stages:
   - deploy
 variables:
   BUILD_CONFIG: "Release"
-  SOLUTION: "AspxDemo.sln"
+  SOLUTION: "AspxDemo_NET481.sln"
   PUBLISH_DIR: "publish"
 # Cache NuGet packages between pipelines on the same runner
 cache:
@@ -75,6 +75,7 @@ build:
   artifacts:
     paths:
       - publish/
+      - AspxDemo.Tests/bin/Release/
     expire_in: 1 week
 # Stage 2: run unit tests with VSTest, reuse build artifacts
 test:
@@ -86,10 +87,12 @@ test:
       artifacts: true
   script:
     - vstest.console.exe AspxDemo.Tests\bin\$env:BUILD_CONFIG\AspxDemo.Tests.dll /Logger:"trx;LogFileName=results.trx"
+    - dotnet tool install -g trx2junit; if ($LASTEXITCODE -ne 0) { echo "trx2junit already installed" }
+    - trx2junit TestResults\results.trx --output TestResults\junit.xml
   artifacts:
     when: always
     reports:
-      junit: TestResults\results.trx
+      junit: TestResults/junit.xml
     paths:
       - TestResults/
 # Stage 3: deploy to staging, only on the main branch

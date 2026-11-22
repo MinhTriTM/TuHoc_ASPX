@@ -1,7 +1,7 @@
 # Rubric Tự Chấm — Đề Tài GIT – GitHub – GitLab (Thang 10)
 
-> Học phần ASPX (.NET Framework 4.8.1), nhóm 3 thành viên. Đổi `TV1/TV2/TV3`
-> thành tên thật + MSSV trước khi nộp. Chấm sau buổi tổng duyệt, trước ngày nộp 1 ngày.
+> Học phần ASPX (.NET Framework 4.8.1), nhóm 3 thành viên: TV1 = Lê Quang An – 0024415453 · TV2 = Lê Tuấn Kiệt – 0024417193 · TV3 = Đoàn Minh Trí – 0024417136 (trưởng nhóm).
+> Chấm sau buổi tổng duyệt, trước ngày nộp 1 ngày.
 
 ## 0. Tổng Quan 6 Tiêu Chí
 

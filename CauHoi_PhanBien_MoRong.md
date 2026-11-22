@@ -6,9 +6,9 @@
 
 | Mảng | Người trả lời chính | Câu |
 |------|---------------------|-----|
-| Git (local + internals) | TV1 | A1–A10 |
-| GitHub + Actions | TV2 | B1–B10 |
-| GitLab + so sánh + tình huống nhóm | TV3 | C1–C10 |
+| Git (local + internals) | TV1 — Lê Quang An (0024415453) | A1–A10 |
+| GitHub + Actions | TV2 — Lê Tuấn Kiệt (0024417193) | B1–B10 |
+| GitLab + so sánh + tình huống nhóm | TV3 — Đoàn Minh Trí (0024417136) | C1–C10 |
 
 ## Phần A — Git: 10 câu (TV1)
 

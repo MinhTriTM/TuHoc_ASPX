@@ -95,12 +95,12 @@ jobs:
 
       # Step 5: restore all NuGet packages for the solution.
       - name: Restore NuGet packages
-        run: nuget restore AspxDemo.sln
+        run: nuget restore AspxDemo_NET481.sln
 
       # Step 6: build and package using WPP and quoted Platform.
       - name: Build and Package Web Application
         run: |
-          msbuild AspxDemo.sln /p:Configuration=Release `
+          msbuild AspxDemo_NET481.sln /p:Configuration=Release `
             '/p:Platform="Any CPU"' `
             /p:DeployOnBuild=true `
             /p:WebPublishMethod=FileSystem `
@@ -130,7 +130,7 @@ jobs:
 \end{lstlisting}
 
 Workflow trên có thể sao chép vào thư mục \verb|.github/workflows| của repository demo
-và chạy ngay sau khi đẩy lên GitHub, với điều kiện solution có tên \verb|AspxDemo.sln|
+và chạy ngay sau khi đẩy lên GitHub, với điều kiện solution có tên \verb|AspxDemo_NET481.sln|
 và project kiểm thử đã được biên dịch ra \verb|AspxDemo.Tests.dll|.
 
 \subsubsection{Giải thích từng bước}
@@ -143,7 +143,7 @@ MSBuild là công cụ duy nhất biên dịch đầy đủ project Web Forms m�
 Lệnh \verb|nuget restore| sau đó đọc \verb|packages.config| và tải các gói còn thiếu về máy chạy.
 \item \textbf{Dùng cache:} hành động \verb|actions/cache@v4| lưu thư mục \verb|packages| của solution giữa các lần chạy.
 Do project ASP.NET Web Forms .NET 4.8.1 sử dụng \verb|packages.config| (tải gói trực tiếp vào thư mục \verb|packages| cục bộ thay vì \verb|~/.nuget/packages| như .NET Core), khóa cache được tính từ tên hệ điều hành và giá trị băm \verb|hashFiles('**/packages.config')|, bảo đảm tái sử dụng chính xác các thư viện đã tải khi không đổi cấu hình gói.
-\item \textbf{Khôi phục gói:} lệnh \verb|nuget restore AspxDemo.sln| tải phần gói còn thiếu sau khi đã dùng cache.
+\item \textbf{Khôi phục gói:} lệnh \verb|nuget restore AspxDemo_NET481.sln| tải phần gói còn thiếu sau khi đã dùng cache.
 Bước này bắt buộc đứng trước biên dịch, nếu thiếu gói thì MSBuild sẽ báo lỗi ngay.
 \item \textbf{Biên dịch và đóng gói:} lệnh \verb|msbuild| kích hoạt Web Publishing Pipeline (WPP) thông qua các tham số \verb|/p:DeployOnBuild=true|, \verb|/p:WebPublishMethod=FileSystem| và xuất bản toàn bộ trang web (gồm tệp \verb|.aspx|, \verb|Web.config|, thư mục \verb|bin|) ra \verb|PublishOutput|. Tham số \verb|'/p:Platform="Any CPU"'| bắt buộc phải bọc trong cặp dấu nháy đơn để tránh trình bao PowerShell trên runner Windows bóc tách khoảng trắng gây lỗi \verb|MSB1008|.
 \item \textbf{Kiểm thử:} lệnh \verb|dotnet test| thực thi các DLL kiểm thử đơn vị và xuất báo cáo kết quả kiểm thử định dạng \verb|.trx| vào thư mục \verb|TestResults|. Lệnh này có sẵn trong biến môi trường PATH của mọi runner Windows hiện đại, thay thế cho \verb|vstest.console.exe| vốn không nằm trong PATH mặc định.
@@ -251,7 +251,7 @@ steps:
 
   # Packages missing from cache are downloaded by restore.
   - name: Restore packages
-    run: nuget restore AspxDemo.sln
+    run: nuget restore AspxDemo_NET481.sln
 
   # Keep the build output for download and deploy jobs.
   - name: Upload test results

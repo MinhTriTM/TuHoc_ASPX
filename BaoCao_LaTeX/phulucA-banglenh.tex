@@ -14,8 +14,8 @@ với project Web Forms. Mọi lệnh đều chạy được trên Git Bash ho�
 # Basic workflow: config once, then add and commit
 git config --global user.name "Nguyen Van A"
 git config --global user.email "nguyenvana@example.com"
-git init AspxDemo
-cd AspxDemo
+git init AspxDemo_NET481
+cd AspxDemo_NET481
 git status
 git add .
 git commit -m "feat: khoi tao project ASPX"
@@ -29,7 +29,7 @@ git add Default.aspx Default.aspx.cs
 git commit -m "feat: them form dang nhap"
 git checkout main
 git merge feature/login-form
-git remote add origin https://github.com/lop-hk/AspxDemo.git
+git remote add origin https://github.com/MinhTriTM/AspxDemo_NET481.git
 git push -u origin main
 \end{lstlisting}
 
@@ -42,7 +42,7 @@ Tạo kho chứa mới hoặc lấy kho chứa có sẵn về máy trước khi 
 \toprule
 Nhóm & Lệnh & Mục đích & Ví dụ \\
 \midrule
-Khởi tạo & \verb|git init| & Tạo kho Git mới trong thư mục hiện tại & \verb|git init AspxDemo| \\
+Khởi tạo & \verb|git init| & Tạo kho Git mới trong thư mục hiện tại & \verb|git init AspxDemo_NET481| \\
 Khởi tạo & \verb|git clone <url>| & Sao chép toàn bộ kho chứa từ xa về máy & \verb|git clone --depth 1 <url>| \\
 Khởi tạo & \verb|git config user.name| & Khai báo tên tác giả cho commit & \verb|git config user.name "An"| \\
 Khởi tạo & \verb|git config user.email| & Khai báo email tác giả cho commit & \verb|git config user.email a@b.vn| \\

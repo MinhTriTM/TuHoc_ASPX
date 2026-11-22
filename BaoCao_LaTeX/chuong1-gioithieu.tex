@@ -34,8 +34,8 @@ git --version
 git config --global user.name "Nguyen Van A"
 git config --global user.email "nva@student.edu.vn"
 # Tao thu muc project demo ASPX va tao commit dau tien
-mkdir AspxDemo-NET481
-cd AspxDemo-NET481
+mkdir AspxDemo_NET481
+cd AspxDemo_NET481
 git init
 git add .
 git commit -m "docs: khoi tao repo demo ASPX 4.8.1"
@@ -95,7 +95,7 @@ Giảng viên và các nhóm khóa sau cũng có thể dùng báo cáo như mộ
 
 \subsubsection{Phạm vi nội dung}
 
-Về nội dung, báo cáo bao phủ toàn bộ vòng đời cộng tác trên một repo demo ASPX duy nhất là \texttt{AspxDemo-NET481}.
+Về nội dung, báo cáo bao phủ toàn bộ vòng đời cộng tác trên một repo demo ASPX duy nhất là \texttt{AspxDemo\_NET481}.
 Các mảng nằm trong phạm vi gồm có:
 \begin{itemize}
 \item Git cục bộ từ căn bản đến nâng cao, thao tác trực tiếp trên các file \texttt{.aspx}, \texttt{.aspx.cs} và \texttt{Web.config} của project demo.
@@ -134,7 +134,7 @@ Nhóm thực hiện đề tài theo phương pháp học đi đôi với làm th
 Quy trình gồm năm bước lặp lại cho từng chương, do cả ba thành viên cùng tham gia và review chéo cho nhau.
 \begin{enumerate}
 \item \textbf{Học tài liệu gốc:} đọc sách Pro Git cho nền tảng Git \cite{progit}, đọc tài liệu chính thức của GitHub và GitLab cho phần cộng tác \cite{githubdocs, gitlabdocs}, đọc tài liệu Microsoft cho phần Web Forms và MSBuild \cite{msnetfx, msmsbuild}.
-\item \textbf{Dựng repo demo dùng chung:} tạo project \texttt{AspxDemo-NET481} đúng chuẩn Web Forms 4.8.1, viết file \texttt{.gitignore} chuẩn cho ASP.NET rồi tạo lịch sử commit mẫu để mọi ví dụ trong báo cáo đều có chỗ kiểm chứng.
+\item \textbf{Dựng repo demo dùng chung:} tạo project \texttt{AspxDemo\_NET481} đúng chuẩn Web Forms 4.8.1, viết file \texttt{.gitignore} chuẩn cho ASP.NET rồi tạo lịch sử commit mẫu để mọi ví dụ trong báo cáo đều có chỗ kiểm chứng.
 \item \textbf{Mỗi người một nhánh feature:} ba thành viên thực hành song song trên ba nhánh riêng, mọi thay đổi đều đi qua pull request hoặc merge request có review, tuyệt đối không đẩy thẳng lên nhánh \verb|main|.
 \item \textbf{Dựng pipeline chạy thật:} viết file \texttt{ci-aspx-481.yml} cho GitHub Actions và file \texttt{.gitlab-ci.yml} cho GitLab CI, cả hai đều biên dịch bằng \verb|msbuild| trên Windows runner và phải đạt trạng thái xanh trước khi viết báo cáo.
 \item \textbf{Tổng hợp và review chéo:} mỗi chương do một thành viên viết nháp, hai thành viên còn lại review qua pull request, mọi lệnh trong báo cáo đều được chạy lại từ đầu để bảo đảm độc giả làm theo là thành công.
@@ -142,8 +142,8 @@ Quy trình gồm năm bước lặp lại cho từng chương, do cả ba thành
 Ví dụ dưới đây mô tả vòng đời chuẩn của một tính năng nhỏ trong repo demo, từ lúc tạo nhánh đến lúc đẩy lên để xin review.
 \begin{lstlisting}[language=bash]
 # Tai repo demo ve may va tao nhanh chuc nang rieng
-git clone https://github.com/nhom3/AspxDemo-NET481.git
-cd AspxDemo-NET481
+git clone https://github.com/MinhTriTM/AspxDemo_NET481.git
+cd AspxDemo_NET481
 git checkout -b feature/sua-trang-login
 # Sua file Default.aspx roi ghi nhan thay doi
 git status
@@ -197,14 +197,14 @@ Bảng phân công chi tiết từng chương cho ba thành viên được trìn
 \toprule
 Chương & Nội dung chính & Phụ trách \\
 \midrule
-Chương 1 & Giới thiệu: lý do, mục tiêu, phạm vi, phương pháp & TV1 \\
-Chương 2 & Git căn bản và demo trên project ASPX & TV1 \\
-Chương 3 & Git nâng cao và mô hình nhánh & TV1 \\
-Chương 4 & GitHub và pipeline GitHub Actions & TV2 \\
-Chương 5 & GitLab và pipeline GitLab CI & TV3 \\
-Chương 6 & So sánh Git với GitHub và GitLab & TV3 \\
-Chương 7 & Quy trình nhóm ba người và bài tập & TV3 \\
-Chương 8 & Kết luận và hướng phát triển & TV3 \\
+Chương 1 & Giới thiệu: lý do, mục tiêu, phạm vi, phương pháp & Lê Quang An (TV1) \\
+Chương 2 & Git căn bản và demo trên project ASPX & Lê Quang An (TV1) \\
+Chương 3 & Git nâng cao và mô hình nhánh & Lê Quang An (TV1) \\
+Chương 4 & GitHub và pipeline GitHub Actions & Lê Tuấn Kiệt (TV2) \\
+Chương 5 & GitLab và pipeline GitLab CI & Đoàn Minh Trí (TV3) \\
+Chương 6 & So sánh Git với GitHub và GitLab & Đoàn Minh Trí (TV3) \\
+Chương 7 & Quy trình nhóm ba người và bài tập & Đoàn Minh Trí (TV3) \\
+Chương 8 & Kết luận và hướng phát triển & Đoàn Minh Trí (TV3) \\
 Phụ lục & Bảng lệnh, file mẫu, kịch bản demo & Cả nhóm \\
 \bottomrule
 \end{tabular}

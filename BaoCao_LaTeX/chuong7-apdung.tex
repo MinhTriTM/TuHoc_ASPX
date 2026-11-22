@@ -9,14 +9,14 @@ Nhóm đọc xong chương này có thể bắt tay làm đồ án ngay mà khô
 \subsection{Tổ chức nhóm 3 người và mô hình nhánh}
 \label{subsec:c7-tochuc}
 
-Nhóm 3 thành viên phân vai theo mảng trong file phân công: TV1 phụ trách Git local và repo demo, TV2 phụ trách GitHub và GitHub Actions, TV3 phụ trách GitLab, so sánh và tổng hợp báo cáo.
+Nhóm 3 thành viên phân vai theo mảng trong file phân công: TV1 (Lê Quang An, 0024415453) phụ trách Git local và repo demo, TV2 (Lê Tuấn Kiệt, 0024417193) phụ trách GitHub và GitHub Actions, TV3 (Đoàn Minh Trí, 0024417136, trưởng nhóm) phụ trách GitLab, so sánh và tổng hợp báo cáo.
 Mỗi người vẫn phải biết đầy đủ quy trình chung, vai trò chỉ xác định người chịu trách nhiệm chính khi có sự cố.
 Quy tắc quan trọng nhất: không ai được push trực tiếp lên nhánh \texttt{main}, mọi thay đổi đều đi qua nhánh tính năng và pull request hoặc merge request có ít nhất một người review \cite{atlassiangit,githubdocs,gitlabdocs}.
 
 \begin{itemize}
-\item \textbf{TV1 -- Git và repo demo:} tạo repo \texttt{AspxDemo-NET481}, viết file \verb|.gitignore| chuẩn ASP.NET, dựng lịch sử commit mẫu, chịu trách nhiệm giải quyết xung đột local và kiểm tra mọi lệnh trong báo cáo chạy được.
-\item \textbf{TV2 -- GitHub và CI:} quản trị repo GitHub, cấu hình protected branch và secret, viết workflow \texttt{ci-aspx-481.yml}, đảm bảo mỗi pull request đều có pipeline build xanh trước khi merge \cite{ghactions}.
-\item \textbf{TV3 -- GitLab và tổng hợp:} mirror repo sang GitLab, viết file \verb|.gitlab-ci.yml| cho Windows runner, cấu hình approval rule, vẽ bảng so sánh và tổng hợp báo cáo \cite{gitlabci}.
+\item \textbf{TV1 (Lê Quang An) -- Git và repo demo:} tạo repo \texttt{AspxDemo\_NET481}, viết file \verb|.gitignore| chuẩn ASP.NET, dựng lịch sử commit mẫu, chịu trách nhiệm giải quyết xung đột local và kiểm tra mọi lệnh trong báo cáo chạy được.
+\item \textbf{TV2 (Lê Tuấn Kiệt) -- GitHub và CI:} quản trị repo GitHub, cấu hình protected branch và secret, viết workflow \texttt{ci-aspx-481.yml}, đảm bảo mỗi pull request đều có pipeline build xanh trước khi merge \cite{ghactions}.
+\item \textbf{TV3 (Đoàn Minh Trí, trưởng nhóm) -- GitLab và tổng hợp:} mirror repo sang GitLab, viết file \verb|.gitlab-ci.yml| cho Windows runner, cấu hình approval rule, vẽ bảng so sánh và tổng hợp báo cáo \cite{gitlabci}.
 \end{itemize}
 
 Mô hình nhánh áp dụng GitFlow rút gọn với 3 tầng \cite{gitflow}:
@@ -118,7 +118,7 @@ git merge origin/develop
 git add Web.config
 git commit -m "fix: giai quyet conflict Web.config, giu connection string mau"
 # build thu truoc khi push
-msbuild AspxDemo.sln /p:Configuration=Release
+msbuild AspxDemo_NET481.sln /p:Configuration=Release
 git push origin feature/login-aspx
 \end{lstlisting}
 
